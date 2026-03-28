@@ -34,7 +34,10 @@ const Terms = lazy(() => import("./Terms"))
 const About = lazy(() => import("./about"))
 const Threads = lazy(() => import("./Threads"))
 const Users = lazy(() => import("./Users"))
-const Watermelon = lazy(() => import("./Watermelon"))
+
+import Grape from "./Grape"
+import Watermelon from "./Watermelon"
+
 // Maybe later
 // const Affiliate = lazy(() => import("./affiliate"))
 // const AffiliateDashboard = lazy(() => import("./affiliateDashboard"))
@@ -94,6 +97,9 @@ export const Hey = memo(
       user,
       guest,
       showWatermelon,
+      showGrapeInitial,
+      showGrape,
+      setShowGrape,
       FRONTEND_URL,
       showWatermelonInitial,
       hasHydrated: isHydrated,
@@ -184,20 +190,30 @@ export const Hey = memo(
               slug={
                 showWatermelon || showWatermelonInitial
                   ? "watermelon"
-                  : showTribeLogo
-                    ? "tribe"
-                    : app
-                      ? undefined
-                      : appSlug
+                  : showGrape || showGrapeInitial
+                    ? "grape"
+                    : showTribeLogo
+                      ? "tribe"
+                      : app
+                        ? undefined
+                        : appSlug
               }
               app={
-                showTribeLogo || showWatermelon || showWatermelonInitial
+                showTribeLogo ||
+                showWatermelon ||
+                showWatermelonInitial ||
+                showGrapeInitial ||
+                showGrape
                   ? undefined
                   : app
               }
               showLoading={false}
               size={
-                showTribeLogo || showWatermelon || showWatermelonInitial
+                showTribeLogo ||
+                showWatermelon ||
+                showWatermelonInitial ||
+                showGrapeInitial ||
+                showGrape
                   ? 70
                   : 64
               }
@@ -284,6 +300,8 @@ export const Hey = memo(
               <Div style={{ display: isProgramme ? "none" : "block" }}>
                 {showWatermelon ? (
                   <Watermelon />
+                ) : showGrape ? (
+                  <Grape />
                 ) : isClientRoute ? (
                   postId || tribeSlug ? (
                     <Home />

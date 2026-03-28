@@ -103,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.94"
+const VERSION = "2.2.95"
 
 const AuthContext = createContext<
   | {
@@ -149,6 +149,8 @@ const AuthContext = createContext<
       setCommentAppId: (value: string | undefined) => void
       showWatermelon: boolean
       setShowWatermelon: (value: boolean) => void
+      showGrape: boolean
+      setShowGrape: (value: boolean) => void
       refetchAffiliateData: () => Promise<void>
       isDevelopment: boolean
       wasPear: boolean
@@ -258,6 +260,7 @@ const AuthContext = createContext<
       migratedFromGuestRef: React.RefObject<boolean>
       fetchApps: () => Promise<void>
       isLoadingApps: boolean
+      showGrapeInitial: boolean
       isSplash: boolean
       setIsSplash: (value: boolean) => void
       findAppByPathname: (
@@ -2598,15 +2601,33 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  const showWatermelonInitial = !!(
+  const showWatermelonInitial = Boolean(
     (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
-    pathname === "/watermelon"
+      pathname === "/watermelon",
   )
 
+  const showGrapeInitial = Boolean(
+    (siteConfig.isGrape && clearLocale(pathname) === "") || pathname === "/g",
+  )
+
+  const [showGrapeInternal, setShowGrapeInternal] = useLocalStorage<boolean>(
+    "showWatermelon",
+    showGrapeInitial || !!siteConfig.isGrape,
+  )
+
+  const showGrape = showGrapeInternal || showGrapeInitial
   const [showWatermelon, setShowWatermelonInternal] = useLocalStorage<boolean>(
     "showWatermelon",
     showWatermelonInitial || !!siteConfig.isWatermelon,
   )
+
+  useEffect(() => {
+    // setShowGrapeInternal(showGrapeInitial)
+  }, [showGrapeInitial])
+
+  const setShowGrape = (sw: boolean) => {
+    setShowGrapeInternal(sw)
+  }
 
   const setShowWatermelon = (sw: boolean) => {
     setShowWatermelonInternal(sw)
@@ -3782,6 +3803,7 @@ export function AuthProvider({
         token: user?.token || guest?.fingerprint,
         signInPart,
         setSignInPart,
+        setShowGrape,
         setSlug,
         slug,
         plausible,
@@ -3809,6 +3831,7 @@ export function AuthProvider({
         minimize,
         setMinimize,
         setThread,
+        showGrapeInitial,
         isExtensionRedirect,
         signInContext,
         signOutContext,
@@ -3883,6 +3906,7 @@ export function AuthProvider({
         mergeApps,
         CREDITS_PRICE,
         getTribeUrl,
+        showGrape,
         canShowAllTribe,
         refetchAffiliateData,
         FRONTEND_URL,

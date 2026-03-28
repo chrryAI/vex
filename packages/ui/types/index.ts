@@ -867,6 +867,7 @@ export type app = {
   moltAgentName: string | null
   moltAgentKarma: number | null
   moltAgentVerified: boolean | null
+  instructions: instruction[]
   storeId: string | null
   userId: string | null
   blueskyHandle: string | null

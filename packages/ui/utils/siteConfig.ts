@@ -1636,6 +1636,7 @@ export interface SiteConfig {
   url: string
   isTribe?: boolean
   isWatermelon?: boolean
+  isGrape?: boolean
   description: string
   version?: string
   email: string

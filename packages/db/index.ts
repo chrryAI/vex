@@ -1101,12 +1101,14 @@ export const getUser = async ({
           pageSize: 1,
         }).then((res) => res.totalCount),
         creditsLeft,
-        instructions: await getInstructions({
-          appId: app?.id,
-          userId: result.user.id,
-          pageSize: 7, // 7 instructions per app
-          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
-        }),
+        instructions: app
+          ? await getInstructions({
+              appId: app?.id,
+              userId: result.user.id,
+              pageSize: 7, // 7 instructions per app
+              // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+            })
+          : [],
         placeHolder: await getPlaceHolder({
           userId: result.user.id,
         }),
@@ -2424,11 +2426,13 @@ export const getGuest = async ({
           pageSize: 1,
         }).then((res) => res.totalCount),
         creditsLeft,
-        instructions: await getInstructions({
-          appId,
-          guestId: result.id,
-          pageSize: 7,
-        }),
+        instructions: appId
+          ? await getInstructions({
+              appId,
+              guestId: result.id,
+              pageSize: 7,
+            })
+          : [],
         apiKeys: skipMasking
           ? result.apiKeys
           : result.apiKeys
@@ -5511,6 +5515,13 @@ export const getApp = async ({
     extends: await getAppExtends({
       appId: app.app.id,
     }),
+    // instructions: await getInstructions({
+    //   appId: app?.app?.id,
+    //   userId,
+    //   guestId,
+    //   pageSize: 7, // 7 instructions per app
+    //   // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+    // }),
     user: toSafeUser({ user: app.user }),
     guest: toSafeGuest({ guest: app.guest }),
     store: storeWithApps,
@@ -5699,6 +5710,16 @@ export const getSimpleApp = async ({
     user: toSafeUser({ user: app.user }),
     guest: toSafeGuest({ guest: app.guest }),
     store: app.store,
+    instructions:
+      userId || guestId
+        ? await getInstructions({
+            appId: app?.app?.id,
+            userId,
+            guestId,
+            pageSize: 7, // 7 instructions per app
+            // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          })
+        : [],
   } as unknown as appWithStore
 
   const r = {
@@ -5857,7 +5878,7 @@ const toSafeCharacterProfile = ({
     : undefined
 }
 
-export function toSafeApp({
+const toSafeApp = ({
   app,
   userId,
   guestId,
@@ -5867,7 +5888,7 @@ export function toSafeApp({
   userId?: string
   guestId?: string
   skip?: boolean
-}): Partial<app | appWithStore> | undefined {
+}): Partial<app | appWithStore> | undefined => {
   if (!app) return undefined
 
   if (!skip && "store" in app && app?.store?.apps) {
@@ -5979,6 +6000,7 @@ export function toSafeApp({
     tips: app.tips,
     tipsTitle: app.tipsTitle,
     storeId: app.storeId,
+    instructions: (app as any).instructions || [],
     extend: app.extend,
     pricing: app.pricing,
     isSystem: app.isSystem,
