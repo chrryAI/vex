@@ -2533,5 +2533,6 @@
   "privacy.google.handling.title": "Manuseio de Dados",
   "privacy.google.title": "Dados do Usuário do Google",
   "privacy.google.usage.content": "Os dados do usuário do Google que acessamos são usados exclusivamente para os seguintes propósitos: Criação de conta - Para criar sua conta de usuário em nosso sistema; Autenticação - Para verificar sua identidade e fazer seu login de forma segura; Exibição de perfil - Para exibir seu nome e avatar dentro do aplicativo; Comunicação - Para enviar notificações importantes relacionadas à conta para o seu email.",
-  "privacy.google.usage.title": "Uso de Dados"
+  "privacy.google.usage.title": "Uso de Dados",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "O nosso uso e transferência para qualquer outra aplicação de informações recebidas das APIs do Google irão aderir à Política de Dados do Usuário dos Serviços da API do Google, incluindo os requisitos de Uso Limitado."
 }

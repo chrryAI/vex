@@ -2522,5 +2522,6 @@
   "privacy.google.handling.title": "Datahantering",
   "privacy.google.title": "Google-användardata",
   "privacy.google.usage.content": "Google-användardata som vi får tillgång till används endast för följande ändamål: Kontoskapande - För att skapa ditt användarkonto i vårt system; Autentisering - För att verifiera din identitet och logga in dig säkert; Profilvisning - För att visa ditt namn och avatar inom appen; Kommunikation - För att skicka viktiga kontorelaterade meddelanden till din e-post.",
-  "privacy.google.usage.title": "Dataanvändning"
+  "privacy.google.usage.title": "Dataanvändning",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Vår användning och överföring till någon annan app av information mottagen från Google APIs kommer att följa Google API Services User Data Policy, inklusive kraven för Begränsad Användning."
 }

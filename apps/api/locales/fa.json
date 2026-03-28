@@ -2522,5 +2522,6 @@
   "privacy.google.handling.title": "دستکاری داده‌ها",
   "privacy.google.title": "داده‌های کاربر Google",
   "privacy.google.usage.content": "داده‌های کاربر Google که ما به آنها دسترسی پیدا می‌کنیم، فقط برای اهداف زیر استفاده می‌شوند: ایجاد حساب - برای ایجاد حساب کاربری شما در سیستم ما؛ تأیید هویت - برای تأیید هویت شما و ورود شما به طور امن؛ نمایش پروفایل - برای نمایش نام و آواتار شما درون برنامه؛ ارتباط - برای ارسال اعلانات مهم مرتبط با حساب به ایمیل شما.",
-  "privacy.google.usage.title": "استفاده از داده‌ها"
+  "privacy.google.usage.title": "استفاده از داده‌ها",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "استفاده و انتقال ما به هر برنامه دیگری از اطلاعات دریافتی از Google APIs، مطابق با سیاست استفاده از داده‌های کاربر سرویس‌های Google API، از جمله الزامات استفاده محدود خواهد بود."
 }

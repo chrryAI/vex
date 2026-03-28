@@ -992,6 +992,7 @@
   "privacy.cookies.title": "4. Cookies",
   "privacy.google.accessed.content": "We access the following Google user data via OAuth with scopes: openid, email, and profile: Email address - Your primary Google account email; Name - Your display name from your Google profile; Profile picture - Your Google account avatar image URL.",
   "privacy.google.accessed.title": "Data Accessed",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.",
   "privacy.google.content": "When you sign in with Google, we access specific information from your Google account to create and authenticate your account. This section describes what data we access and how we use it in compliance with the Google API Services User Data Policy.",
   "privacy.google.handling.content": "We do not sell, rent, or share your Google user data with third parties. Your data is stored securely and only used to provide our services to you. You can delete your account and associated data at any time by contacting us at iliyan@chrry.ai.",
   "privacy.google.handling.title": "Data Handling",

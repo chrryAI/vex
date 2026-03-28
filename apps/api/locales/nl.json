@@ -2534,5 +2534,6 @@
   "privacy.google.handling.title": "Gegevensverwerking",
   "privacy.google.title": "Google Gebruikersgegevens",
   "privacy.google.usage.content": "De Google-gebruikersgegevens waartoe we toegang hebben, worden uitsluitend gebruikt voor de volgende doeleinden: Accountcreatie - Om uw gebruikersaccount in ons systeem te maken; Authenticatie - Om uw identiteit te verifiëren en u veilig in te loggen; Profielweergave - Om uw naam en avatar binnen de app weer te geven; Communicatie - Om belangrijke accountgerelateerde meldingen naar uw e-mail te sturen.",
-  "privacy.google.usage.title": "Gegevensgebruik"
+  "privacy.google.usage.title": "Gegevensgebruik",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Ons gebruik en overdracht naar elke andere app van informatie ontvangen via Google API's zal voldoen aan het Google API Services Gebruikersgegevensbeleid, inclusief de vereisten voor beperkt gebruik."
 }

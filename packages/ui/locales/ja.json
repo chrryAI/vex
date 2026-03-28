@@ -2533,5 +2533,6 @@
   "privacy.google.handling.title": "データの取り扱い",
   "privacy.google.title": "Googleユーザーデータ",
   "privacy.google.usage.content": "アクセスしたGoogleユーザーデータは、以下の目的のためだけに使用されます：アカウント作成 - システム内でユーザーアカウントを作成するため；認証 - あなたの身元を確認し、安全にログインさせるため；プロフィール表示 - アプリ内であなたの名前とアバターを表示するため；通信 - あなたのメールに重要なアカウント関連の通知を送るため。",
-  "privacy.google.usage.title": "データの使用"
+  "privacy.google.usage.title": "データの使用",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Google APIから受け取った情報の使用と他のアプリへの転送は、Google APIサービスユーザーデータポリシー、特に制限された使用要件に準拠します。"
 }

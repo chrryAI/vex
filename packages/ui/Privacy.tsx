@@ -118,6 +118,11 @@ export default function Privacy() {
             {t("privacy.google.handling.title")}
           </H3>
           <P>{t("privacy.google.handling.content")}</P>
+          <P>
+            {t(`Our use and transfer to any other app of information received from
+            Google APIs will adhere to the Google API Services User Data Policy,
+            including the Limited Use requirements.`)}
+          </P>
         </Section>
 
         <Section>
