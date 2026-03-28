@@ -30,6 +30,8 @@ if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
 const SECRET = JWT_SECRET || "development-secret"
 
 // ==================== TYPES ====================
+export const wait = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
 interface GeneratedAppFeedback {
   appIndex: number
@@ -433,17 +435,21 @@ Respond with a single JSON object (not an array).`
           throw new Error("ThreadId is not found")
         }
 
-        const lastMessageInfo = await getMessages({
-          userId: user.id,
-          threadId,
-          pageSize: 1,
-        })
+        const getMessagesId = async () => {
+          const lastMessageInfo = await getMessages({
+            userId: user.id,
+            threadId,
+            pageSize: 1,
+          })
+          const lastMessage = lastMessageInfo?.messages?.[0]
+          return lastMessage?.message?.id
+        }
 
-        const lastMessage = lastMessageInfo?.messages?.[0]
-
-        if (!lastMessage?.message?.id) {
+        if (!(await getMessagesId())) {
           throw new Error("Last message not found")
         }
+
+        await wait(3000)
 
         try {
           await fetch(`${baseUrl}/ai`, {
@@ -453,7 +459,7 @@ Respond with a single JSON object (not an array).`
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-              messageId: lastMessage.message.id,
+              messageId: await getMessagesId(),
               agentId: selectedAgent.id,
               stream: false,
               pear: "true",
@@ -462,6 +468,8 @@ Respond with a single JSON object (not an array).`
             }),
           })
           try {
+            await wait(3000)
+
             await fetch(`${baseUrl}/ai`, {
               method: "POST",
               headers: {
@@ -469,15 +477,16 @@ Respond with a single JSON object (not an array).`
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({
-                messageId: lastMessage.message.id,
+                messageId: await getMessagesId(),
                 agentId: selectedAgent.id,
                 stream: false,
-                pear: "true",
                 jobId: job?.id,
                 appId: reviewingApp.id,
               }),
             })
             try {
+              await wait(3000)
+
               reviewingApp.store?.app?.id &&
                 (await fetch(`${baseUrl}/ai`, {
                   method: "POST",
@@ -486,10 +495,9 @@ Respond with a single JSON object (not an array).`
                     Authorization: `Bearer ${token}`,
                   },
                   body: JSON.stringify({
-                    messageId: lastMessage.message.id,
+                    messageId: await getMessagesId(),
                     agentId: selectedAgent.id,
                     stream: false,
-                    pear: "true",
                     jobId: job?.id,
                     appId: reviewingApp.store?.app?.id,
                   }),
