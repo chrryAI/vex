@@ -445,21 +445,76 @@ Respond with a single JSON object (not an array).`
           throw new Error("Last message not found")
         }
 
-        await fetch(`${baseUrl}/ai`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            messageId: lastMessage.message.id,
-            agentId: selectedAgent.id,
-            stream: false,
-            pear: "true",
-            jobId: job?.id,
-            appId: pear.id,
-          }),
-        })
+        try {
+          await fetch(`${baseUrl}/ai`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              messageId: lastMessage.message.id,
+              agentId: selectedAgent.id,
+              stream: false,
+              pear: "true",
+              jobId: job?.id,
+              appId: pear.id,
+            }),
+          })
+          try {
+            await fetch(`${baseUrl}/ai`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                messageId: lastMessage.message.id,
+                agentId: selectedAgent.id,
+                stream: false,
+                pear: "true",
+                jobId: job?.id,
+                appId: reviewingApp.id,
+              }),
+            })
+            try {
+              reviewingApp.store?.app?.id &&
+                (await fetch(`${baseUrl}/ai`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    messageId: lastMessage.message.id,
+                    agentId: selectedAgent.id,
+                    stream: false,
+                    pear: "true",
+                    jobId: job?.id,
+                    appId: reviewingApp.store?.app?.id,
+                  }),
+                }))
+            } catch (error) {
+              console.error(
+                `🍐 Error processing feedback for ${targetAppId}:`,
+                error,
+              )
+              errors.push(`${targetAppId}: processing_error`)
+            }
+          } catch (error) {
+            console.error(
+              `🍐 Error processing feedback for ${targetAppId}:`,
+              error,
+            )
+            errors.push(`${targetAppId}: processing_error`)
+          }
+        } catch (error) {
+          console.error(
+            `🍐 Error processing feedback for ${targetAppId}:`,
+            error,
+          )
+          errors.push(`${targetAppId}: processing_error`)
+        }
       } catch (feedbackError) {
         console.error(
           `🍐 Error processing feedback for ${targetAppId}:`,
