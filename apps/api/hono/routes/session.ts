@@ -11,6 +11,8 @@ import {
   type guest,
   hasThreadNotifications,
   isProd,
+  isSeedSafe,
+  isVex,
   migrateUser,
   TEST_GUEST_FINGERPRINTS,
   TEST_MEMBER_EMAILS,
@@ -776,7 +778,11 @@ session.delete("/", async (c) => {
   }
 
   if (!isE2E) {
-    return c.json({ error: "Unauthorized" }, 401)
+    return c.json({ error: "Not isE2E" }, 401)
+  }
+
+  if (isVex) {
+    return c.json({ error: "isVex" }, 401)
   }
 
   const member = await getMemberAction(c)
@@ -785,6 +791,10 @@ session.delete("/", async (c) => {
   }
 
   if (!TEST_MEMBER_EMAILS.includes(member.email)) {
+    return c.json({ error: "Unauthorized" }, 401)
+  }
+
+  if (member.role !== "admin" && !member?.roles?.includes("admin")) {
     return c.json({ error: "Unauthorized" }, 401)
   }
 

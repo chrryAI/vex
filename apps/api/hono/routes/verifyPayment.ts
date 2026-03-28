@@ -14,7 +14,7 @@ import {
   createSubscription,
   createSystemLog,
   getAffiliateLink,
-  getApp,
+  getSimpleApp as getApp,
   getGuest,
   getScheduledJob,
   getSubscription,

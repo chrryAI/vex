@@ -27,7 +27,7 @@
 ## Why generateArray Pattern Works
 
 ```javascript
-const tmp = localTmp(scope, "#create_array" + uniqId(), Valtype.i32)
+const tmp = localTmp(scope, "#create_array" + uniqId(), Valtype.i32);
 ```
 
 Works because:
@@ -41,7 +41,7 @@ Works because:
 
 ```javascript
 // In func.generate(), AFTER parameters are allocated
-const tmp = localTmp(func, "#context_ptr", Valtype.i32)
+const tmp = localTmp(func, "#context_ptr", Valtype.i32);
 ```
 
 Fails because:
@@ -58,12 +58,12 @@ Need to allocate context local BEFORE parameter locals:
 // BEFORE: let localInd = args.length * 2;
 // Allocate context local first
 if (func._needsContext) {
-  const contextIdx = func.localInd++ // Reserve index
-  func.locals["#context"] = { idx: contextIdx, type: Valtype.i32 }
+  const contextIdx = func.localInd++; // Reserve index
+  func.locals["#context"] = { idx: contextIdx, type: Valtype.i32 };
 }
 
 // THEN: Allocate parameter locals
-let localInd = args.length * 2
+let localInd = args.length * 2;
 ```
 
 ## Next Step

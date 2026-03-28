@@ -22,48 +22,52 @@ npm install @chrryai/pepper
 ### Web (with View Transitions)
 
 ```tsx
-import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/web"
+import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/web";
 
 function App() {
   return (
     <HistoryRouterProvider>
       <YourApp />
     </HistoryRouterProvider>
-  )
+  );
 }
 
 function YourComponent() {
-  const { navigate, pathname } = useNavigation()
+  const { navigate, pathname } = useNavigation();
 
-  return <button type="button"  onClick={() => navigate("/about")}>Go to About</button>
+  return (
+    <button type="button" onClick={() => navigate("/about")}>
+      Go to About
+    </button>
+  );
 }
 ```
 
 ### React Native
 
 ```tsx
-import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/native"
+import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/native";
 
 function App() {
   return (
     <HistoryRouterProvider>
       <YourApp />
     </HistoryRouterProvider>
-  )
+  );
 }
 ```
 
 ### Browser Extension
 
 ```tsx
-import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/extension"
+import { HistoryRouterProvider, useNavigation } from "@chrryai/pepper/extension";
 
 function App() {
   return (
     <HistoryRouterProvider>
       <YourApp />
     </HistoryRouterProvider>
-  )
+  );
 }
 ```
 
@@ -91,7 +95,7 @@ const {
   pathname, // Current pathname
   searchParams, // URL search params
   hash, // URL hash
-} = useNavigation()
+} = useNavigation();
 ```
 
 #### Methods
@@ -109,7 +113,7 @@ Pepper automatically uses the [View Transitions API](https://developer.mozilla.o
 
 ```tsx
 // Transitions happen automatically!
-navigate("/about") // ✨ Smooth transition
+navigate("/about"); // ✨ Smooth transition
 ```
 
 ## 🎯 Why Pepper?

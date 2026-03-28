@@ -49,6 +49,7 @@ import { Button, Div, P, Span, Strong, useTheme, Video } from "./platform"
 import type {
   aiAgent,
   app,
+  appWithStore,
   guest,
   message,
   thread,
@@ -81,6 +82,7 @@ function Message({
     aiAgent?: aiAgent
     thread?: thread
     parentMessage?: message
+    app?: appWithStore
   }
   onDelete?: ({ id }: { id: string }) => Promise<void>
   onToggleLike?: (liked: boolean | undefined) => void
@@ -114,7 +116,7 @@ function Message({
   const isStreaming = message.message.isStreaming
 
   const { setIsAccountVisible, push } = useNavigationContext()
-  const { refetchThread, scrollToBottom } = useChat()
+  const { refetchThread, scrollToBottom, setIsNewChat } = useChat()
   const { addParams } = useNavigationContext()
 
   const { slug, apps, app } = useApp()
@@ -924,6 +926,7 @@ function Message({
                     data-testid="user-message-images"
                     style={{
                       ...styles.userMessageImages.style,
+                      position: "relative",
                     }}
                   >
                     {images.map((image) => (
@@ -1223,8 +1226,16 @@ function Message({
               </>
             ) : (
               <Span style={styles.appIcon.style}>
-                <Img app={app} size={35} />
-                <Span>{app?.name || "Vex"}</Span>
+                <Img
+                  app={message?.app || message.thread?.app || app}
+                  size={35}
+                />
+                <Span>
+                  {message?.app?.name ||
+                    message.thread?.app?.name ||
+                    app?.name ||
+                    "Vex"}
+                </Span>
               </Span>
             )}
           </Button>
@@ -1325,7 +1336,10 @@ function Message({
                   style={{ ...styles.agentMessageImages.style, marginTop: 5 }}
                 >
                   {message.message.images.map((image) => (
-                    <Div key={image.url} style={agentImageStyle}>
+                    <Div
+                      key={image.url}
+                      style={{ ...agentImageStyle, position: "relative" }}
+                    >
                       <Img
                         style={agentImageStyle}
                         src={image.url}
@@ -1419,8 +1433,10 @@ function Message({
                     href={`/p/${message.message.tribePostId}`}
                     onClick={(e) => {
                       e.preventDefault()
-                      setShowTribe(true)
-                      push(`/p/${message.message.tribePostId}`)
+                      setIsNewChat({
+                        value: true,
+                        postId: message.message.tribePostId,
+                      })
                     }}
                   >
                     <Img slug="zarathustra" />

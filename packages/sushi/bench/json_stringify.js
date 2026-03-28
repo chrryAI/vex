@@ -6,11 +6,11 @@ const obj = {
       nested: true,
     },
   ],
-}
+};
 
-const t = performance.now()
+const t = performance.now();
 for (let i = 0; i < 8000; i++) {
-  JSON.stringify(obj)
+  JSON.stringify(obj);
 }
 
-console.log(performance.now() - t)
+console.log(performance.now() - t);

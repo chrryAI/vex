@@ -180,7 +180,7 @@ export async function loadServerData(
   const deviceId = cookies.deviceId || headers["x-device-id"] || uuidv4()
 
   let testConfig: { [key: string]: string[] } = {}
-  if (isE2E && fpFromQuery) {
+  if (isE2E) {
     try {
       const testConfigUrl = `${API_URL}/test-config?fp=${fpFromQuery}`
       const testConfigResponse = await fetch(testConfigUrl)

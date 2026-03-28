@@ -18,7 +18,7 @@ cat > apps/api/.env.example << 'EOF'
 DB_URL=postgresql://user:password@localhost:5432/chrry
 
 # NextAuth
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
+AUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=http://localhost:5173
 
 # AI Provider Keys (Get from respective providers)
@@ -53,7 +53,7 @@ cat > apps/web/.env.example << 'EOF'
 DB_URL=postgresql://user:password@localhost:5432/chrry
 
 # NextAuth
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
+AUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=http://localhost:3001
 
 # AI Provider Keys

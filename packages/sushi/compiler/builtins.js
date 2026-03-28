@@ -1,19 +1,19 @@
-import * as PrecompiledBuiltins from "./builtins_precompiled.js"
-import { number, unsignedLEB128 } from "./encoding.js"
-import { TYPE_NAMES, TYPES } from "./types.js"
-import { Blocktype, Opcodes, PageSize, Valtype } from "./wasmSpec.js"
-import "./prefs.js"
+import * as PrecompiledBuiltins from "./builtins_precompiled.js";
+import { number, unsignedLEB128 } from "./encoding.js";
+import { TYPE_NAMES, TYPES } from "./types.js";
+import { Blocktype, Opcodes, PageSize, Valtype } from "./wasmSpec.js";
+import "./prefs.js";
 
-export let importedFuncs
+export let importedFuncs;
 export const setImports = (v = null) => {
   if (v == null) {
-    v = Object.create(null)
-    v.length = 0
+    v = Object.create(null);
+    v.length = 0;
   }
 
-  importedFuncs = v
-}
-setImports()
+  importedFuncs = v;
+};
+setImports();
 
 /**
  * Create an import function for the Porffor world to use.
@@ -26,76 +26,75 @@ setImports()
  */
 export const createImport = (name, params, returns, js = null, c = null) => {
   if (!globalThis.valtypeBinary) {
-    globalThis.valtype ??= Prefs.valtype ?? "f64"
-    globalThis.valtypeBinary = Valtype[valtype]
+    globalThis.valtype ??= Prefs.valtype ?? "f64";
+    globalThis.valtypeBinary = Valtype[valtype];
   }
 
-  if (typeof params === "number") params = new Array(params).fill(valtypeBinary)
-  if (typeof returns === "number")
-    returns = new Array(returns).fill(valtypeBinary)
+  if (typeof params === "number") params = new Array(params).fill(valtypeBinary);
+  if (typeof returns === "number") returns = new Array(returns).fill(valtypeBinary);
 
   if (name in importedFuncs) {
     // overwrite existing import
-    const existing = importedFuncs[name]
-    const call = +existing
-    const replacement = new Number(call)
-    replacement.name = name
-    replacement.import = existing.import
-    replacement.params = params
-    replacement.returns = returns
-    replacement.js = js
-    replacement.c = c
+    const existing = importedFuncs[name];
+    const call = +existing;
+    const replacement = new Number(call);
+    replacement.name = name;
+    replacement.import = existing.import;
+    replacement.params = params;
+    replacement.returns = returns;
+    replacement.js = js;
+    replacement.c = c;
 
-    importedFuncs[name] = replacement
-    return
+    importedFuncs[name] = replacement;
+    return;
   }
 
-  const call = importedFuncs.length
-  const ident = String.fromCharCode(97 + importedFuncs.length)
+  const call = importedFuncs.length;
+  const ident = String.fromCharCode(97 + importedFuncs.length);
 
-  const obj = (importedFuncs[name] = importedFuncs[call] = new Number(call))
-  obj.name = name
-  obj.import = ident
-  obj.params = params
-  obj.returns = returns
-  obj.js = js
-  obj.c = c
+  const obj = (importedFuncs[name] = importedFuncs[call] = new Number(call));
+  obj.name = name;
+  obj.import = ident;
+  obj.params = params;
+  obj.returns = returns;
+  obj.js = js;
+  obj.c = c;
 
-  importedFuncs.length = call + 1
-}
+  importedFuncs.length = call + 1;
+};
 
-export const UNDEFINED = 0
-export const NULL = 0
+export const UNDEFINED = 0;
+export const NULL = 0;
 
 export const BuiltinVars = ({ builtinFuncs }) => {
-  const _ = Object.create(null)
-  _.undefined = () => [number(UNDEFINED)]
-  _.undefined.type = TYPES.undefined
+  const _ = Object.create(null);
+  _.undefined = () => [number(UNDEFINED)];
+  _.undefined.type = TYPES.undefined;
 
-  _.null = () => [number(NULL)]
-  _.null.type = TYPES.object
+  _.null = () => [number(NULL)];
+  _.null.type = TYPES.object;
 
-  _.NaN = () => [number(NaN)]
-  _.Infinity = () => [number(Infinity)]
+  _.NaN = () => [number(NaN)];
+  _.Infinity = () => [number(Infinity)];
 
   for (const x in TYPES) {
-    _[`__Porffor_TYPES_${x}`] = () => [number(TYPES[x])]
+    _[`__Porffor_TYPES_${x}`] = () => [number(TYPES[x])];
   }
 
-  _.__performance_timeOrigin = [[Opcodes.call, importedFuncs.timeOrigin]]
-  _.__performance_timeOrigin.usesImports = true
+  _.__performance_timeOrigin = [[Opcodes.call, importedFuncs.timeOrigin]];
+  _.__performance_timeOrigin.usesImports = true;
 
-  _.__Uint8Array_BYTES_PER_ELEMENT = () => [number(1)]
-  _.__Int8Array_BYTES_PER_ELEMENT = () => [number(1)]
-  _.__Uint8ClampedArray_BYTES_PER_ELEMENT = () => [number(1)]
-  _.__Uint16Array_BYTES_PER_ELEMENT = () => [number(2)]
-  _.__Int16Array_BYTES_PER_ELEMENT = () => [number(2)]
-  _.__Uint32Array_BYTES_PER_ELEMENT = () => [number(4)]
-  _.__Int32Array_BYTES_PER_ELEMENT = () => [number(4)]
-  _.__Float32Array_BYTES_PER_ELEMENT = () => [number(4)]
-  _.__Float64Array_BYTES_PER_ELEMENT = () => [number(8)]
-  _.__BigInt64Array_BYTES_PER_ELEMENT = () => [number(8)]
-  _.__BigUint64Array_BYTES_PER_ELEMENT = () => [number(8)]
+  _.__Uint8Array_BYTES_PER_ELEMENT = () => [number(1)];
+  _.__Int8Array_BYTES_PER_ELEMENT = () => [number(1)];
+  _.__Uint8ClampedArray_BYTES_PER_ELEMENT = () => [number(1)];
+  _.__Uint16Array_BYTES_PER_ELEMENT = () => [number(2)];
+  _.__Int16Array_BYTES_PER_ELEMENT = () => [number(2)];
+  _.__Uint32Array_BYTES_PER_ELEMENT = () => [number(4)];
+  _.__Int32Array_BYTES_PER_ELEMENT = () => [number(4)];
+  _.__Float32Array_BYTES_PER_ELEMENT = () => [number(4)];
+  _.__Float64Array_BYTES_PER_ELEMENT = () => [number(8)];
+  _.__BigInt64Array_BYTES_PER_ELEMENT = () => [number(8)];
+  _.__BigUint64Array_BYTES_PER_ELEMENT = () => [number(8)];
 
   // well-known symbols
   for (const x of [
@@ -130,54 +129,39 @@ export const BuiltinVars = ({ builtinFuncs }) => {
       ...glbl(Opcodes.global_set, `#wellknown_${x}`, Valtype.f64),
       ...glbl(Opcodes.global_get, `#wellknown_${x}`, Valtype.f64),
       [Opcodes.end],
-    ]
-    _[`__Symbol_${x}`].type = TYPES.symbol
+    ];
+    _[`__Symbol_${x}`].type = TYPES.symbol;
   }
 
   // builtin objects
-  const makePrefix = (name) => `${(name.startsWith("__") ? "" : "__") + name}_`
+  const makePrefix = (name) => `${(name.startsWith("__") ? "" : "__") + name}_`;
 
-  const done = new Set()
+  const done = new Set();
   const object = (name, props) => {
-    done.add(name)
-    const prefix = name === "globalThis" ? "" : makePrefix(name)
+    done.add(name);
+    const prefix = name === "globalThis" ? "" : makePrefix(name);
 
     // already a func
-    const existingFunc = builtinFuncs[name]
+    const existingFunc = builtinFuncs[name];
 
     builtinFuncs[`#get_${name}`] = {
       params: [],
       locals: [Valtype.i32],
       returns: [Valtype.i32],
       returnType: TYPES.object,
-      wasm: (
-        scope,
-        {
-          allocPage,
-          makeString,
-          generate,
-          getNodeType,
-          builtin,
-          funcRef,
-          glbl,
-        },
-      ) => {
-        if (globalThis.precompile) return [["get object", name]]
+      wasm: (scope, { allocPage, makeString, generate, getNodeType, builtin, funcRef, glbl }) => {
+        if (globalThis.precompile) return [["get object", name]];
 
         // todo/perf: precompute bytes here instead of calling real funcs if we really care about perf later
 
-        let ptr
+        let ptr;
         if (existingFunc) {
-          ptr = funcRef(name)[0][1]
+          ptr = funcRef(name)[0][1];
         } else {
-          ptr = allocPage(scope, `builtin object: ${name}`)
+          ptr = allocPage(scope, `builtin object: ${name}`);
         }
 
-        const getPtr = glbl(
-          Opcodes.global_get,
-          `getptr_${name}`,
-          Valtype.i32,
-        )[0]
+        const getPtr = glbl(Opcodes.global_get, `getptr_${name}`, Valtype.i32)[0];
         const out = [
           // check if already made/cached
           getPtr,
@@ -197,13 +181,13 @@ export const BuiltinVars = ({ builtinFuncs }) => {
           [Opcodes.call, builtin("__Porffor_object_underlying")],
           [Opcodes.drop],
           [Opcodes.local_set, 0],
-        ]
+        ];
 
         for (const x in props) {
           const value = {
             type: "Identifier",
             name: prefix + x,
-          }
+          };
 
           if (x === "__proto__") {
             out.push(
@@ -215,19 +199,18 @@ export const BuiltinVars = ({ builtinFuncs }) => {
               ...getNodeType(scope, value),
 
               [Opcodes.call, builtin("__Porffor_object_setPrototype")],
-            )
-            continue
+            );
+            continue;
           }
 
-          let add = true
-          if (existingFunc && (x === "prototype" || x === "constructor"))
-            add = false
+          let add = true;
+          if (existingFunc && (x === "prototype" || x === "constructor")) add = false;
 
-          let flags = 0b0000
-          const d = props[x]
-          if (d.configurable) flags |= 0b0010
-          if (d.enumerable) flags |= 0b0100
-          if (d.writable) flags |= 0b1000
+          let flags = 0b0000;
+          const d = props[x];
+          if (d.configurable) flags |= 0b0010;
+          if (d.enumerable) flags |= 0b0100;
+          if (d.writable) flags |= 0b1000;
 
           out.push(
             [Opcodes.local_get, 0],
@@ -243,68 +226,60 @@ export const BuiltinVars = ({ builtinFuncs }) => {
             number(flags, Valtype.i32),
             number(TYPES.number, Valtype.i32),
 
-            [
-              Opcodes.call,
-              builtin(
-                add ? "__Porffor_object_fastAdd" : "__Porffor_object_define",
-              ),
-            ],
-          )
+            [Opcodes.call, builtin(add ? "__Porffor_object_fastAdd" : "__Porffor_object_define")],
+          );
         }
 
         // return ptr
-        out.push(getPtr)
-        return out
+        out.push(getPtr);
+        return out;
       },
-    }
+    };
 
-    _[name] = (scope, { builtin }) => [
-      [Opcodes.call, builtin(`#get_${name}`)],
-      Opcodes.i32_from_u,
-    ]
-    _[name].type = existingFunc ? TYPES.function : TYPES.object
+    _[name] = (scope, { builtin }) => [[Opcodes.call, builtin(`#get_${name}`)], Opcodes.i32_from_u];
+    _[name].type = existingFunc ? TYPES.function : TYPES.object;
 
     for (const x in props) {
-      const d = props[x]
-      const k = prefix + x
+      const d = props[x];
+      const k = prefix + x;
 
       if ("value" in d && !(k in builtinFuncs) && !(k in _)) {
         if (Array.isArray(d.value) || typeof d.value === "function") {
-          _[k] = d.value
-          continue
+          _[k] = d.value;
+          continue;
         }
 
         if (typeof d.value === "number") {
-          _[k] = [number(d.value)]
-          _[k].type = TYPES.number
-          continue
+          _[k] = [number(d.value)];
+          _[k].type = TYPES.number;
+          continue;
         }
 
         if (typeof d.value === "string") {
-          _[k] = (scope, { makeString }) => makeString(scope, d.value)
-          _[k].type = TYPES.bytestring
-          continue
+          _[k] = (scope, { makeString }) => makeString(scope, d.value);
+          _[k].type = TYPES.bytestring;
+          continue;
         }
 
         if (d.value === null) {
-          _[k] = _.null
-          continue
+          _[k] = _.null;
+          continue;
         }
 
-        throw new Error(`unsupported value type (${typeof d.value})`)
+        throw new Error(`unsupported value type (${typeof d.value})`);
       }
     }
-  }
+  };
 
   const props = (base, vals) => {
-    const out = {}
+    const out = {};
 
     if (Array.isArray(vals)) {
       // array of keys with no value
       for (const x of vals) {
         out[x] = {
           ...base,
-        }
+        };
       }
     } else
       for (const x in vals) {
@@ -312,20 +287,20 @@ export const BuiltinVars = ({ builtinFuncs }) => {
         out[x] = {
           ...base,
           value: vals[x],
-        }
+        };
       }
 
-    return out
-  }
+    return out;
+  };
 
-  const builtinFuncKeys = Object.keys(builtinFuncs)
+  const builtinFuncKeys = Object.keys(builtinFuncs);
   const autoFuncKeys = (name) => {
-    const prefix = makePrefix(name)
+    const prefix = makePrefix(name);
     return builtinFuncKeys
       .filter((x) => x.startsWith(prefix))
       .map((x) => x.slice(prefix.length))
-      .filter((x) => !x.startsWith("prototype_"))
-  }
+      .filter((x) => !x.startsWith("prototype_"));
+  };
   const autoFuncs = (name) => ({
     ...props(
       {
@@ -344,7 +319,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
           },
         }
       : {}),
-  })
+  });
 
   object("Math", {
     ...props(
@@ -370,54 +345,54 @@ export const BuiltinVars = ({ builtinFuncs }) => {
     ),
 
     ...autoFuncs("Math"),
-  })
+  });
 
   // automatically generate objects for prototypes
   for (const x of builtinFuncKeys.reduce((acc, x) => {
-    const ind = x.indexOf("_prototype_")
-    if (ind === -1) return acc
+    const ind = x.indexOf("_prototype_");
+    if (ind === -1) return acc;
 
-    acc.add(x.slice(0, ind + 10))
-    return acc
+    acc.add(x.slice(0, ind + 10));
+    return acc;
   }, new Set())) {
-    const props = autoFuncs(x)
+    const props = autoFuncs(x);
 
     // special case: Object.prototype.__proto__ = null
     if (x === "__Object_prototype") {
       Object.defineProperty(props, "__proto__", {
         value: { value: null, configurable: true },
         enumerable: true,
-      })
+      });
     }
 
     // special case: Function.prototype.length = 0
     // special case: Function.prototype.name = ''
     if (x === "__Function_prototype") {
-      props.length = { value: 0, configurable: true }
-      props.name = { value: "", configurable: true }
+      props.length = { value: 0, configurable: true };
+      props.name = { value: "", configurable: true };
     }
 
     // special case: Array.prototype.length = 0
     // Per spec, Array.prototype is an Array exotic object with length = 0
     if (x === "__Array_prototype") {
-      props.length = { value: 0, writable: true, configurable: false }
+      props.length = { value: 0, writable: true, configurable: false };
     }
 
     // add constructor for constructors
-    const name = x.slice(2, x.indexOf("_", 2))
+    const name = x.slice(2, x.indexOf("_", 2));
     if (builtinFuncs[name]?.constr) {
-      const value = (scope, { funcRef }) => funcRef(name)
-      value.type = TYPES.function
+      const value = (scope, { funcRef }) => funcRef(name);
+      value.type = TYPES.function;
 
       props.constructor = {
         value,
         writable: true,
         enumerable: false,
         configurable: true,
-      }
+      };
     }
 
-    object(x, props)
+    object(x, props);
   }
 
   object("Number", {
@@ -440,7 +415,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
     ),
 
     ...autoFuncs("Number"),
-  })
+  });
 
   // these technically not spec compliant as it should be classes or non-enumerable but eh
   object("navigator", {
@@ -454,7 +429,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
         userAgent: `Porffor/${globalThis.version}`,
       },
     ),
-  })
+  });
 
   for (const x of ["console", "crypto", "performance"]) {
     object(
@@ -467,7 +442,7 @@ export const BuiltinVars = ({ builtinFuncs }) => {
         },
         autoFuncKeys(x).slice(0, 12),
       ),
-    )
+    );
   }
 
   for (const x of [
@@ -512,16 +487,10 @@ export const BuiltinVars = ({ builtinFuncs }) => {
     "WeakRef",
     "WeakSet",
   ]) {
-    object(x, autoFuncs(x))
+    object(x, autoFuncs(x));
   }
 
-  const enumerableGlobals = [
-    "atob",
-    "btoa",
-    "performance",
-    "crypto",
-    "navigator",
-  ]
+  const enumerableGlobals = ["atob", "btoa", "performance", "crypto", "navigator"];
   object("globalThis", {
     // 19.1 Value Properties of the Global Object
     // https://tc39.es/ecma262/#sec-value-properties-of-the-global-object
@@ -571,31 +540,31 @@ export const BuiltinVars = ({ builtinFuncs }) => {
       },
       enumerableGlobals,
     ),
-  })
+  });
 
   if (Prefs.logMissingObjects)
     for (const x of Object.keys(builtinFuncs).concat(Object.keys(_))) {
-      if (!x.startsWith("__")) continue
-      const name = x.split("_").slice(2, -1).join("_")
+      if (!x.startsWith("__")) continue;
+      const name = x.split("_").slice(2, -1).join("_");
 
-      let t = globalThis
+      let t = globalThis;
       for (const x of name.split("_")) {
-        t = t[x]
-        if (!t) break
+        t = t[x];
+        if (!t) break;
       }
-      if (!t) continue
+      if (!t) continue;
 
       if (!done.has(name) && !done.has(`__${name}`)) {
-        console.log(name, !!builtinFuncs[name])
-        done.add(name)
+        console.log(name, !!builtinFuncs[name]);
+        done.add(name);
       }
     }
 
-  return _
-}
+  return _;
+};
 
 export const BuiltinFuncs = () => {
-  const _ = Object.create(null)
+  const _ = Object.create(null);
   _.isNaN = {
     params: [valtypeBinary],
     locals: [],
@@ -607,8 +576,8 @@ export const BuiltinFuncs = () => {
       [Opcodes.f64_ne],
       Opcodes.i32_from,
     ],
-  }
-  _.__Number_isNaN = _.isNaN
+  };
+  _.__Number_isNaN = _.isNaN;
 
   _.isFinite = {
     params: [valtypeBinary],
@@ -624,8 +593,8 @@ export const BuiltinFuncs = () => {
       [Opcodes.f64_eq],
       Opcodes.i32_from,
     ],
-  }
-  _.__Number_isFinite = _.isFinite
+  };
+  _.__Number_isFinite = _.isFinite;
 
   // todo: should be false for +-Infinity
   _.__Number_isInteger = {
@@ -640,7 +609,7 @@ export const BuiltinFuncs = () => {
       [Opcodes.f64_eq],
       Opcodes.i32_from,
     ],
-  }
+  };
 
   _.__Number_isSafeInteger = {
     params: [valtypeBinary],
@@ -662,7 +631,7 @@ export const BuiltinFuncs = () => {
       [Opcodes.f64_le],
       Opcodes.i32_from,
     ],
-  }
+  };
 
   for (const [name, op, prefix = [[Opcodes.local_get, 0]]] of [
     ["sqrt", Opcodes.f64_sqrt],
@@ -679,7 +648,7 @@ export const BuiltinFuncs = () => {
       returns: [Valtype.f64],
       returnType: TYPES.number,
       wasm: () => [...prefix, [op]],
-    }
+    };
   }
 
   // todo: does not follow spec with +-Infinity and values >2**32
@@ -688,25 +657,16 @@ export const BuiltinFuncs = () => {
     locals: [],
     returns: [valtypeBinary],
     returnType: TYPES.number,
-    wasm: () => [
-      [Opcodes.local_get, 0],
-      Opcodes.i32_to_u,
-      [Opcodes.i32_clz],
-      Opcodes.i32_from,
-    ],
-  }
+    wasm: () => [[Opcodes.local_get, 0], Opcodes.i32_to_u, [Opcodes.i32_clz], Opcodes.i32_from],
+  };
 
   _.__Math_fround = {
     params: [valtypeBinary],
     locals: [],
     returns: [valtypeBinary],
     returnType: TYPES.number,
-    wasm: () => [
-      [Opcodes.local_get, 0],
-      [Opcodes.f32_demote_f64],
-      [Opcodes.f64_promote_f32],
-    ],
-  }
+    wasm: () => [[Opcodes.local_get, 0], [Opcodes.f32_demote_f64], [Opcodes.f64_promote_f32]],
+  };
 
   // todo: this does not overflow correctly
   _.__Math_imul = {
@@ -722,10 +682,10 @@ export const BuiltinFuncs = () => {
       [Opcodes.i32_mul],
       Opcodes.i32_from,
     ],
-  }
+  };
 
   const prngSeed0 = (Math.random() * 2 ** 30) | 0,
-    prngSeed1 = (Math.random() * 2 ** 30) | 0
+    prngSeed1 = (Math.random() * 2 ** 30) | 0;
   const prng = {
     localNames: ["s1", "s0"],
     ...{
@@ -966,9 +926,9 @@ export const BuiltinFuncs = () => {
         ],
       },
     }[Prefs.prng ?? "xorshift128+"],
-  }
+  };
 
-  if (!prng) throw new Error(`unknown prng algo: ${Prefs.prng}`)
+  if (!prng) throw new Error(`unknown prng algo: ${Prefs.prng}`);
 
   _.__Math_random = {
     ...prng,
@@ -1001,7 +961,7 @@ export const BuiltinFuncs = () => {
             [Opcodes.f64_div],
           ]),
     ],
-  }
+  };
 
   _.__Porffor_randomByte = {
     ...prng,
@@ -1023,31 +983,23 @@ export const BuiltinFuncs = () => {
       number(0xff, Valtype.i32),
       [Opcodes.i32_and],
     ],
-  }
+  };
 
   _.__Math_radians = {
     params: [valtypeBinary],
     locals: [],
     returns: [valtypeBinary],
     returnType: TYPES.number,
-    wasm: () => [
-      [Opcodes.local_get, 0],
-      number(Math.PI / 180),
-      [Opcodes.f64_mul],
-    ],
-  }
+    wasm: () => [[Opcodes.local_get, 0], number(Math.PI / 180), [Opcodes.f64_mul]],
+  };
 
   _.__Math_degrees = {
     params: [valtypeBinary],
     locals: [],
     returns: [valtypeBinary],
     returnType: TYPES.number,
-    wasm: () => [
-      [Opcodes.local_get, 0],
-      number(180 / Math.PI),
-      [Opcodes.f64_mul],
-    ],
-  }
+    wasm: () => [[Opcodes.local_get, 0], number(180 / Math.PI), [Opcodes.f64_mul]],
+  };
 
   _.__Math_clamp = {
     params: [valtypeBinary, valtypeBinary, valtypeBinary],
@@ -1062,16 +1014,10 @@ export const BuiltinFuncs = () => {
       [Opcodes.local_get, 2],
       [Opcodes.f64_min],
     ],
-  }
+  };
 
   _.__Math_scale = {
-    params: [
-      valtypeBinary,
-      valtypeBinary,
-      valtypeBinary,
-      valtypeBinary,
-      valtypeBinary,
-    ],
+    params: [valtypeBinary, valtypeBinary, valtypeBinary, valtypeBinary, valtypeBinary],
     locals: [],
     localNames: ["x", "inLow", "inHigh", "outLow", "outHigh"],
     returns: [valtypeBinary],
@@ -1097,7 +1043,7 @@ export const BuiltinFuncs = () => {
       [Opcodes.local_get, 3],
       [Opcodes.f64_add],
     ],
-  }
+  };
 
   // todo: fix for -0
   _.__Math_signbit = {
@@ -1105,13 +1051,8 @@ export const BuiltinFuncs = () => {
     locals: [],
     returns: [valtypeBinary],
     returnType: TYPES.boolean,
-    wasm: () => [
-      [Opcodes.local_get, 0],
-      number(0),
-      [Opcodes.f64_le],
-      Opcodes.i32_from,
-    ],
-  }
+    wasm: () => [[Opcodes.local_get, 0], number(0), [Opcodes.f64_le], Opcodes.i32_from],
+  };
 
   _.__performance_now = {
     params: [],
@@ -1119,8 +1060,8 @@ export const BuiltinFuncs = () => {
     returns: [valtypeBinary],
     returnType: TYPES.number,
     wasm: () => [[Opcodes.call, importedFuncs.time]],
-  }
-  _.__performance_now.usesImports = true
+  };
+  _.__performance_now.usesImports = true;
 
   _.__Porffor_typeName = {
     params: [Valtype.i32],
@@ -1128,14 +1069,14 @@ export const BuiltinFuncs = () => {
     returns: [valtypeBinary],
     returnType: TYPES.bytestring,
     wasm: (scope, { typeSwitch, makeString }) => {
-      const bc = {}
+      const bc = {};
       for (const x in TYPE_NAMES) {
-        bc[x] = () => makeString(scope, TYPE_NAMES[x])
+        bc[x] = () => makeString(scope, TYPE_NAMES[x]);
       }
 
-      return typeSwitch(scope, [[Opcodes.local_get, 0]], bc)
+      return typeSwitch(scope, [[Opcodes.local_get, 0]], bc);
     },
-  }
+  };
 
   _.__Porffor_clone = {
     params: [Valtype.i32, Valtype.i32],
@@ -1148,7 +1089,7 @@ export const BuiltinFuncs = () => {
       number(pageSize, Valtype.i32),
       [...Opcodes.memory_copy, 0x00, 0x00],
     ],
-  }
+  };
 
   _.__Porffor_malloc = {
     defaultParam: () => ({ type: "Literal", value: pageSize }),
@@ -1196,7 +1137,7 @@ export const BuiltinFuncs = () => {
       ...glbl(Opcodes.global_set, "currentPtr", Valtype.i32),
       [Opcodes.end],
     ],
-  }
+  };
 
   _.__Porffor_bytestringToString = {
     params: [Valtype.i32],
@@ -1255,7 +1196,7 @@ export const BuiltinFuncs = () => {
       // return dst
       [Opcodes.local_get, 3],
     ],
-  }
+  };
 
   _.__Porffor_funcLut_length = {
     params: [Valtype.i32],
@@ -1265,14 +1206,10 @@ export const BuiltinFuncs = () => {
       [Opcodes.local_get, 0],
       [null, () => [number(funcs.bytesPerFuncLut(), Valtype.i32)]],
       [Opcodes.i32_mul],
-      [
-        Opcodes.i32_load16_u,
-        0,
-        ...unsignedLEB128(allocLargePage(scope, "#func lut")),
-      ],
+      [Opcodes.i32_load16_u, 0, ...unsignedLEB128(allocLargePage(scope, "#func lut"))],
     ],
     table: true,
-  }
+  };
 
   _.__Porffor_funcLut_flags = {
     params: [Valtype.i32],
@@ -1284,14 +1221,10 @@ export const BuiltinFuncs = () => {
       [Opcodes.i32_mul],
       number(2, Valtype.i32),
       [Opcodes.i32_add],
-      [
-        Opcodes.i32_load8_u,
-        0,
-        ...unsignedLEB128(allocLargePage(scope, "#func lut")),
-      ],
+      [Opcodes.i32_load8_u, 0, ...unsignedLEB128(allocLargePage(scope, "#func lut"))],
     ],
     table: true,
-  }
+  };
 
   _.__Porffor_funcLut_name = {
     params: [Valtype.i32],
@@ -1307,7 +1240,7 @@ export const BuiltinFuncs = () => {
       [Opcodes.i32_add],
     ],
     table: true,
-  }
+  };
 
   _.__Porffor_number_getExponent = {
     params: [Valtype.f64],
@@ -1325,7 +1258,7 @@ export const BuiltinFuncs = () => {
       number(1023, Valtype.i32),
       [Opcodes.i32_sub],
     ],
-  }
+  };
 
   _.__Porffor_bigint_fromU64 = {
     params: [Valtype.i64],
@@ -1377,7 +1310,7 @@ export const BuiltinFuncs = () => {
       number(0x8000000000000, Valtype.f64),
       [Opcodes.f64_add],
     ],
-  }
+  };
 
   _.__Porffor_bigint_fromS64 = {
     params: [Valtype.i64],
@@ -1445,7 +1378,7 @@ export const BuiltinFuncs = () => {
       number(0x8000000000000, Valtype.f64),
       [Opcodes.f64_add],
     ],
-  }
+  };
 
   _.__Porffor_bigint_toI64 = {
     params: [Valtype.f64],
@@ -1507,18 +1440,14 @@ export const BuiltinFuncs = () => {
       [Opcodes.i64_add],
       [Opcodes.i64_mul], // * sign earlier
     ],
-  }
+  };
 
   _.__Porffor_memorySize = {
     params: [],
     returns: [Valtype.i32],
     returnType: TYPES.number,
-    wasm: () => [
-      [Opcodes.memory_size, 0],
-      number(PageSize, Valtype.i32),
-      [Opcodes.i32_mul],
-    ],
-  }
+    wasm: () => [[Opcodes.memory_size, 0], number(PageSize, Valtype.i32), [Opcodes.i32_mul]],
+  };
 
   // allow non-comptime redefinition later in precompiled
   const comptime = (name, returnType, comptime, jsLength = 0) => {
@@ -1529,103 +1458,99 @@ export const BuiltinFuncs = () => {
       params: [],
       locals: [],
       returns: [],
-    }
+    };
 
     Object.defineProperty(_, name, {
       get() {
-        return v
+        return v;
       },
       set(x) {
         // v = { ...x, comptime, returnType };
-        x.comptime = comptime
-        x.returnType = returnType
-        v = x
+        x.comptime = comptime;
+        x.returnType = returnType;
+        v = x;
       },
-    })
-  }
+    });
+  };
 
   comptime("__Array_of", TYPES.array, (scope, decl, { generate }) =>
     generate(scope, {
       type: "ArrayExpression",
       elements: decl.arguments,
     }),
-  )
+  );
 
   comptime("__Porffor_fastOr", TYPES.boolean, (scope, decl, { generate }) => {
-    const out = []
+    const out = [];
 
     for (let i = 0; i < decl.arguments.length; i++) {
       out.push(
         ...generate(scope, decl.arguments[i]),
         Opcodes.i32_to_u,
         ...(i > 0 ? [[Opcodes.i32_or]] : []),
-      )
+      );
     }
 
-    out.push(Opcodes.i32_from_u)
-    return out
-  })
+    out.push(Opcodes.i32_from_u);
+    return out;
+  });
 
   comptime("__Porffor_fastAnd", TYPES.boolean, (scope, decl, { generate }) => {
-    const out = []
+    const out = [];
 
     for (let i = 0; i < decl.arguments.length; i++) {
       out.push(
         ...generate(scope, decl.arguments[i]),
         Opcodes.i32_to_u,
         ...(i > 0 ? [[Opcodes.i32_and]] : []),
-      )
+      );
     }
 
-    out.push(Opcodes.i32_from_u)
-    return out
-  })
+    out.push(Opcodes.i32_from_u);
+    return out;
+  });
 
   comptime(
     "__Math_max",
     TYPES.number,
     (scope, decl, { generate }) => {
-      const out = [number(-Infinity)]
+      const out = [number(-Infinity)];
 
       for (let i = 0; i < decl.arguments.length; i++) {
-        out.push(...generate(scope, decl.arguments[i]), [Opcodes.f64_max])
+        out.push(...generate(scope, decl.arguments[i]), [Opcodes.f64_max]);
       }
 
-      return out
+      return out;
     },
     2,
-  )
+  );
 
   comptime(
     "__Math_min",
     TYPES.number,
     (scope, decl, { generate }) => {
-      const out = [number(Infinity)]
+      const out = [number(Infinity)];
 
       for (let i = 0; i < decl.arguments.length; i++) {
-        out.push(...generate(scope, decl.arguments[i]), [Opcodes.f64_min])
+        out.push(...generate(scope, decl.arguments[i]), [Opcodes.f64_min]);
       }
 
-      return out
+      return out;
     },
     2,
-  )
+  );
 
-  comptime(
-    "__Porffor_printStatic",
-    TYPES.undefined,
-    (scope, decl, { printStaticStr }) => {
-      const str = decl.arguments[0].value
-      const out = printStaticStr(scope, str)
-      out.push(number(UNDEFINED))
-      return out
-    },
-  )
+  comptime("__Porffor_printStatic", TYPES.undefined, (scope, decl, { printStaticStr }) => {
+    const str = decl.arguments[0].value;
+    const out = printStaticStr(scope, str);
+    out.push(number(UNDEFINED));
+    return out;
+  });
 
   comptime("__Porffor_type", TYPES.number, (scope, decl, { getNodeType }) => [
     ...getNodeType(scope, decl.arguments[0]),
     Opcodes.i32_from_u,
-  ])
+  ]);
 
   comptime(
     "__Porffor_compileType",
@@ -1633,58 +1558,44 @@ export const BuiltinFuncs = () => {
     (scope, decl, { makeString, knownType, getNodeType }) =>
       makeString(
         scope,
-        TYPE_NAMES[knownType(scope, getNodeType(scope, decl.arguments[0]))] ??
-          "unknown",
+        TYPE_NAMES[knownType(scope, getNodeType(scope, decl.arguments[0]))] ?? "unknown",
       ),
-  )
+  );
 
   // Porffor.call(func, argArray, this, newTarget)
-  comptime(
-    "__Porffor_call",
-    undefined,
-    (scope, decl, { generate, getNodeType }) =>
-      generate(scope, {
-        type: "CallExpression",
-        callee: decl.arguments[0],
-        arguments: [
-          {
-            type: "SpreadElement",
-            argument: decl.arguments[1],
-          },
-        ],
-        _thisWasm:
-          decl.arguments[2].value === null
-            ? null
-            : [
-                ...generate(scope, decl.arguments[2]),
-                ...getNodeType(scope, decl.arguments[2]),
-              ],
-        _newTargetWasm:
-          decl.arguments[3].value === null
-            ? null
-            : [
-                ...generate(scope, decl.arguments[3]),
-                ...getNodeType(scope, decl.arguments[3]),
-              ],
-        _new: decl.arguments[3].value !== null,
-        _forceCreateThis: true,
-      }),
-  )
+  comptime("__Porffor_call", undefined, (scope, decl, { generate, getNodeType }) =>
+    generate(scope, {
+      type: "CallExpression",
+      callee: decl.arguments[0],
+      arguments: [
+        {
+          type: "SpreadElement",
+          argument: decl.arguments[1],
+        },
+      ],
+      _thisWasm:
+        decl.arguments[2].value === null
+          ? null
+          : [...generate(scope, decl.arguments[2]), ...getNodeType(scope, decl.arguments[2])],
+      _newTargetWasm:
+        decl.arguments[3].value === null
+          ? null
+          : [...generate(scope, decl.arguments[3]), ...getNodeType(scope, decl.arguments[3])],
+      _new: decl.arguments[3].value !== null,
+      _forceCreateThis: true,
+    }),
+  );
 
   // compile-time aware console.log to optimize fast paths
   // todo: this breaks console.group, etc - disable this if those are used but edge case for now
   comptime(
     "__console_log",
     TYPES.undefined,
-    (
-      scope,
-      decl,
-      { generate, getNodeType, knownTypeWithGuess, printStaticStr },
-    ) => {
+    (scope, decl, { generate, getNodeType, knownTypeWithGuess, printStaticStr }) => {
       const slow = () => {
-        decl._noComptime = true
-        return generate(scope, decl)
-      }
+        decl._noComptime = true;
+        return generate(scope, decl);
+      };
       const fast = (name, before = "", after = "\n") => {
         return [
           ...(before ? printStaticStr(scope, before) : []),
@@ -1698,30 +1609,27 @@ export const BuiltinFuncs = () => {
                 },
               })),
           ...printStaticStr(scope, after),
-        ]
-      }
+        ];
+      };
 
-      if (decl.arguments.length === 0) return fast()
-      if (decl.arguments.length !== 1) return slow()
+      if (decl.arguments.length === 0) return fast();
+      if (decl.arguments.length !== 1) return slow();
 
-      generate(scope, decl.arguments[0]) // generate first to get accurate type
-      const type = knownTypeWithGuess(
-        scope,
-        getNodeType(scope, decl.arguments[0]),
-      )
+      generate(scope, decl.arguments[0]); // generate first to get accurate type
+      const type = knownTypeWithGuess(scope, getNodeType(scope, decl.arguments[0]));
 
       // if we know the type skip the entire print logic, use type's func directly
       if (type === TYPES.string || type === TYPES.bytestring) {
-        return fast("__Porffor_printString")
+        return fast("__Porffor_printString");
       } else if (type === TYPES.number) {
-        return fast("print", "\x1b[33m", "\x1b[0m\n")
+        return fast("print", "\x1b[33m", "\x1b[0m\n");
       }
 
       // one arg, skip most of console to avoid rest arg etc
-      return fast("__Porffor_consolePrint")
+      return fast("__Porffor_consolePrint");
     },
-  )
+  );
 
-  PrecompiledBuiltins.BuiltinFuncs(_)
-  return _
-}
+  PrecompiledBuiltins.BuiltinFuncs(_);
+  return _;
+};

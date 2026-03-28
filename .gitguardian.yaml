@@ -7,11 +7,11 @@ paths-ignore:
   - "**/*.template"
   - "**/*.example"
 
-# Ignore test files
+  # Ignore test files
   - "**/test/**"
   - "**/tests/**"
   - "**/__tests__/**"
 
-# Ignore documentation
+  # Ignore documentation
   - "**/*.md"
   - "**/docs/**"

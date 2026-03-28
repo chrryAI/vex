@@ -3,7 +3,7 @@
  * Syncs Drizzle ORM entities to FalkorDB graph
  */
 
-import type { HybridDB } from "./hybrid-schema"
+import type { HybridDB } from "./hybrid-schema";
 
 /**
  * Sync utilities for different entity types
@@ -15,13 +15,13 @@ export class PostgresSync {
    * Sync User to graph
    */
   async syncUser(user: {
-    id: string
-    name: string | null
-    email: string
-    role: string
-    isAvailableForHire?: boolean
-    hourlyRate?: number | null
-    expertise?: string[]
+    id: string;
+    name: string | null;
+    email: string;
+    role: string;
+    isAvailableForHire?: boolean;
+    hourlyRate?: number | null;
+    expertise?: string[];
   }): Promise<void> {
     await this.hybridDB.syncFromPostgres({
       type: "User",
@@ -35,18 +35,18 @@ export class PostgresSync {
         expertise: JSON.stringify(user.expertise || []),
         syncedAt: Date.now(),
       },
-    })
+    });
   }
 
   /**
    * Sync Team to graph
    */
   async syncTeam(team: {
-    id: string
-    name: string
-    slug: string
-    ownerId: string
-    plan: string
+    id: string;
+    name: string;
+    slug: string;
+    ownerId: string;
+    plan: string;
   }): Promise<void> {
     await this.hybridDB.syncFromPostgres({
       type: "Team",
@@ -64,31 +64,31 @@ export class PostgresSync {
           targetId: team.ownerId,
         },
       ],
-    })
+    });
   }
 
   /**
    * Sync App to graph
    */
   async syncApp(app: {
-    id: string
-    name: string
-    slug: string
-    userId?: string | null
-    teamId?: string | null
+    id: string;
+    name: string;
+    slug: string;
+    userId?: string | null;
+    teamId?: string | null;
   }): Promise<void> {
     const relationships: Array<{
-      type: any
-      targetType: any
-      targetId: string
-    }> = []
+      type: any;
+      targetType: any;
+      targetId: string;
+    }> = [];
 
     if (app.userId) {
       relationships.push({
         type: "CREATED_BY",
         targetType: "User",
         targetId: app.userId,
-      })
+      });
     }
 
     if (app.teamId) {
@@ -96,7 +96,7 @@ export class PostgresSync {
         type: "BELONGS_TO",
         targetType: "Team",
         targetId: app.teamId,
-      })
+      });
     }
 
     await this.hybridDB.syncFromPostgres({
@@ -108,33 +108,33 @@ export class PostgresSync {
         syncedAt: Date.now(),
       },
       relationships,
-    })
+    });
   }
 
   /**
    * Sync Task to graph (Kanban)
    */
   async syncTask(task: {
-    id: string
-    title: string
-    description: string | null
-    userId?: string | null
-    taskStateId?: string | null
-    appId?: string | null
-    order?: number | null
+    id: string;
+    title: string;
+    description: string | null;
+    userId?: string | null;
+    taskStateId?: string | null;
+    appId?: string | null;
+    order?: number | null;
   }): Promise<void> {
     const relationships: Array<{
-      type: any
-      targetType: any
-      targetId: string
-    }> = []
+      type: any;
+      targetType: any;
+      targetId: string;
+    }> = [];
 
     if (task.userId) {
       relationships.push({
         type: "CREATED_BY",
         targetType: "User",
         targetId: task.userId,
-      })
+      });
     }
 
     if (task.taskStateId) {
@@ -142,7 +142,7 @@ export class PostgresSync {
         type: "BELONGS_TO",
         targetType: "TaskState",
         targetId: task.taskStateId,
-      })
+      });
     }
 
     if (task.appId) {
@@ -150,7 +150,7 @@ export class PostgresSync {
         type: "RELATED_TO",
         targetType: "App",
         targetId: task.appId,
-      })
+      });
     }
 
     await this.hybridDB.syncFromPostgres({
@@ -164,30 +164,30 @@ export class PostgresSync {
         syncedAt: Date.now(),
       },
       relationships,
-    })
+    });
   }
 
   /**
    * Sync Kanban Board to graph
    */
   async syncKanbanBoard(board: {
-    id: string
-    name: string
-    userId?: string | null
-    appId?: string | null
+    id: string;
+    name: string;
+    userId?: string | null;
+    appId?: string | null;
   }): Promise<void> {
     const relationships: Array<{
-      type: any
-      targetType: any
-      targetId: string
-    }> = []
+      type: any;
+      targetType: any;
+      targetId: string;
+    }> = [];
 
     if (board.userId) {
       relationships.push({
         type: "OWNS",
         targetType: "User",
         targetId: board.userId,
-      })
+      });
     }
 
     if (board.appId) {
@@ -195,7 +195,7 @@ export class PostgresSync {
         type: "RELATED_TO",
         targetType: "App",
         targetId: board.appId,
-      })
+      });
     }
 
     await this.hybridDB.syncFromPostgres({
@@ -206,17 +206,17 @@ export class PostgresSync {
         syncedAt: Date.now(),
       },
       relationships,
-    })
+    });
   }
 
   /**
    * Sync TaskState (Kanban column) to graph
    */
   async syncTaskState(state: {
-    id: string
-    title: string
-    order: number
-    kanbanBoardId: string
+    id: string;
+    title: string;
+    order: number;
+    kanbanBoardId: string;
   }): Promise<void> {
     await this.hybridDB.syncFromPostgres({
       type: "TaskState",
@@ -233,48 +233,48 @@ export class PostgresSync {
           targetId: state.kanbanBoardId,
         },
       ],
-    })
+    });
   }
 
   /**
    * Batch sync entire workspace
    */
   async syncWorkspace(data: {
-    users: Array<any>
-    teams: Array<any>
-    apps: Array<any>
-    boards: Array<any>
-    states: Array<any>
-    tasks: Array<any>
+    users: Array<any>;
+    teams: Array<any>;
+    apps: Array<any>;
+    boards: Array<any>;
+    states: Array<any>;
+    tasks: Array<any>;
   }): Promise<void> {
-    console.log("🔄 Syncing workspace to FalkorDB...")
+    console.log("🔄 Syncing workspace to FalkorDB...");
 
     // Sync in order of dependencies
     for (const user of data.users) {
-      await this.syncUser(user)
+      await this.syncUser(user);
     }
 
     for (const team of data.teams) {
-      await this.syncTeam(team)
+      await this.syncTeam(team);
     }
 
     for (const app of data.apps) {
-      await this.syncApp(app)
+      await this.syncApp(app);
     }
 
     for (const board of data.boards) {
-      await this.syncKanbanBoard(board)
+      await this.syncKanbanBoard(board);
     }
 
     for (const state of data.states) {
-      await this.syncTaskState(state)
+      await this.syncTaskState(state);
     }
 
     for (const task of data.tasks) {
-      await this.syncTask(task)
+      await this.syncTask(task);
     }
 
-    console.log("✅ Workspace synced successfully")
+    console.log("✅ Workspace synced successfully");
   }
 }
 
@@ -288,45 +288,45 @@ export class RealtimeSync {
    * Handle PostgreSQL change event
    */
   async handleChange(event: {
-    table: string
-    operation: "INSERT" | "UPDATE" | "DELETE"
-    data: any
+    table: string;
+    operation: "INSERT" | "UPDATE" | "DELETE";
+    data: any;
   }): Promise<void> {
-    const sync = new PostgresSync(this.hybridDB)
+    const sync = new PostgresSync(this.hybridDB);
 
     switch (event.table) {
       case "user":
         if (event.operation === "DELETE") {
           // Delete from graph
-          await this.deleteNode("User", event.data.id)
+          await this.deleteNode("User", event.data.id);
         } else {
-          await sync.syncUser(event.data)
+          await sync.syncUser(event.data);
         }
-        break
+        break;
 
       case "teams":
         if (event.operation === "DELETE") {
-          await this.deleteNode("Team", event.data.id)
+          await this.deleteNode("Team", event.data.id);
         } else {
-          await sync.syncTeam(event.data)
+          await sync.syncTeam(event.data);
         }
-        break
+        break;
 
       case "task":
         if (event.operation === "DELETE") {
-          await this.deleteNode("Task", event.data.id)
+          await this.deleteNode("Task", event.data.id);
         } else {
-          await sync.syncTask(event.data)
+          await sync.syncTask(event.data);
         }
-        break
+        break;
 
       // Add more cases as needed
     }
   }
 
   private async deleteNode(type: string, id: string): Promise<void> {
-    const graph = (this.hybridDB as any).graph
-    if (!graph) return
+    const graph = (this.hybridDB as any).graph;
+    if (!graph) return;
 
     await graph.query(
       `
@@ -334,8 +334,8 @@ export class RealtimeSync {
       DETACH DELETE n
     `,
       { params: { id } },
-    )
+    );
   }
 }
 
-export default PostgresSync
+export default PostgresSync;

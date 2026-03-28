@@ -35,41 +35,41 @@ tests/
 
 ```typescript
 // Guest user test configuration
-const isMember = false
+const isMember = false;
 
 test("Guest subscription flow", async ({ page }) => {
-  await page.goto(getURL({ isLive: false, isMember }))
+  await page.goto(getURL({ isLive: false, isMember }));
 
   // Test guest can access basic features
-  await chat({ page, isMember })
+  await chat({ page, isMember });
 
   // Test subscription prompt appears
-  const subscribeButton = page.getByTestId("subscribe-from-chat-button")
-  await expect(subscribeButton).toBeVisible()
+  const subscribeButton = page.getByTestId("subscribe-from-chat-button");
+  await expect(subscribeButton).toBeVisible();
 
   // Test guest subscription flow
-  await subscribe({ page, isMember })
-})
+  await subscribe({ page, isMember });
+});
 ```
 
 #### Authenticated Members
 
 ```typescript
 // Member user test configuration
-const isMember = true
+const isMember = true;
 
 test("Member advanced features", async ({ page }) => {
-  await page.goto(getURL({ isLive: false, isMember }))
+  await page.goto(getURL({ isLive: false, isMember }));
 
   // Test member-specific features
-  await chat({ page, isMember, credits: 1000 })
+  await chat({ page, isMember, credits: 1000 });
 
   // Test collaboration features
-  await collaboration({ page, isMember })
+  await collaboration({ page, isMember });
 
   // Test thread management
-  await thread({ page, bookmark: true, isMember })
-})
+  await thread({ page, bookmark: true, isMember });
+});
 ```
 
 ### Platform-Specific Testing
@@ -87,9 +87,9 @@ test.describe("Extension Platform", () => {
         isMember: true,
         extension: true,
       }),
-    )
-  })
-})
+    );
+  });
+});
 ```
 
 #### Web Platform Testing
@@ -99,14 +99,14 @@ test.describe("Extension Platform", () => {
 test.describe("Web Platform", () => {
   test("Responsive design", async ({ page }) => {
     // Test desktop view
-    await page.setViewportSize({ width: 1200, height: 800 })
-    await testDesktopLayout({ page })
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await testDesktopLayout({ page });
 
     // Test mobile view
-    await page.setViewportSize({ width: 375, height: 667 })
-    await testMobileLayout({ page })
-  })
-})
+    await page.setViewportSize({ width: 375, height: 667 });
+    await testMobileLayout({ page });
+  });
+});
 ```
 
 ## Shared Test Utilities
@@ -122,28 +122,28 @@ export const chat = async ({
   model = "gpt-4o-mini",
 }: ChatTestParams) => {
   // Test message sending
-  const messageInput = page.getByTestId("message-input")
-  await messageInput.fill("Test message")
+  const messageInput = page.getByTestId("message-input");
+  await messageInput.fill("Test message");
 
-  const sendButton = page.getByTestId("send-button")
-  await sendButton.click()
+  const sendButton = page.getByTestId("send-button");
+  await sendButton.click();
 
   // Wait for AI response
-  await page.waitForSelector('[data-testid="ai-message"]', { timeout: 30000 })
+  await page.waitForSelector('[data-testid="ai-message"]', { timeout: 30000 });
 
   // Verify credit deduction
-  const creditsLeft = await getCreditsLeft(page)
-  expect(parseInt(creditsLeft)).toBe(credits - 1)
+  const creditsLeft = await getCreditsLeft(page);
+  expect(parseInt(creditsLeft)).toBe(credits - 1);
 
   // Test different user types
   if (!isMember) {
     // Test guest limitations
-    await testGuestLimitations({ page })
+    await testGuestLimitations({ page });
   } else {
     // Test member features
-    await testMemberFeatures({ page })
+    await testMemberFeatures({ page });
   }
-}
+};
 ```
 
 ### Subscription Testing
@@ -187,21 +187,21 @@ export const thread = async ({
   collaborate = false,
 }: ThreadTestParams) => {
   // Test thread creation
-  await createNewThread({ page })
+  await createNewThread({ page });
 
   // Test thread navigation
-  await testThreadNavigation({ page })
+  await testThreadNavigation({ page });
 
   if (bookmark) {
     // Test bookmarking
-    await testBookmarkFeature({ page })
+    await testBookmarkFeature({ page });
   }
 
   if (collaborate && isMember) {
     // Test collaboration features
-    await testCollaboration({ page })
+    await testCollaboration({ page });
   }
-}
+};
 ```
 
 ## Advanced Testing Scenarios
@@ -211,15 +211,15 @@ export const thread = async ({
 ```typescript
 test("Gift subscription end-to-end", async ({ page }) => {
   // Test gift purchase flow
-  await page.goto(getURL({ isLive: false, isMember: true }))
+  await page.goto(getURL({ isLive: false, isMember: true }));
 
   // Initiate gift subscription
-  const giftButton = page.getByTestId("gift-button")
-  await giftButton.click()
+  const giftButton = page.getByTestId("gift-button");
+  await giftButton.click();
 
   // Enter recipient email
-  const emailInput = page.getByTestId("gift-email-input")
-  await emailInput.fill("recipient@example.com")
+  const emailInput = page.getByTestId("gift-email-input");
+  await emailInput.fill("recipient@example.com");
 
   // Complete gift purchase
   await subscribe({
@@ -227,58 +227,58 @@ test("Gift subscription end-to-end", async ({ page }) => {
     isMember: true,
     gift: true,
     email: "recipient@example.com",
-  })
+  });
 
   // Verify gift email sent (mock email service)
-  await verifyGiftEmailSent({ email: "recipient@example.com" })
+  await verifyGiftEmailSent({ email: "recipient@example.com" });
 
   // Test gift redemption flow
-  await testGiftRedemption({ page, giftFingerprint: "test-gift-fingerprint" })
-})
+  await testGiftRedemption({ page, giftFingerprint: "test-gift-fingerprint" });
+});
 ```
 
 ### Cross-Platform Compatibility
 
 ```typescript
 test.describe("Cross-Platform Compatibility", () => {
-  const browsers = ["chromium", "firefox", "webkit"]
+  const browsers = ["chromium", "firefox", "webkit"];
 
   browsers.forEach((browserName) => {
     test(`${browserName} compatibility`, async ({ page }) => {
       // Test core functionality across browsers
-      await testCoreFunctionality({ page, browser: browserName })
+      await testCoreFunctionality({ page, browser: browserName });
 
       // Test browser-specific features
-      await testBrowserSpecificFeatures({ page, browser: browserName })
-    })
-  })
-})
+      await testBrowserSpecificFeatures({ page, browser: browserName });
+    });
+  });
+});
 ```
 
 ### Rate Limiting Testing
 
 ```typescript
 export const limit = async ({ page, isMember }: LimitTestParams) => {
-  const requestLimit = isMember ? 200 : 30
+  const requestLimit = isMember ? 200 : 30;
 
   // Test rate limiting
   for (let i = 0; i < requestLimit + 5; i++) {
     try {
-      await makeAPIRequest({ page })
+      await makeAPIRequest({ page });
       if (i >= requestLimit) {
-        throw new Error("Rate limit should have been triggered")
+        throw new Error("Rate limit should have been triggered");
       }
     } catch (error) {
       if (i >= requestLimit) {
         // Expected rate limit error
-        expect(error.message).toContain("Rate limit exceeded")
-        break
+        expect(error.message).toContain("Rate limit exceeded");
+        break;
       } else {
-        throw error
+        throw error;
       }
     }
   }
-}
+};
 ```
 
 ## Test Configuration
@@ -287,37 +287,25 @@ export const limit = async ({ page, isMember }: LimitTestParams) => {
 
 ```typescript
 // Test configuration
-export const getURL = ({
-  isLive = false,
-  isMember = false,
-  extension = false,
-}: URLConfig) => {
-  const baseURL = isLive ? "https://vex.chrry.ai" : "http://localhost:5173"
-  const fingerprint = isMember ? TEST_MEMBER_FINGERPRINTS[0] : undefined
-  const params = new URLSearchParams()
+export const getURL = ({ isLive = false, isMember = false, extension = false }: URLConfig) => {
+  const baseURL = isLive ? "https://vex.chrry.ai" : "http://localhost:5173";
+  const fingerprint = isMember ? TEST_MEMBER_FINGERPRINTS[0] : undefined;
+  const params = new URLSearchParams();
 
-  if (fingerprint) params.set("fp", fingerprint)
-  if (extension) params.set("extension", "true")
+  if (fingerprint) params.set("fp", fingerprint);
+  if (extension) params.set("extension", "true");
 
-  return `${baseURL}?${params.toString()}`
-}
+  return `${baseURL}?${params.toString()}`;
+};
 ```
 
 ### Test Data Management
 
 ```typescript
 // Test fingerprints for different user types
-export const TEST_MEMBER_FINGERPRINTS = [
-  "test-member-1",
-  "test-member-2",
-  "test-member-3",
-]
+export const TEST_MEMBER_FINGERPRINTS = ["test-member-1", "test-member-2", "test-member-3"];
 
-export const TEST_GUEST_FINGERPRINTS = [
-  "test-guest-1",
-  "test-guest-2",
-  "test-guest-3",
-]
+export const TEST_GUEST_FINGERPRINTS = ["test-guest-1", "test-guest-2", "test-guest-3"];
 ```
 
 ## Continuous Integration
@@ -356,11 +344,11 @@ class CustomReporter {
   onTestEnd(test: TestCase, result: TestResult) {
     if (result.status === "failed") {
       // Log detailed failure information
-      console.log(`Test failed: ${test.title}`)
-      console.log(`Error: ${result.error?.message}`)
+      console.log(`Test failed: ${test.title}`);
+      console.log(`Error: ${result.error?.message}`);
 
       // Take screenshot on failure
-      this.captureScreenshot(test, result)
+      this.captureScreenshot(test, result);
     }
   }
 
@@ -407,7 +395,7 @@ const testMetrics = {
   averageExecutionTime: calculateAverageTime(),
   flakyTests: identifyFlakyTests(),
   coverage: calculateTestCoverage(),
-}
+};
 ```
 
 ### Automated Test Maintenance

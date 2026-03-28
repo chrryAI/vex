@@ -1,29 +1,33 @@
 {
   "name": "@chrryai/pepper",
-  "version": "2.2.41",
+  "version": "2.2.92",
   "description": "Universal router for React - works in web, React Native, and browser extensions with built-in view transitions",
   "keywords": [
-    "router",
+    "browser-extension",
+    "history",
+    "navigation",
     "react",
     "react-native",
-    "browser-extension",
-    "view-transitions",
-    "navigation",
-    "history",
+    "router",
+    "typescript",
     "universal",
-    "typescript"
+    "view-transitions"
   ],
   "homepage": "https://github.com/chrryai/pepper",
   "bugs": {
     "url": "https://github.com/chrryai/pepper/issues"
   },
+  "license": "AGPL-3.0",
+  "author": "Iliyan Velinov",
   "repository": {
     "type": "git",
     "url": "https://github.com/chrryai/pepper.git",
     "directory": "packages/pepper"
   },
-  "license": "AGPL-3.0",
-  "author": "Iliyan Velinov",
+  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -46,10 +50,9 @@
       "require": "./dist/extension.js"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm exec tsup",
     "check-types": "tsc --noEmit",
@@ -67,8 +70,5 @@
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

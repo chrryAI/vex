@@ -1,20 +1,20 @@
 // based on https://github.com/littledivy/blazing-fast-ffi-talk/blob/main/sqlite_shared.mjs
-const SQLITE3_OK = 0
-const SQLITE3_ROW = 100
+const SQLITE3_OK = 0;
+const SQLITE3_ROW = 100;
 
-const SQLITE3_OPEN_READWRITE = 0x00000002
-const SQLITE3_OPEN_CREATE = 0x00000004
-const SQLITE3_OPEN_MEMORY = 0x00000080
-const SQLITE3_OPEN_PRIVATECACHE = 0x00040000
+const SQLITE3_OPEN_READWRITE = 0x00000002;
+const SQLITE3_OPEN_CREATE = 0x00000004;
+const SQLITE3_OPEN_MEMORY = 0x00000080;
+const SQLITE3_OPEN_PRIVATECACHE = 0x00040000;
 
 const unwrap = (code: i32) => {
-  if (code === SQLITE3_OK) return
+  if (code === SQLITE3_OK) return;
   // throw new Error(`SQLite error: ${code}`);
-}
+};
 
 const passTA = (ta: any) => {
-  return Porffor.wasm.i32.load(ta, 0, 4)
-}
+  return Porffor.wasm.i32.load(ta, 0, 4);
+};
 
 // based on https://github.com/littledivy/blazing-fast-ffi-talk/blob/main/sqlite.deno.ts
 const {
@@ -78,33 +78,30 @@ const {
     ],
     result: "i32",
   },
-})
+});
 
-sqlite3_initialize()
+sqlite3_initialize();
 
-const pHandle = new Uint32Array(2)
+const pHandle = new Uint32Array(2);
 unwrap(
   sqlite3_open_v2(
     ":memory:",
     passTA(pHandle),
-    SQLITE3_OPEN_READWRITE |
-      SQLITE3_OPEN_PRIVATECACHE |
-      SQLITE3_OPEN_CREATE |
-      SQLITE3_OPEN_MEMORY,
+    SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_PRIVATECACHE | SQLITE3_OPEN_CREATE | SQLITE3_OPEN_MEMORY,
     null,
   ),
-)
+);
 
-const db: number = pHandle[0] + pHandle[1] * 4294967296
+const db: number = pHandle[0] + pHandle[1] * 4294967296;
 
 function exec(sql) {
-  unwrap(sqlite3_exec(db, sql, null, null, null))
+  unwrap(sqlite3_exec(db, sql, null, null, null));
 }
 
-exec("PRAGMA auto_vacuum = none")
-exec("PRAGMA temp_store = memory")
-exec("PRAGMA locking_mode = exclusive")
-exec("PRAGMA user_version = 100")
+exec("PRAGMA auto_vacuum = none");
+exec("PRAGMA temp_store = memory");
+exec("PRAGMA locking_mode = exclusive");
+exec("PRAGMA user_version = 100");
 
 function prepareStatement() {
   const sql = `WITH RECURSIVE c(x) AS (
@@ -112,30 +109,30 @@ function prepareStatement() {
     UNION ALL
     SELECT x+1 FROM c WHERE x<50
   )
-  SELECT x, x as a FROM c;`
+  SELECT x, x as a FROM c;`;
 
-  const out = new Uint32Array(2)
-  unwrap(sqlite3_prepare_v2(db, sql, sql.length, passTA(out), null))
-  return out[0] + out[1] * 4294967296
+  const out = new Uint32Array(2);
+  unwrap(sqlite3_prepare_v2(db, sql, sql.length, passTA(out), null));
+  return out[0] + out[1] * 4294967296;
 }
 
-const prepared = prepareStatement()
+const prepared = prepareStatement();
 const run = (): number[] => {
-  const result: number[] = new Array(50)
+  const result: number[] = new Array(50);
 
-  let status: number = SQLITE3_ROW
+  let status: number = SQLITE3_ROW;
   while (status === SQLITE3_ROW) {
-    status = sqlite3_step(prepared)
-    const i: number = sqlite3_column_int(prepared, 0)
-    result[i] = i
+    status = sqlite3_step(prepared);
+    const i: number = sqlite3_column_int(prepared, 0);
+    result[i] = i;
   }
 
-  sqlite3_reset(prepared)
-  return result
-}
+  sqlite3_reset(prepared);
+  return result;
+};
 
-const runs = 10_000
-const start = performance.now()
-for (let i = 0; i < runs; i++) run()
+const runs = 10_000;
+const start = performance.now();
+for (let i = 0; i < runs; i++) run();
 
-console.log((performance.now() - start).toFixed(10))
+console.log((performance.now() - start).toFixed(10));

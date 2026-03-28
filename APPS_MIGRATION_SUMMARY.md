@@ -7,6 +7,7 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 ## 📦 Migrated Apps
 
 ### 1. **Atlas** 🌍 - Travel Companion
+
 - **File**: `packages/db/src/seed/apps/atlas.ts`
 - **Function**: `seedAtlas()`
 - **Creates**: Compass store + Atlas app
@@ -14,6 +15,7 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 - **RPG Stats**: Intelligence 60, Creativity 80, Empathy 70, Efficiency 85
 
 ### 2. **Vault** 💰 - Finance Assistant
+
 - **File**: `packages/db/src/seed/apps/vault.ts`
 - **Function**: `seedVault()`
 - **Creates**: Wine store + Vault app
@@ -21,6 +23,7 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 - **RPG Stats**: Intelligence 90, Creativity 10, Empathy 10, Efficiency 100
 
 ### 3. **Bloom** 🌸 - Wellness Coach
+
 - **File**: `packages/db/src/seed/apps/bloom.ts`
 - **Function**: `seedBloom()`
 - **Uses**: Existing LifeOS store
@@ -28,6 +31,7 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 - **RPG Stats**: Intelligence 60, Creativity 40, Empathy 90, Efficiency 80
 
 ### 4. **Peach** 🍑 - Social Assistant
+
 - **File**: `packages/db/src/seed/apps/peach.ts`
 - **Function**: `seedPeach()`
 - **Uses**: Existing LifeOS store
@@ -35,6 +39,7 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 - **RPG Stats**: Intelligence 40, Creativity 70, Empathy 100, Efficiency 30
 
 ### 5. **Focus** ⏱️ - Productivity Assistant
+
 - **File**: `packages/db/src/seed/apps/focus.ts`
 - **Function**: `seedFocus()`
 - **Uses**: Existing Blossom store
@@ -44,14 +49,11 @@ Successfully migrated hardcoded app seeding logic from the monolithic `createSto
 ## 🔧 Shared Infrastructure
 
 ### Helper Functions
+
 **File**: `packages/db/src/seed/helpers.ts`
 
 ```typescript
-export async function handleAppExtends(
-  appId: string,
-  extendsIds: string[],
-  storeId?: string,
-)
+export async function handleAppExtends(appId: string, extendsIds: string[], storeId?: string);
 ```
 
 Handles app inheritance relationships and store installations.
@@ -59,6 +61,7 @@ Handles app inheritance relationships and store installations.
 ## 📊 Before vs After
 
 ### Before (Monolithic) ❌
+
 ```typescript
 // createStores.ts - 9356 lines!
 export const createStores = async ({ user, isProd }) => {
@@ -66,17 +69,18 @@ export const createStores = async ({ user, isProd }) => {
   const compass = await getOrCreateStore({ slug: "compass", ... })
   const atlas = await createOrUpdateApp({ app: atlasPayload })
   await handleAppExtends(atlas.id, [chrry.id], compass.id)
-  
+
   // Vault logic (100+ lines)
   const wine = await getOrCreateStore({ slug: "wine", ... })
   const vault = await createOrUpdateApp({ app: vaultPayload })
   await handleAppExtends(vault.id, [chrry.id, vex.id], wine.id)
-  
+
   // ... 20+ more apps
 }
 ```
 
 ### After (Modular) ✅
+
 ```typescript
 // packages/db/src/seed/apps/atlas.ts
 export async function seedAtlas(params) {
@@ -99,64 +103,70 @@ export async function seedVault(params) {
 
 ```typescript
 // In createStores.ts (simplified)
-import { seedAtlas } from "./apps/atlas"
-import { seedVault } from "./apps/vault"
-import { seedBloom } from "./apps/bloom"
+import { seedAtlas } from "./apps/atlas";
+import { seedVault } from "./apps/vault";
+import { seedBloom } from "./apps/bloom";
 
 export const createStores = async ({ user: admin, isProd }) => {
   // Seed core apps first
-  const { chrry } = await seedChrry({ admin })
-  const { vex } = await seedVex({ admin, chrryId: chrry.id })
-  const { focus } = await seedFocus({ admin, blossomId: blossom.id })
-  
+  const { chrry } = await seedChrry({ admin });
+  const { vex } = await seedVex({ admin, chrryId: chrry.id });
+  const { focus } = await seedFocus({ admin, blossomId: blossom.id });
+
   // Seed LifeOS apps
-  const { atlas } = await seedAtlas({ 
-    admin, 
+  const { atlas } = await seedAtlas({
+    admin,
     chrryId: chrry.id,
-    seedAgentRPG 
-  })
-  
-  const { vault } = await seedVault({ 
-    admin, 
+    seedAgentRPG,
+  });
+
+  const { vault } = await seedVault({
+    admin,
     chrryId: chrry.id,
     vexId: vex.id,
     focusId: focus.id,
     blossomId: blossom.id,
-    seedAgentRPG 
-  })
-  
-  const { bloom } = await seedBloom({ 
-    admin, 
+    seedAgentRPG,
+  });
+
+  const { bloom } = await seedBloom({
+    admin,
     chrryId: chrry.id,
     vexId: vex.id,
     focusId: focus.id,
     lifeOSId: lifeOS.id,
-    seedAgentRPG 
-  })
-  
+    seedAgentRPG,
+  });
+
   // ... etc
-}
+};
 ```
 
 ## ✨ Benefits
 
 ### 1. **Modularity**
+
 Each app's seeding logic is self-contained and can be tested independently.
 
 ### 2. **Reusability**
+
 Seed functions can be called from anywhere:
+
 - Database migrations
 - Test fixtures
 - Admin tools
 - CLI commands
 
 ### 3. **Maintainability**
+
 No more 9356-line monolith! Each app file is ~200 lines max.
 
 ### 4. **Clarity**
+
 Clear separation of concerns - each app owns its seeding logic.
 
 ### 5. **Backup Safety**
+
 Original logic preserved in `createStores.ts` - can rollback if needed.
 
 ## 📁 File Structure
@@ -182,11 +192,13 @@ packages/db/src/seed/
 ## 🚀 Next Steps
 
 ### Immediate
+
 1. ✅ Test each seed function independently
 2. ⏳ Update `createStores.ts` to call new seed functions
 3. ⏳ Migrate remaining apps (Vex, Chrry, Jules, Grok, etc.)
 
 ### Future
+
 1. Add unit tests for each seed function
 2. Create CLI tool to seed individual apps
 3. Add validation for app dependencies

@@ -22,9 +22,9 @@ export default function useCookieOrLocalStorage(
 
   // Sync cookie to localStorage on mount (for extension/native)
   useEffect(() => {
-    if (!canReadCookie) {
-      return
-    }
+    // if (!canReadCookie) {
+    //   return
+    // }
 
     ;(async () => {
       const cookieValue = await platformCookies.get(key, currentUrl)

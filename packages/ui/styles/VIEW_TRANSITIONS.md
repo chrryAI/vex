@@ -24,7 +24,7 @@ The theme system now supports smooth transitions across **all browsers** with au
 ```typescript
 document.startViewTransition(() => {
   // Apply theme changes
-})
+});
 ```
 
 - Uses browser's native View Transitions API
@@ -36,17 +36,17 @@ document.startViewTransition(() => {
 
 ```typescript
 // Create overlay with new theme background
-const overlay = document.createElement("div")
-overlay.style.background = theme.background
+const overlay = document.createElement("div");
+overlay.style.background = theme.background;
 
 // Fade in overlay (150ms)
-overlay.style.opacity = "1"
+overlay.style.opacity = "1";
 
 // Apply theme at peak
-setTimeout(() => applyTheme(), 75)
+setTimeout(() => applyTheme(), 75);
 
 // Fade out overlay (150ms)
-setTimeout(() => (overlay.style.opacity = "0"), 75)
+setTimeout(() => (overlay.style.opacity = "0"), 75);
 ```
 
 - DOM overlay cross-fade
@@ -61,38 +61,38 @@ setTimeout(() => (overlay.style.opacity = "0"), 75)
 ### Basic Theme Switch
 
 ```typescript
-import { applyThemeToDOM, darkTheme, lightTheme } from "./styles/theme"
+import { applyThemeToDOM, darkTheme, lightTheme } from "./styles/theme";
 
 // With transition (works in all browsers)
-applyThemeToDOM(darkTheme, true)
+applyThemeToDOM(darkTheme, true);
 
 // Instant (no transition)
-applyThemeToDOM(darkTheme, false)
+applyThemeToDOM(darkTheme, false);
 ```
 
 ### App Branding
 
 ```typescript
-import { createBrandTheme, useTheme, applyThemeToDOM } from "./styles/theme"
+import { createBrandTheme, useTheme, applyThemeToDOM } from "./styles/theme";
 
-const baseTheme = useTheme()
-const atlasTheme = createBrandTheme(baseTheme, "#00A6FF")
+const baseTheme = useTheme();
+const atlasTheme = createBrandTheme(baseTheme, "#00A6FF");
 
 // Smooth transition in all browsers
-applyThemeToDOM(atlasTheme, true)
+applyThemeToDOM(atlasTheme, true);
 ```
 
 ### System Theme Sync
 
 ```typescript
-import { subscribeToThemeChanges, applyThemeToDOM } from "./styles/theme"
+import { subscribeToThemeChanges, applyThemeToDOM } from "./styles/theme";
 
 const cleanup = subscribeToThemeChanges((theme) => {
-  applyThemeToDOM(theme, true) // Smooth transition
-})
+  applyThemeToDOM(theme, true); // Smooth transition
+});
 
 // Cleanup when component unmounts
-return cleanup
+return cleanup;
 ```
 
 ---
@@ -123,26 +123,26 @@ If you want to customize the fallback animation, edit the timing in `applyThemeT
 
 ```typescript
 // Current timing (fast & smooth)
-root.style.transition = "opacity 150ms ease-in-out"
-root.style.opacity = "0.85"
-setTimeout(() => applyTheme(), 75)
+root.style.transition = "opacity 150ms ease-in-out";
+root.style.opacity = "0.85";
+setTimeout(() => applyTheme(), 75);
 
 // Slower, more dramatic (300ms total)
-root.style.transition = "opacity 200ms ease-in-out"
-root.style.opacity = "0.7"
-setTimeout(() => applyTheme(), 100)
+root.style.transition = "opacity 200ms ease-in-out";
+root.style.opacity = "0.7";
+setTimeout(() => applyTheme(), 100);
 
 // Faster, snappier (150ms total)
-root.style.transition = "opacity 100ms ease-in-out"
-root.style.opacity = "0.9"
-setTimeout(() => applyTheme(), 50)
+root.style.transition = "opacity 100ms ease-in-out";
+root.style.opacity = "0.9";
+setTimeout(() => applyTheme(), 50);
 ```
 
 ### Disable Transitions Globally
 
 ```typescript
 // Always instant (no animation)
-applyThemeToDOM(theme, false)
+applyThemeToDOM(theme, false);
 ```
 
 ---
@@ -168,12 +168,9 @@ applyThemeToDOM(theme, false)
 ```typescript
 // Add logging to see which method is used
 const supportsViewTransitions =
-  "startViewTransition" in document &&
-  typeof document.startViewTransition === "function"
+  "startViewTransition" in document && typeof document.startViewTransition === "function";
 
-console.log(
-  supportsViewTransitions ? "✅ Native View Transitions" : "⚠️ CSS Fallback",
-)
+console.log(supportsViewTransitions ? "✅ Native View Transitions" : "⚠️ CSS Fallback");
 ```
 
 ---
@@ -224,12 +221,12 @@ However, our CSS fallback is:
 const supportsViewTransitions =
   typeof document !== "undefined" &&
   "startViewTransition" in document &&
-  typeof document.startViewTransition === "function"
+  typeof document.startViewTransition === "function";
 
 if (supportsViewTransitions) {
-  console.log("🎉 Native View Transitions available!")
+  console.log("🎉 Native View Transitions available!");
 } else {
-  console.log("⚠️ Using CSS fallback")
+  console.log("⚠️ Using CSS fallback");
 }
 ```
 

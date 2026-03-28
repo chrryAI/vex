@@ -363,7 +363,7 @@ const focus = {
   isStoreApp: false,
   mode: "focus" as siteMode,
   slug: "focus",
-  version: "26.11.61",
+  version: "26.11.62",
   storeSlug: "blossom",
   name: "Focus",
   domain: "focus.chrry.ai",
@@ -3054,7 +3054,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = "focus"
+  const devMode = "sushi"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 

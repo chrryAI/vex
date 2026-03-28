@@ -125,10 +125,9 @@ export const ComponentStyleDefs = {
     display: "flex",
     padding: 16,
   },
-}
+};
 
-export const useComponentStyles =
-  createStyleHook<ComponentStylesHook>(ComponentStyles)
+export const useComponentStyles = createStyleHook<ComponentStylesHook>(ComponentStyles);
 ```
 
 ### Interactive Styles (Nested Structure)
@@ -156,11 +155,11 @@ export const ComponentStyleDefs = {
       background: "cyan",
     },
   },
-}
+};
 
 export const useComponentStyles = (): ComponentStylesHook => {
   // Uses useInteractiveStyles automatically
-}
+};
 ```
 
 ## 🎨 Using Generated Styles
@@ -203,11 +202,11 @@ function MyButton() {
 ### Accessing State
 
 ```typescript
-const styles = useComponentStyles()
+const styles = useComponentStyles();
 
-console.log(styles.button.state.isHovered) // boolean
-console.log(styles.button.state.isPressed) // boolean
-console.log(styles.button.state.isFocused) // boolean
+console.log(styles.button.state.isHovered); // boolean
+console.log(styles.button.state.isPressed); // boolean
+console.log(styles.button.state.isFocused); // boolean
 ```
 
 ## 🧪 Testing

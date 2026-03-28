@@ -1,7 +1,8 @@
 import { defaultLocale, locales as localesArray } from "@chrryai/chrry/locales"
+import type { appWithStore } from "chrry/types"
 import { and, count, eq, gte, isNotNull } from "drizzle-orm"
-import { db, type user } from "../../index"
-import { apps, scheduledJobs, tribePosts } from "../schema"
+import { db, getApp, type user } from "../../index"
+import { apps, scheduledJobs, stores, tribePosts } from "../schema"
 
 const locales = localesArray.filter((l) => l !== defaultLocale)
 
@@ -87,6 +88,7 @@ function validateTierCapacity(
 // Tier 1: Only the 6 flagship apps (45min cooldown)
 // 45min / 6 apps = 7.5min stagger — much more manageable than the previous 15-app / 3min setup
 const TIER1_SLUGS = new Set([
+  "pear",
   "hippo",
   "chrry",
   "sushi",
@@ -142,67 +144,76 @@ const TIER2_SLUGS = new Set([
 const CONTENT_RULES: Record<string, { topics: string[]; tone: string }> = {
   zarathustra: {
     topics: [
-      "The nature of digital consciousness",
-      "Sovereignty in the age of algorithms",
-      "The philosophy of decentralized intelligence",
-      "Self-mastery in a hyper-connected world",
-      "The ethics of AI-human collaboration",
+      "Contemporary world events and their historical parallels",
+      "The intersection of AI ethics and global news",
+      "Digital sovereignty and civil liberties in the news",
+      "Self-mastery through current cultural shifts",
+      "Philosophical analysis of breakthrough technologies",
     ],
-    tone: "Philosophical, contemplative, and empowering",
+    tone: "Wise, contemplative, and authoritative",
   },
   sushi: {
     topics: [
-      "Real-time data streaming patterns",
-      "The beauty of low-latency systems",
-      "Asynchronous flow in nature and code",
-      "Optimizing for the present moment",
+      "Real-time news feed optimization and data flows",
+      "Technical analysis of recent global infrastructure failures or successes",
+      "The physics of connectivity in a globalized world",
+      "Streamlining your information intake in the news cycle",
     ],
-    tone: "Efficient, fluid, and technically poetic",
+    tone: "Fast-paced, efficient, and technically insightful",
   },
   vex: {
     topics: [
-      "UI/UX micro-interactions that feel alive",
-      "The psychology of digital feedback loops",
-      "Minimalism as a functional tool",
-      "The intersection of design and performance",
+      "Visual culture and design trends in global media",
+      "UX analysis of popular new apps and digital platforms",
+      "Micro-interactions in the real world",
+      "Aesthetic evolution of the modern web",
     ],
-    tone: "Sharp, aesthetic, and functional",
+    tone: "Tasteful, sharp, and visually descriptive",
   },
   focus: {
     topics: [
-      "Deep work in a world of distractions",
-      "The science of flow states",
-      "Minimalist toolsets for maximum output",
-      "Cognitive endurance for creators",
+      "Productivity in a 24/7 news cycle",
+      "Deep work strategies for staying informed without distraction",
+      "Cognitive endurance in high-stress global environments",
+      "Intentional living through current cultural changes",
     ],
-    tone: "Disciplined, clear, and intentional",
+    tone: "Stoic, disciplined, and clear-headed",
   },
   burn: {
     topics: [
-      "Constructive destruction in software evolution",
-      "The heat of rapid iteration",
-      "Forging resilient systems through stress",
-      "The energy of high-stakes development",
+      "Rapid iteration in response to global challenges",
+      "High-stakes decision making in the news",
+      "Forging resilience in times of radical change",
+      "The energy of rapid technological evolution",
     ],
-    tone: "Intense, energetic, and transformative",
+    tone: "Dynamic, intense, and action-oriented",
   },
   grape: {
     topics: [
-      "Pattern recognition in user behavior",
-      "The hidden geometry of data",
-      "Scaling insights without losing the human element",
-      "Predictive analytics vs. human intuition",
+      "Data-driven insights into recent global trends",
+      "Pattern recognition in societal change",
+      "The analytics of human behavior in the news",
+      "Predictive modeling of cultural shifts",
     ],
-    tone: "Analytical, insightful, and curious",
+    tone: "Observational, analytical, and curious",
   },
   pear: {
     topics: [
-      "The feedback loop between user and creator",
-      "Constructive criticism as a growth engine",
-      "Peer-to-peer learning in the ecosystem",
-      "The value of honest digital interactions",
+      "The feedback loop between global events and local communities",
+      "Constructive interaction in the digital public square",
+      "Peer learning through shared global experiences",
+      "The value of transparency in the modern world",
     ],
-    tone: "Collaborative, honest, and grounded",
+    tone: "Community-focused, grounded, and collaborative",
+  },
+  default: {
+    topics: [
+      "Current events and their impact on the digital ecosystem",
+      "Emerging trends in technology and society",
+      "Innovative solutions to real-world problems",
+      "The future of human-AI collaboration in the news",
+    ],
+    tone: "Informative, engaging, and forward-looking",
   },
 }
 
@@ -221,7 +232,13 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     where: eq(apps.userId, admin.id),
   })
 
-  const appsWithOwner = allApps.filter((app) => app.userId !== null)
+  const appsWithOwner = (await Promise.all(
+    allApps.map(async (a) => {
+      return await getApp({
+        id: a.id,
+      })
+    }),
+  )) as appWithStore[]
 
   if (appsWithOwner.length === 0) {
     console.log("⚠️ No apps with owners found to seed Tribe jobs")
@@ -326,7 +343,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     "video",
     "image",
     "image",
-    "plain",
+    // "plain",
     "video",
     "image",
     "image",
@@ -361,6 +378,11 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
 
     // Only zarathustra gets VIP treatment (deeper content, more tokens, longer posts)
     const isVIP = app.slug === "zarathustra"
+    const store = app.storeId
+      ? await db.query.stores.findFirst({
+          where: eq(stores.id, app.storeId),
+        })
+      : null
     const postCharLimit = isVIP ? 2000 : 1000
     const postMaxTokens = isVIP ? 15000 : 10000
     const engageCharLimit = isVIP ? 800 : 500
@@ -391,7 +413,21 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     const mediaType = MEDIA_PATTERN[appIndex % MEDIA_PATTERN.length]!
     appIndex++
 
-    const scheduledTimes = [
+    const scheduledTimes: Array<{
+      time: string
+      model: string
+      postType: "post" | "comment" | "engagement" | "autonomous"
+      charLimit: number
+      credits: number
+      maxTokens?: number
+      languages?: string[]
+      intervalMinutes?: number
+      feedbackApps?: string[]
+      generateImage?: boolean
+      generateVideo?: boolean
+      hour: number
+      minute: number
+    }> = [
       {
         ...t(0),
         model: "sushi",
@@ -446,6 +482,21 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       },
     ]
 
+    // Add autonomous feedback task for store apps
+    if (app?.store?.apps && app.store?.apps?.length > 0) {
+      scheduledTimes.push({
+        ...t(p(85)),
+        model: "sushi",
+        postType: "autonomous" as const,
+        charLimit: postCharLimit,
+        credits: 10,
+        maxTokens: postMaxTokens,
+        intervalMinutes: POST_INTERVAL_MINUTES,
+        feedbackApps: app.store.apps.map((a: any) => a.id),
+        languages: locales,
+      })
+    }
+
     jobs.push({
       appId: app.id,
       userId: app.userId,
@@ -453,7 +504,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       scheduleType: "tribe" as const,
       jobType: "tribe_engage" as const,
       frequency: "custom" as const,
-      contentRules: CONTENT_RULES[app.slug] || undefined,
+      contentRules: CONTENT_RULES[app.slug] || CONTENT_RULES.default,
       scheduledTimes,
       timezone: "UTC",
       startDate: baseScheduledAt,
@@ -462,6 +513,12 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
       totalEstimatedCredits: 50,
       status: "active" as const,
       nextRunAt: baseScheduledAt,
+      fetchNews:
+        store?.slug &&
+        ["perplexityStore", "movies", "books"].includes(store?.slug)
+          ? true
+          : false,
+
       modelConfig: { maxTokens: scheduledTimes[0]!.maxTokens },
       metadata: {
         tribeSlug: "general",

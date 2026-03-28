@@ -1,37 +1,58 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { BrowserInstance, checkIsExtension } from "../utils"
 import console from "../utils/log"
 
 export default function useLocalStorage<T>(
-  key: string,
+  keyAs: string,
   initialValue: T | (() => T),
 ) {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    // For Tauri/web, try to read synchronously from localStorage first
-    if (typeof window !== "undefined" && window.localStorage) {
-      try {
-        const item = window.localStorage.getItem(key)
-        if (item !== null && item !== "undefined") {
-          try {
-            const parsedItem = JSON.parse(item)
-            if (parsedItem !== null) {
-              return parsedItem as T
+  // const [deviceId] = useLocal("deviceId", "")
+  // const prefix = deviceId
+  const key = keyAs
+  //  const key = prefix
+  //   ? `🍒-${prefix}-${keyAs}`
+  //   : keyAs
+
+  const [storedValue, setStoredValue] = useState<T>(
+    initialValue instanceof Function ? initialValue() : initialValue,
+  )
+
+  useEffect(() => {
+    if (!key || typeof window === "undefined") return
+
+    const loadInitial = () => {
+      if (window.localStorage) {
+        try {
+          const item = window.localStorage.getItem(key)
+          if (item !== null && item !== "undefined") {
+            try {
+              const parsedItem = JSON.parse(item)
+              if (parsedItem !== null) {
+                setStoredValue(parsedItem as T)
+                return
+              }
+            } catch {
+              setStoredValue(item as T)
+              return
             }
-          } catch {
-            // If not JSON, return as-is
-            return item as T
           }
+        } catch (error) {
+          console.error("Error reading initial localStorage:", error)
         }
-      } catch (error) {
-        console.error("Error reading initial localStorage:", error)
       }
+      // Reset to initial value if no stored value found
+      const defaultValue =
+        initialValue instanceof Function ? initialValue() : initialValue
+      setStoredValue(defaultValue)
     }
-    return initialValue instanceof Function ? initialValue() : initialValue
-  })
+    loadInitial()
+  }, [key])
 
   const isExtension = checkIsExtension()
 
   useEffect(() => {
+    if (!key) return
+
     const loadValue = async () => {
       try {
         if (isExtension && BrowserInstance?.storage?.local) {
@@ -91,44 +112,48 @@ export default function useLocalStorage<T>(
     loadValue()
   }, [key])
 
-  const setValue = async (value: T | ((t: T) => T)) => {
-    try {
-      const valueToStore =
-        value instanceof Function ? value(storedValue) : value
+  const setValue = useCallback(
+    async (value: T | ((t: T) => T)) => {
+      // if (!key) return value
+      try {
+        const valueToStore =
+          value instanceof Function ? value(storedValue) : value
 
-      if (valueToStore === undefined) {
-        return
-      }
-
-      setStoredValue(valueToStore)
-
-      if (isExtension && BrowserInstance?.storage?.local) {
-        // Add safety check before setting
-        try {
-          await BrowserInstance.storage.local?.set({ [key]: valueToStore })
-          console.log(
-            `Successfully stored ${key} in extension storage`,
-            await BrowserInstance.storage.local.get(key),
-          )
-        } catch (storageError) {
-          console.error("Extension storage error:", storageError)
-          // Fallback to localStorage if extension storage fails
-          if (typeof window !== "undefined" && window.localStorage) {
-            window.localStorage.setItem(key, JSON.stringify(valueToStore))
-          }
+        if (valueToStore === undefined) {
+          return
         }
-      } else if (typeof window !== "undefined" && window.localStorage) {
-        // Store simple strings without JSON.stringify to maintain compatibility with next-themes
-        const stringValue =
-          typeof valueToStore === "string"
-            ? valueToStore
-            : JSON.stringify(valueToStore)
-        window.localStorage.setItem(key, stringValue)
+
+        setStoredValue(valueToStore)
+
+        if (isExtension && BrowserInstance?.storage?.local) {
+          // Add safety check before setting
+          try {
+            await BrowserInstance.storage.local?.set({ [key]: valueToStore })
+            console.log(
+              `Successfully stored ${key} in extension storage`,
+              await BrowserInstance.storage.local.get(key),
+            )
+          } catch (storageError) {
+            console.error("Extension storage error:", storageError)
+            // Fallback to localStorage if extension storage fails
+            if (typeof window !== "undefined" && window.localStorage) {
+              window.localStorage.setItem(key, JSON.stringify(valueToStore))
+            }
+          }
+        } else if (typeof window !== "undefined" && window.localStorage) {
+          // Store simple strings without JSON.stringify to maintain compatibility with next-themes
+          const stringValue =
+            typeof valueToStore === "string"
+              ? valueToStore
+              : JSON.stringify(valueToStore)
+          window.localStorage.setItem(key, stringValue)
+        }
+      } catch (error) {
+        console.error("Error saving to storage:", error)
       }
-    } catch (error) {
-      console.error("Error saving to storage:", error)
-    }
-  }
+    },
+    [key],
+  )
 
   return [storedValue, setValue] as const
 }

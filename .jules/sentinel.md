@@ -171,21 +171,24 @@
 
 ## 2026-06-20 - TOCTOU and Open Redirect in File Uploads
 
-**Vulnerability:** The `minio.ts` upload utility validated URLs against private IPs *before* fetching them. However, it used standard `fetch`, which follows redirects automatically. This created two vulnerabilities:
+**Vulnerability:** The `minio.ts` upload utility validated URLs against private IPs _before_ fetching them. However, it used standard `fetch`, which follows redirects automatically. This created two vulnerabilities:
+
 1.  **Open Redirect SSRF:** An attacker could provide a URL that passes validation (e.g., `http://evil.com/image`) but redirects to a private IP (e.g., `http://169.254.169.254/metadata`), which `fetch` would follow without re-validation.
 2.  **DNS Rebinding (TOCTOU):** For the initial request, the time between the DNS check and the actual `fetch` allowed an attacker to change the DNS record to a private IP.
 
 **Learning:**
+
 - **Fetch follows redirects:** Standard `fetch` behavior is dangerous for SSRF protection because it blindly trusts redirects.
-- **Validation Persistence:** Validation must happen at *every step* of the HTTP chain (initial URL + every redirect).
+- **Validation Persistence:** Validation must happen at _every step_ of the HTTP chain (initial URL + every redirect).
 - **DNS Pinning:** To prevent DNS rebinding, you must resolve the IP once and use that IP for the connection (setting the `Host` header manually).
 
 **Prevention:**
+
 - Implemented `safeFetch` utility that:
-    1.  Handles redirects manually (`redirect: "manual"`).
-    2.  Resolves and validates the IP for *every* URL in the chain.
-    3.  Uses the resolved IP for the actual request (for HTTP) to pin the DNS.
-    4.  Limits redirect depth to prevent loops.
+  1.  Handles redirects manually (`redirect: "manual"`).
+  2.  Resolves and validates the IP for _every_ URL in the chain.
+  3.  Uses the resolved IP for the actual request (for HTTP) to pin the DNS.
+  4.  Limits redirect depth to prevent loops.
 - Replaced direct `fetch` usage in `minio.ts` with `safeFetch`.
 
 ## 2026-06-25 - Incomplete SSRF Protection in Private IP Checks
@@ -193,21 +196,26 @@
 **Vulnerability:** The `isPrivateIP` utility used to block private IPs (SSRF protection) only checked for standard RFC1918 ranges (10.x, 172.16-31.x, 192.168.x). It failed to block other IANA reserved ranges like `127.x.x.x` (other than loopback), `0.0.0.0/8`, `192.0.2.0/24` (TEST-NET), `169.254.x.x` (Link-Local), and IPv6 addresses. This could allow attackers to bypass SSRF protections by using less common reserved IPs or IPv6.
 
 **Learning:**
+
 - **RFC1918 is insufficient:** Blocking only private networks (10/8, 172.16/12, 192.168/16) is not enough for robust SSRF protection.
 - **Reserved Ranges:** Attackers can use documentation ranges, test networks, or link-local addresses to target internal services or metadata endpoints.
 - **IPv6:** Modern stacks support IPv6, and failing to check it opens a bypass vector.
 
 **Prevention:**
+
 - **Comprehensive Blocklist:** Updated `isPrivateIP` to include all IANA reserved IPv4 ranges (0.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 192.0.0.0/24, 192.0.2.0/24, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4).
 - **IPv6 Support:** Added checks for IPv6 reserved ranges (::/128, ::1/128, fc00::/7, fe80::/10, etc.) and mapped IPv4 addresses.
+
 ## 2026-06-21 - False Positive SSRF Block for Data URLs
 
 **Vulnerability:** The `safeFetch` utility correctly blocked SSRF attempts but also blocked legitimate `data:` URLs used for image uploads (constructed from `File` objects). This false positive broke upload functionality. Crucially, broken uploads prevented the downstream security sanitization (Sharp conversion), effectively leaving the system vulnerable to Stored XSS via SVG uploads if the upload mechanism were bypassed or fixed incorrectly.
 
 **Learning:**
+
 - **SSRF Scope:** `data:` URLs are inherently safe from SSRF as they do not trigger network requests. Applying network-layer SSRF protection to them is unnecessary and causes functional regressions.
 - **Security Logic Dependency:** When security controls (like sanitization) depend on a functional pipeline (like upload), breaking the pipeline disables the control.
 
 **Prevention:**
+
 - Explicitly bypass `safeFetch` for `data:` URLs in `apps/api/lib/minio.ts` and use native `fetch`.
 - Added regression tests to ensure `data:` URLs are handled correctly and `safeFetch` is bypassed only for them.

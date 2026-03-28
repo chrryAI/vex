@@ -5,9 +5,9 @@ import { v4 as uuidv4 } from "uuid"
 import { captureException } from "../../lib/captureException"
 import { sendDiscordNotification } from "../sendDiscordNotification"
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET
+const JWT_SECRET = process.env.AUTH_SECRET
 if (!JWT_SECRET && process.env.NODE_ENV !== "development") {
-  throw new Error("NEXTAUTH_SECRET is not defined")
+  throw new Error("AUTH_SECRET is not defined")
 }
 
 import { analyzeMoltbookTrends } from "../../lib/cron/moltbookTrends"

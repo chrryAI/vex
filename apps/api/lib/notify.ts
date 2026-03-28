@@ -113,6 +113,7 @@ export type notifyOwnerAndCollaborationsPayload = {
       user: user
     }[]
   }
+  types?: ("email" | "push" | "ws")[]
   pushNotification?: boolean
   payload: {
     type:
@@ -161,6 +162,7 @@ export const notifyOwnerAndCollaborations = async ({
   thread,
   pushNotification,
   payload,
+  types = ["email", "push", "ws"],
 }: notifyOwnerAndCollaborationsPayload) => {
   if (notifySender) {
     const recipientId = member?.id || guest?.id || ""
@@ -177,11 +179,12 @@ export const notifyOwnerAndCollaborations = async ({
   thread?.collaborations?.map(async (collaboration) => {
     if (collaboration.user.id !== member?.id) {
       ;(async () => {
-        const subscription = pushNotification
-          ? await getPushSubscription({
-              userId: collaboration.user.id,
-            })
-          : undefined
+        const subscription =
+          types.includes("push") && pushNotification
+            ? await getPushSubscription({
+                userId: collaboration.user.id,
+              })
+            : undefined
 
         if (subscription && collaboration.collaboration.status === "active") {
           // Always send push notifications, let client handle deduplication
@@ -232,19 +235,21 @@ export const notifyOwnerAndCollaborations = async ({
         }
       })()
 
-      notify(collaboration.user.id, {
-        ...payload,
-        data: { ...payload.data, collaboration: collaboration.collaboration },
-      })
+      types.includes("ws") &&
+        notify(collaboration.user.id, {
+          ...payload,
+          data: { ...payload.data, collaboration: collaboration.collaboration },
+        })
     }
   })
 
   if (thread?.userId && thread.userId !== member?.id) {
-    const subscription = pushNotification
-      ? await getPushSubscription({
-          userId: thread.userId,
-        })
-      : undefined
+    const subscription =
+      types.includes("push") && pushNotification
+        ? await getPushSubscription({
+            userId: thread.userId,
+          })
+        : undefined
 
     if (subscription) {
       // Always send push notifications, let client handle deduplication
@@ -256,9 +261,7 @@ export const notifyOwnerAndCollaborations = async ({
         JSON.stringify({
           icon: `${FRONTEND_URL}/icon-128.png`,
           badge: `${FRONTEND_URL}/icon-128.png`,
-          title: `${
-            payload.data.message?.message.content.slice(0, 100) || "New message"
-          } - Vex`,
+          title: `${payload.data.message?.message.content.slice(0, 100) || "New message"} - Vex`,
           body: "You have a new message",
           tag: `thread-${payload.data.message?.message.threadId}-message-${payload.data.message?.message.id}`,
           data: {
@@ -271,25 +274,27 @@ export const notifyOwnerAndCollaborations = async ({
         await deletePushSubscription({ id: subscription.id })
       }
 
-      notify(thread.userId, {
-        type: "notification",
-        data: {
-          message: {
-            message: payload.data.message?.message,
+      types.includes("ws") &&
+        notify(thread.userId, {
+          type: "notification",
+          data: {
+            message: {
+              message: payload.data.message?.message,
+            },
           },
-        },
-      })
+        })
     }
-    notify(thread.userId, payload)
+    types.includes("ws") && notify(thread.userId, payload)
   }
 
   // Notify thread guest if they are not the sender
   if (thread?.guestId && thread.guestId !== guest?.id) {
-    const subscription = pushNotification
-      ? await getPushSubscription({
-          guestId: thread.guestId,
-        })
-      : undefined
+    const subscription =
+      types.includes("push") && pushNotification
+        ? await getPushSubscription({
+            guestId: thread.guestId,
+          })
+        : undefined
 
     if (subscription) {
       // Always send push notifications, let client handle deduplication
@@ -301,9 +306,7 @@ export const notifyOwnerAndCollaborations = async ({
         JSON.stringify({
           icon: `${FRONTEND_URL}/icon-128.png`,
           badge: `${FRONTEND_URL}/icon-128.png`,
-          title: `${
-            payload.data.message?.message.content.slice(0, 100) || "New message"
-          } - Vex`,
+          title: `${payload.data.message?.message.content.slice(0, 100) || "New message"} - Vex`,
           body: "You have a new message",
           tag: `thread-${payload.data.message?.message.threadId}-message-${payload.data.message?.message.id}`,
           data: {
@@ -324,6 +327,7 @@ export const notifyOwnerAndCollaborations = async ({
         },
       })
     }
-    notify(thread.guestId, payload)
+
+    types.includes("ws") && notify(thread.guestId, payload)
   }
 }

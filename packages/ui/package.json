@@ -1,28 +1,32 @@
 {
   "name": "@chrryai/chrry",
-  "version": "2.2.41",
+  "version": "2.2.92",
   "private": false,
   "description": "A modern, cross-platform UI library for React, React Native, and Next.js",
   "keywords": [
-    "react",
-    "react-native",
-    "nextjs",
-    "ui",
     "components",
     "cross-platform",
-    "typescript"
+    "nextjs",
+    "react",
+    "react-native",
+    "typescript",
+    "ui"
   ],
   "homepage": "https://chrry.dev",
   "bugs": {
     "url": "https://github.com/chrryai/chrry/issues"
   },
+  "license": "AGPL-3.0",
+  "author": "Iliyan Velinov",
   "repository": {
     "type": "git",
     "url": "https://github.com/chrryai/chrry.git"
   },
-  "license": "AGPL-3.0",
-  "author": "Iliyan Velinov",
+  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -49,10 +53,9 @@
     "./package.json": "./package.json",
     "./*": "./*"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": ["dist", "locales", "**/*.css", "**/*.scss", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm exec tsup",
     "check-types": "tsc --noEmit",
@@ -89,7 +92,6 @@
     "@types/sanitize-html": "^2.16.1",
     "@types/three": "^0.183.1",
     "@types/uuid": "^11.0.0",
-    "@uidotdev/usehooks": "^2.4.1",
     "ai": "^6.0.134",
     "antd": "^6.3.3",
     "clsx": "^2.1.1",
@@ -183,8 +185,5 @@
     "date-fns": "^4.1.0",
     "react-big-calendar": "^1.19.4",
     "recharts": "^3.8.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

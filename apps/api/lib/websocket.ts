@@ -91,7 +91,7 @@ async function getMemberWithToken(token: string) {
   }
 
   // Use default secret if not set (matches auth.ts behavior)
-  const secret = process.env.NEXTAUTH_SECRET || "development-secret"
+  const secret = process.env.AUTH_SECRET || "development-secret"
   let decoded: { email?: string } | null = null
 
   try {

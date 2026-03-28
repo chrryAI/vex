@@ -19,11 +19,8 @@ Your sitemap includes localized pages that shouldn't be there.
 // Only include the canonical (English) version
 // Don't include /de/page, /fr/page, etc.
 const urls = pages.filter(
-  (page) =>
-    !page.startsWith("/de") &&
-    !page.startsWith("/fr") &&
-    !page.startsWith("/es"),
-)
+  (page) => !page.startsWith("/de") && !page.startsWith("/fr") && !page.startsWith("/es"),
+);
 ```
 
 ### 2. Fix Multiple H1s
@@ -94,11 +91,11 @@ The `share-modal.js` error is a timing issue. It's trying to access DOM before i
 ```javascript
 // If you have custom scripts
 document.addEventListener("networkidle", () => {
-  const modal = document.querySelector("#share-modal")
+  const modal = document.querySelector("#share-modal");
   if (modal) {
-    modal.addEventListener("click", handler)
+    modal.addEventListener("click", handler);
   }
-})
+});
 ```
 
 ## 📊 Your Current Score

@@ -58,22 +58,22 @@ chrome.runtime.sendNativeMessage(
   "com.chrry.sushi.bridge",
   { type: "fs:read", path: "package.json" },
   (response) => {
-    console.log(response.content)
+    console.log(response.content);
   },
-)
+);
 ```
 
 ### From Extension (WebSocket Fallback)
 
 ```typescript
-const ws = new WebSocket("ws://localhost:3456")
+const ws = new WebSocket("ws://localhost:3456");
 
-ws.send(JSON.stringify({ type: "fs:read", path: "package.json" }))
+ws.send(JSON.stringify({ type: "fs:read", path: "package.json" }));
 
 ws.onmessage = (event) => {
-  const response = JSON.parse(event.data)
-  console.log(response.content)
-}
+  const response = JSON.parse(event.data);
+  console.log(response.content);
+};
 ```
 
 ## API

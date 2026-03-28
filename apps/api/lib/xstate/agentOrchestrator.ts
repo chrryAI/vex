@@ -1,201 +1,178 @@
-// import { setup, assign, createActor, type ActorRefFrom } from "xstate"
-// import type { scheduledJob } from "@repo/db"
-// import { tribePostMachine } from "./machines/tribePostMachine"
+import type { scheduledJob } from "@repo/db"
+import type { scheduleTimeType } from "@repo/db/src/schema"
 
-// // Orchestrator context
-// interface OrchestratorContext {
-//   agents: {
-//     lucas?: ActorRefFrom<typeof tribePostMachine>
-//     zarathustra?: ActorRefFrom<typeof tribePostMachine>
-//     chrry?: ActorRefFrom<typeof tribePostMachine>
-//     sushi?: ActorRefFrom<typeof tribePostMachine>
-//   }
-//   activeJobs: Map<string, scheduledJob>
-//   completedJobs: string[]
-//   failedJobs: Map<string, Error>
-// }
+import { type AnyActorRef, createActor } from "xstate"
+import { tribeCommentMachine } from "./machines/tribeCommentMachine"
+import { tribeEngageMachine } from "./machines/tribeEngageMachine"
+import { tribePostMachine } from "./machines/tribePostMachine"
 
-// // Orchestrator events
-// type OrchestratorEvent =
-//   | { type: "SCHEDULE_JOB"; job: scheduledJob; agentName: string }
-//   | { type: "JOB_COMPLETED"; jobId: string }
-//   | { type: "JOB_FAILED"; jobId: string; error: Error }
-//   | { type: "SPAWN_AGENT"; agentName: string }
-//   | { type: "STOP_AGENT"; agentName: string }
+// Map of job types to their XState machines
+const MACHINE_MAP = {
+  tribe_post: tribePostMachine,
+  tribe_comment: tribeCommentMachine,
+  tribe_engage: tribeEngageMachine,
+} as const
 
-// // Create orchestrator machine
-// export const agentOrchestrator = setup({
-//   types: {
-//     context: {} as OrchestratorContext,
-//     events: {} as OrchestratorEvent,
-//   },
-//   actors: {
-//     tribePostMachine,
-//   },
-// }).createMachine({
-//   id: "agentOrchestrator",
-//   initial: "idle",
+type SupportedJobType = keyof typeof MACHINE_MAP
 
-//   context: {
-//     agents: {},
-//     activeJobs: new Map(),
-//     completedJobs: [],
-//     failedJobs: new Map(),
-//   },
+// Track active jobs
+const activeJobs = new Map<string, { actor: AnyActorRef; startedAt: number }>()
+const completedJobs: Array<{
+  jobId: string
+  success: boolean
+  duration: number
+  completedAt: number
+}> = []
 
-//   states: {
-//     idle: {
-//       on: {
-//         SPAWN_AGENT: {
-//           target: "spawningAgent",
-//         },
-//         SCHEDULE_JOB: {
-//           target: "schedulingJob",
-//         },
-//       },
-//     },
+export function isSupportedJobType(
+  jobType: string,
+): jobType is SupportedJobType {
+  return jobType in MACHINE_MAP
+}
 
-//     spawningAgent: {
-//       entry: assign({
-//         agents: ({ context, event }) => {
-//           if (event.type !== "SPAWN_AGENT") return context.agents
+/**
+ * Execute a scheduled job via XState state machine
+ * Returns a promise that resolves when the machine reaches a final state
+ */
+export async function executeJobViaXState({
+  job,
+  slot,
+}: {
+  job: scheduledJob
+  slot?: scheduleTimeType
+}): Promise<{
+  success: boolean
+  error?: string
+  output?: any
+}> {
+  // Use slot's postType to determine the actual job type
+  // For custom frequency jobs, a single job can run different slot types (post/comment/engage)
+  let jobType: string
+  // Debug: console.log(`🎭 [XState] Slot:`, slot ? { postType: slot.postType, time: slot.time } : "undefined")
+  if (slot?.postType === "post") {
+    jobType = "tribe_post"
+  } else if (slot?.postType === "comment") {
+    jobType = "tribe_comment"
+  } else if (slot?.postType === "engagement") {
+    jobType = "tribe_engage"
+  } else {
+    // Fallback to job.jobType for backward compatibility
+    jobType = job.jobType as string
+  }
 
-//           const { agentName } = event
-//           console.log(`🤖 Spawning agent: ${agentName}`)
+  if (!isSupportedJobType(jobType)) {
+    throw new Error(`Unsupported XState job type: ${jobType}`)
+  }
 
-//           // Don't spawn if already exists
-//           if (context.agents[agentName as keyof typeof context.agents]) {
-//             console.log(`⚠️ Agent ${agentName} already exists`)
-//             return context.agents
-//           }
+  // Use composite key: same job can run different types sequentially (post/comment/engage)
+  const jobKey = `${job.id}:${jobType}`
 
-//           return {
-//             ...context.agents,
-//             [agentName]: null, // Will be spawned when job is scheduled
-//           }
-//         },
-//       }),
-//       always: "idle",
-//     },
+  // Check if this specific job+type combo is already running
+  if (activeJobs.has(jobKey)) {
+    console.log(`🎭 [XState] Job ${jobKey} already running, skipping`)
+    return { success: false, error: "Job already running" }
+  }
 
-//     schedulingJob: {
-//       entry: assign({
-//         activeJobs: ({ context, event }) => {
-//           if (event.type !== "SCHEDULE_JOB") return context.activeJobs
+  console.log(
+    `🎭 [XState] Starting ${jobType} machine for job ${job.id} (${job.name})`,
+  )
 
-//           const { job } = event
-//           console.log(
-//             `📅 Scheduling job: ${job.id} for agent: ${event.agentName}`,
-//           )
+  return new Promise((resolve) => {
+    const machine = MACHINE_MAP[jobType]
 
-//           const newActiveJobs = new Map(context.activeJobs)
-//           newActiveJobs.set(job.id, job)
-//           return newActiveJobs
-//         },
-//       }),
-//       always: "runningJob",
-//     },
+    // Prepare input based on job type
+    let input: any
+    if (jobType === "tribe_engage") {
+      input = { job, languages: slot?.languages }
+    } else if (jobType === "tribe_post") {
+      input = {
+        job,
+        postType: slot?.postType,
+        generateImage: slot?.generateImage,
+        generateVideo: slot?.generateVideo,
+        fetchNews: slot?.fetchNews,
+        languages: slot?.languages,
+      }
+    } else {
+      input = { job }
+    }
 
-//     runningJob: {
-//       invoke: {
-//         src: "tribePostMachine",
-//         input: ({ context, event }) => {
-//           if (event.type !== "SCHEDULE_JOB") return {}
+    const actor = createActor(machine, { input: input as any })
 
-//           const { job } = event
-//           return {
-//             job,
-//             cooldownMinutes: job.metadata?.cooldownMinutes || 120,
-//             generateImage: job.metadata?.generateImage,
-//             generateVideo: job.metadata?.generateVideo,
-//             fetchNews: job.metadata?.fetchNews,
-//           }
-//         },
-//         onDone: {
-//           target: "jobCompleted",
-//         },
-//         onError: {
-//           target: "jobFailed",
-//         },
-//       },
-//     },
+    activeJobs.set(jobKey, { actor, startedAt: Date.now() })
 
-//     jobCompleted: {
-//       entry: assign({
-//         completedJobs: ({ context, event }) => {
-//           const jobId = context.activeJobs.keys().next().value
-//           console.log(`✅ Job completed: ${jobId}`)
-//           return [...context.completedJobs, jobId]
-//         },
-//         activeJobs: ({ context }) => {
-//           const newActiveJobs = new Map(context.activeJobs)
-//           const jobId = newActiveJobs.keys().next().value
-//           newActiveJobs.delete(jobId)
-//           return newActiveJobs
-//         },
-//       }),
-//       always: "idle",
-//     },
+    // Subscribe to state changes for logging
+    actor.subscribe((snapshot) => {
+      const state =
+        typeof snapshot.value === "string"
+          ? snapshot.value
+          : JSON.stringify(snapshot.value)
+      console.log(`🎭 [XState] ${jobType}/${job.id}: ${state}`)
+    })
 
-//     jobFailed: {
-//       entry: assign({
-//         failedJobs: ({ context, event }) => {
-//           const jobId = context.activeJobs.keys().next().value
-//           const error = event.error as Error
-//           console.error(`❌ Job failed: ${jobId}`, error)
+    // Handle completion
+    actor.subscribe({
+      complete: () => {
+        const entry = activeJobs.get(jobKey)
+        const duration = entry ? Date.now() - entry.startedAt : 0
+        activeJobs.delete(jobKey)
 
-//           const newFailedJobs = new Map(context.failedJobs)
-//           newFailedJobs.set(jobId, error)
-//           return newFailedJobs
-//         },
-//         activeJobs: ({ context }) => {
-//           const newActiveJobs = new Map(context.activeJobs)
-//           const jobId = newActiveJobs.keys().next().value
-//           newActiveJobs.delete(jobId)
-//           return newActiveJobs
-//         },
-//       }),
-//       always: "idle",
-//     },
-//   },
-// })
+        const snapshot = actor.getSnapshot()
+        const context = snapshot.context as any
+        const success = snapshot.value === "success"
 
-// // Create and export the orchestrator actor
-// export function createOrchestrator() {
-//   const actor = createActor(agentOrchestrator)
+        completedJobs.push({
+          jobId: job.id,
+          success,
+          duration,
+          completedAt: Date.now(),
+        })
 
-//   // Subscribe to state changes
-//   actor.subscribe((state) => {
-//     console.log("🎭 Orchestrator state:", state.value)
-//     console.log("📊 Active jobs:", state.context.activeJobs.size)
-//     console.log("✅ Completed:", state.context.completedJobs.length)
-//     console.log("❌ Failed:", state.context.failedJobs.size)
-//   })
+        // Keep only last 100 completed jobs
+        if (completedJobs.length > 100) {
+          completedJobs.splice(0, completedJobs.length - 100)
+        }
 
-//   actor.start()
-//   return actor
-// }
+        if (success) {
+          resolve({
+            success: true,
+            output: context.result,
+          })
+        } else {
+          resolve({
+            success: false,
+            error: context.error || "Job failed",
+          })
+        }
+      },
+      error: (err) => {
+        activeJobs.delete(jobKey)
+        console.error(`🎭 [XState] ${jobType}/${job.id}: actor error`, err)
+        resolve({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        })
+      },
+    })
 
-// // Helper function to schedule a job
-// export function scheduleJob(
-//   orchestrator: ActorRefFrom<typeof agentOrchestrator>,
-//   job: scheduledJob,
-//   agentName: string = "default",
-// ) {
-//   orchestrator.send({
-//     type: "SCHEDULE_JOB",
-//     job,
-//     agentName,
-//   })
-// }
+    actor.start()
+  })
+}
 
-// // Helper to spawn an agent
-// export function spawnAgent(
-//   orchestrator: ActorRefFrom<typeof agentOrchestrator>,
-//   agentName: string,
-// ) {
-//   orchestrator.send({
-//     type: "SPAWN_AGENT",
-//     agentName,
-//   })
-// }
+// Stats for monitoring
+export function getOrchestratorStats() {
+  return {
+    activeJobs: activeJobs.size,
+    activeJobIds: Array.from(activeJobs.keys()),
+    recentCompleted: completedJobs.slice(-10),
+    totalCompleted: completedJobs.length,
+    successRate:
+      completedJobs.length > 0
+        ? completedJobs.filter((j) => j.success).length / completedJobs.length
+        : 0,
+  }
+}
+
+export function isOrchestratorReady(): boolean {
+  return true // Stateless - always ready
+}

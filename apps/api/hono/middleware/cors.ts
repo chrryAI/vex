@@ -38,6 +38,7 @@ export function isTrustedOrigin(origin: string): boolean {
       const hostname = url.hostname
       if (
         hostname === "localhost" ||
+        hostname.endsWith(".localhost") ||
         hostname === "127.0.0.1" ||
         hostname.startsWith("192.168.")
       ) {

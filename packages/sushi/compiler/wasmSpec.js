@@ -1,6 +1,6 @@
-export const Magic = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]
-export const PageSize = 65536 // 64KiB
-export const FuncType = 0x60
+export const Magic = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
+export const PageSize = 65536; // 64KiB
+export const FuncType = 0x60;
 
 export const Section = {
   custom: 0,
@@ -17,7 +17,7 @@ export const Section = {
   data: 11,
   data_count: 12,
   tag: 13,
-}
+};
 
 export const ExportDesc = {
   func: 0,
@@ -25,19 +25,19 @@ export const ExportDesc = {
   mem: 2,
   global: 3,
   tag: 4,
-}
+};
 
 export const Mut = {
   const: 0,
   var: 1,
-}
+};
 
 export const Valtype = {
   i32: 0x7f,
   i64: 0x7e,
   f64: 0x7c,
   v128: 0x7b,
-}
+};
 
 export const ValtypeSize = {
   i8: 1,
@@ -45,16 +45,16 @@ export const ValtypeSize = {
   i32: 4,
   i64: 8,
   f64: 8,
-}
+};
 
 export const Reftype = {
   funcref: 0x70,
   externref: 0x6f,
-}
+};
 
 export const Blocktype = {
   void: 0x40,
-}
+};
 
 export const Opcodes = {
   unreachable: 0x00,
@@ -304,4 +304,4 @@ export const Opcodes = {
   i64_atomic_rmw_cmpxchg: [0xfe, 0x49],
   i32_atomic_rmw_cmpxchg8: [0xfe, 0x4a],
   i32_atomic_rmw_cmpxchg16: [0xfe, 0x4b],
-}
+};

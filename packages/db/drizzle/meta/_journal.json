@@ -1639,6 +1639,62 @@
       "when": 1774447022394,
       "tag": "0233_nostalgic_sumo",
       "breakpoints": true
+    },
+    {
+      "idx": 234,
+      "version": "7",
+      "when": 1774528585101,
+      "tag": "0234_brown_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 235,
+      "version": "7",
+      "when": 1774531562631,
+      "tag": "0235_free_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 236,
+      "version": "7",
+      "when": 1774546210760,
+      "tag": "0236_light_killer_shrike",
+      "breakpoints": true
+    },
+    {
+      "idx": 237,
+      "version": "7",
+      "when": 1774559686213,
+      "tag": "0237_acoustic_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 238,
+      "version": "7",
+      "when": 1774622538114,
+      "tag": "0238_yielding_speedball",
+      "breakpoints": true
+    },
+    {
+      "idx": 239,
+      "version": "7",
+      "when": 1774634406461,
+      "tag": "0239_unique_next_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 240,
+      "version": "7",
+      "when": 1774634477315,
+      "tag": "0240_brief_mother_askani",
+      "breakpoints": true
+    },
+    {
+      "idx": 241,
+      "version": "7",
+      "when": 1774634568705,
+      "tag": "0241_productive_sunspot",
+      "breakpoints": true
     }
   ]
 }

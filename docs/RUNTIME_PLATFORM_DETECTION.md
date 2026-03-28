@@ -35,7 +35,7 @@
 
 ```tsx
 // apps/web/app/layout.tsx (Web)
-import { PlatformProvider } from "chrry/platform"
+import { PlatformProvider } from "chrry/platform";
 
 export default function RootLayout({ children }) {
   return (
@@ -44,20 +44,20 @@ export default function RootLayout({ children }) {
         <PlatformProvider>{children}</PlatformProvider>
       </body>
     </html>
-  )
+  );
 }
 ```
 
 ```tsx
 // apps/native/App.tsx (Native)
-import { PlatformProvider } from "chrry/platform"
+import { PlatformProvider } from "chrry/platform";
 
 export default function App() {
   return (
     <PlatformProvider>
       <Navigation />
     </PlatformProvider>
-  )
+  );
 }
 ```
 
@@ -65,16 +65,16 @@ export default function App() {
 
 ```tsx
 // packages/ui/Weather.tsx
-import { Box, Text, usePlatform } from "chrry/platform"
+import { Box, Text, usePlatform } from "chrry/platform";
 
 export function Weather() {
-  const { isWeb, isNative, select } = usePlatform()
+  const { isWeb, isNative, select } = usePlatform();
 
   return (
     <Box>
       <Text>Running on: {isWeb ? "Web" : "Native"}</Text>
     </Box>
-  )
+  );
 }
 ```
 
@@ -106,7 +106,7 @@ const {
 
   // Value selector
   select, // function
-} = usePlatform()
+} = usePlatform();
 ```
 
 ### Platform-Aware Components
@@ -149,49 +149,49 @@ const {
 ### Basic Platform Detection
 
 ```tsx
-import { usePlatform, Box, Text } from "chrry/platform"
+import { usePlatform, Box, Text } from "chrry/platform";
 
 function MyComponent() {
-  const { isWeb, isNative } = usePlatform()
+  const { isWeb, isNative } = usePlatform();
 
   return (
     <Box>
       <Text>Platform: {isWeb ? "Web" : "Native"}</Text>
     </Box>
-  )
+  );
 }
 ```
 
 ### Platform-Specific Values
 
 ```tsx
-import { usePlatform } from "chrry/platform"
+import { usePlatform } from "chrry/platform";
 
 function MyComponent() {
-  const { select } = usePlatform()
+  const { select } = usePlatform();
 
   const fontSize = select({
     ios: 16,
     android: 14,
     web: 15,
     default: 14,
-  })
+  });
 
   const padding = select({
     native: 12,
     web: 16,
     default: 12,
-  })
+  });
 
-  return <Text style={{ fontSize, padding }}>Hello</Text>
+  return <Text style={{ fontSize, padding }}>Hello</Text>;
 }
 ```
 
 ### Adaptive Styles
 
 ```tsx
-import { useAdaptiveStyles } from "chrry/platform"
-import { WeatherStyles } from "./Weather.styles"
+import { useAdaptiveStyles } from "chrry/platform";
+import { WeatherStyles } from "./Weather.styles";
 
 function Weather() {
   const styles = useAdaptiveStyles(WeatherStyles, {
@@ -208,16 +208,16 @@ function Weather() {
         elevation: 2,
       },
     },
-  })
+  });
 
-  return <Box style={styles.container}>...</Box>
+  return <Box style={styles.container}>...</Box>;
 }
 ```
 
 ### Conditional Rendering
 
 ```tsx
-import { PlatformSwitch, WebOnly, NativeOnly } from "chrry/platform"
+import { PlatformSwitch, WebOnly, NativeOnly } from "chrry/platform";
 
 function MyComponent() {
   return (
@@ -239,14 +239,14 @@ function MyComponent() {
         <Text>Only visible on native</Text>
       </NativeOnly>
     </Box>
-  )
+  );
 }
 ```
 
 ### Responsive Styles
 
 ```tsx
-import { useResponsiveStyles } from "chrry/platform"
+import { useResponsiveStyles } from "chrry/platform";
 
 function MyComponent() {
   const styles = useResponsiveStyles({
@@ -256,32 +256,27 @@ function MyComponent() {
       md: { padding: 16 },
       lg: { padding: 24 },
     },
-  })
+  });
 
-  return <Box style={styles.container}>...</Box>
+  return <Box style={styles.container}>...</Box>;
 }
 ```
 
 ### Complete Example: Weather Component
 
 ```tsx
-import { Box, Text, usePlatform, useAdaptiveStyles } from "chrry/platform"
-import { WeatherStyles } from "./Weather.styles"
+import { Box, Text, usePlatform, useAdaptiveStyles } from "chrry/platform";
+import { WeatherStyles } from "./Weather.styles";
 
 interface WeatherProps {
-  location: string
-  temperature: number
-  condition: string
-  onClick?: () => void
+  location: string;
+  temperature: number;
+  condition: string;
+  onClick?: () => void;
 }
 
-export function Weather({
-  location,
-  temperature,
-  condition,
-  onClick,
-}: WeatherProps) {
-  const { isWeb, select } = usePlatform()
+export function Weather({ location, temperature, condition, onClick }: WeatherProps) {
+  const { isWeb, select } = usePlatform();
 
   // Adapt SCSS styles for current platform
   const styles = useAdaptiveStyles(WeatherStyles, {
@@ -300,7 +295,7 @@ export function Weather({
         userSelect: "none",
       },
     },
-  })
+  });
 
   // Platform-specific values
   const fontSize = select({
@@ -308,15 +303,11 @@ export function Weather({
     android: 13,
     web: 14,
     default: 13,
-  })
+  });
 
   return (
     <Box style={styles.weather}>
-      <Box
-        style={styles.location}
-        onClick={onClick}
-        onHover={() => isWeb && console.log("Hover!")}
-      >
+      <Box style={styles.location} onClick={onClick} onHover={() => isWeb && console.log("Hover!")}>
         <Text style={{ fontSize, color: "#3b82f6" }}>{location}</Text>
       </Box>
 
@@ -326,7 +317,7 @@ export function Weather({
         </Text>
       </Box>
     </Box>
-  )
+  );
 }
 ```
 
@@ -358,13 +349,13 @@ export function Weather({
 ### Step 3: Add platform-specific logic
 
 ```tsx
-const { isWeb, select } = usePlatform()
+const { isWeb, select } = usePlatform();
 
 const fontSize = select({
   web: 16,
   native: 14,
   default: 14,
-})
+});
 ```
 
 ### Step 4: Use adaptive styles
@@ -375,7 +366,7 @@ const styles = useAdaptiveStyles(MyStyles, {
     web: { cursor: "pointer" },
     native: { elevation: 2 },
   },
-})
+});
 ```
 
 ## Benefits
@@ -416,27 +407,27 @@ const styles = useAdaptiveStyles(MyStyles, {
 
 ```tsx
 // Use platform primitives
-;<Box>
+<Box>
   <Text>Hello</Text>
-</Box>
+</Box>;
 
 // Use usePlatform hook
-const { isWeb } = usePlatform()
+const { isWeb } = usePlatform();
 
 // Use select for platform-specific values
-const value = select({ web: 10, native: 8, default: 8 })
+const value = select({ web: 10, native: 8, default: 8 });
 
 // Use adaptive styles
-const styles = useAdaptiveStyles(MyStyles, overrides)
+const styles = useAdaptiveStyles(MyStyles, overrides);
 ```
 
 ### ❌ Don't:
 
 ```tsx
 // Don't mix HTML and primitives
-;<div>
+<div>
   <Text>Hello</Text>
-</div> // ❌
+</div>; // ❌
 
 // Don't use Platform.OS directly
 if (Platform.OS === "web") {
@@ -449,8 +440,8 @@ if (typeof window !== "undefined") {
 // Use isWeb instead
 
 // Don't create separate files
-MyComponent.native.tsx // ❌
-MyComponent.web.tsx // ❌
+MyComponent.native.tsx; // ❌
+MyComponent.web.tsx; // ❌
 // Use ONE file with runtime detection
 ```
 
@@ -471,7 +462,7 @@ MyComponent.web.tsx // ❌
 **Solution:** Use `useAdaptiveStyles` to filter web-only properties:
 
 ```tsx
-const styles = useAdaptiveStyles(MyStyles)
+const styles = useAdaptiveStyles(MyStyles);
 ```
 
 ### Issue: TypeScript errors with props

@@ -90,10 +90,10 @@ If you're migrating from `@tamagui/lucide-icons`:
 
 ```typescript
 // Before
-import { Star, Heart } from "@tamagui/lucide-icons"
+import { Star, Heart } from "@tamagui/lucide-icons";
 
 // After
-import { Star, Heart } from "./icons"
+import { Star, Heart } from "./icons";
 ```
 
 Run the replacement script:

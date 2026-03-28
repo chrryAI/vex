@@ -330,7 +330,7 @@ export async function generateServerMetadata(
   if (serverData.app) {
     return generateAppMetadata({
       app: serverData.app,
-      store: serverData.app.store,
+      store: serverData.app?.store,
       locale,
       currentDomain: siteConfig.url,
       translations: serverData.translations || {},

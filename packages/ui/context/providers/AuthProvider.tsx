@@ -15,14 +15,15 @@ import React, {
   useState,
 } from "react"
 import toast from "react-hot-toast"
+
 import useSWR from "swr"
-import { v4 as uuidv4 } from "uuid"
+import { v4 as uuidv4, validate } from "uuid"
 import {
   initializeGoogleAuth,
   appleSignIn as nativeAppleSignIn,
   googleSignIn as nativeGoogleSignIn,
 } from "../../auth/capacitorAuth"
-import { useHasHydrated } from "../../hooks"
+import { useHasHydrated, useLocalStorage } from "../../hooks"
 import useCache from "../../hooks/useCache"
 import i18n from "../../i18n"
 import {
@@ -39,10 +40,11 @@ import {
   storage,
   useCookie,
   useCookieOrLocalStorage,
-  useLocalStorage,
+  useLocalStorage as useLocal,
   useNavigation,
   usePlatform,
 } from "../../platform"
+
 import type {
   affiliateStats,
   aiAgent,
@@ -90,7 +92,6 @@ import {
 } from "../../utils/siteConfig"
 import ago from "../../utils/timeAgo"
 import { excludedSlugRoutes } from "../../utils/url"
-import { useTheme } from "../ThemeContext"
 import type { Task } from "../TimerContext"
 import type { AppStatus } from "./AppProvider"
 import { useError } from "./ErrorProvider"
@@ -102,7 +103,7 @@ export type { session }
 // Create a dedicated low-priority queue for analytics so it doesn't block SWR data fetching
 const analyticsLimit = pLimit(1)
 
-const VERSION = "2.2.41"
+const VERSION = "2.2.92"
 
 const AuthContext = createContext<
   | {
@@ -113,6 +114,9 @@ const AuthContext = createContext<
         chromeVersion: string
         macosVersion: string
       }
+      isAdmin: boolean
+      isDonutOpen: boolean
+      setIsDonutOpen: (value: boolean) => void
       push: (href: string) => void
       tickerPaused: boolean
       setTickerPaused: (value: boolean) => void
@@ -126,7 +130,10 @@ const AuthContext = createContext<
       canShowTribe: boolean
       showWatermelonInitial: boolean
       hasHydrated: boolean
+      modelId: string | undefined
+      setModelId: (value: string | undefined) => void
       actions: apiActions
+      donut?: boolean
       setAbout: (value: string | undefined) => void
       ask: string | undefined
       setAsk: (value: string | undefined) => void
@@ -138,6 +145,8 @@ const AuthContext = createContext<
         timestamp: number
         duration?: number
       } | null
+      commentAppId?: string
+      setCommentAppId: (value: string | undefined) => void
       showWatermelon: boolean
       setShowWatermelon: (value: boolean) => void
       refetchAffiliateData: () => Promise<void>
@@ -332,6 +341,7 @@ const AuthContext = createContext<
       popcorn: appWithStore | undefined
       TEST_MEMBER_EMAILS?: string[]
       TEST_MEMBER_FINGERPRINTS: string[]
+      setPostId: (postId: string | undefined) => void
       TEST_GUEST_FINGERPRINTS: string[]
       storeApp: appWithStore | undefined
       chrry: appWithStore | undefined
@@ -472,6 +482,7 @@ export function AuthProvider({
   tribePosts?: paginatedTribePosts
   tribePost?: tribePostWithDetails
   showTribe?: boolean
+  deviceId?: string
   accountApp?: appWithStore
   testConfig?: { [key: string]: string[] }
   searchParams?: Record<string, string> & {
@@ -841,8 +852,14 @@ export function AuthProvider({
     [],
   )
 
-  const [user, setUser] = React.useState<sessionUser | undefined>(session?.user)
+  const [user, setUserInternal] = React.useState<sessionUser | undefined>(
+    session?.user,
+  )
 
+  const setUser = (user: sessionUser | undefined) => {
+    setUserInternal(user)
+    setProfile(user)
+  }
   const [_state, setState] = useState<AuthState>({
     user,
     loading: true,
@@ -903,6 +920,8 @@ export function AuthProvider({
     [],
   )
 
+  const [isAdmin, setIsAdmin] = useState(!!user?.roles?.includes("admin"))
+
   useEffect(() => {
     if (error) {
       console.error("🔥 Global Auth Error Triggered:", error)
@@ -942,23 +961,33 @@ export function AuthProvider({
     ? hourlyLimit - (user?.messagesLastHour || 0)
     : hourlyLimit - (guest?.messagesLastHour || 0)
 
+  const [isDonutOpen, setIsDonutOpen] = useState(false)
+
   const [showGrapes, setShowGrapes] = useState(false)
 
   const [deviceIdExtension, setDeviceIdExtension] = useCookieOrLocalStorage(
     "deviceId",
-    props.session?.deviceId,
+    props?.deviceId || props.session?.deviceId,
   )
 
-  const [deviceIdWeb, setDeviceIdWeb] = useCookie(
+  const [deviceIdDonut, setDeviceIdDonut] = useLocal(
+    "deviceId",
+    props?.deviceId || props.session?.deviceId,
+  )
+  const [deviceIdWeb, setDeviceIdWeb] = useLocal(
     "deviceId",
     props.session?.deviceId,
   )
 
-  const deviceId =
-    isExtension || isTauri || isCapacitor ? deviceIdExtension : deviceIdWeb
+  const deviceId = donut
+    ? deviceIdDonut
+    : isExtension || isTauri || isCapacitor
+      ? deviceIdExtension
+      : deviceIdWeb
 
-  const setDeviceId =
-    isExtension || isTauri || isCapacitor
+  const setDeviceId = donut
+    ? setDeviceIdDonut
+    : isExtension || isTauri || isCapacitor
       ? setDeviceIdExtension
       : setDeviceIdWeb
 
@@ -980,7 +1009,11 @@ export function AuthProvider({
   )
 
   const ssrToken =
-    props?.session?.user?.token || props?.session?.guest?.fingerprint || apiKey
+    props?.session?.user?.token ||
+    props?.session?.guest?.fingerprint ||
+    (donut && validate(apiKey))
+      ? undefined
+      : apiKey
   const [tokenExtension, setTokenExtension] = useCookieOrLocalStorage(
     "token",
     ssrToken,
@@ -1089,6 +1122,10 @@ export function AuthProvider({
       // Update user/guest state
       if (sessionData.user) {
         setUser(sessionData.user)
+        setIsAdmin(
+          sessionData.user.roles.includes("admin") ||
+            session?.user?.role === "admin",
+        )
         setToken(sessionData.user.token)
         setFingerprint(sessionData.user.fingerprint || undefined)
         setGuest(undefined)
@@ -1849,7 +1886,7 @@ export function AuthProvider({
       )
     }
 
-    // if (user?.role === "admin") return
+    if (user?.role === "admin") return
 
     plausibleEvent({
       name,
@@ -2112,12 +2149,23 @@ export function AuthProvider({
 
     setSkipAppCacheTempInternal(val)
   }
+
+  const [commentAppId, setCommentAppId] = useState<string | undefined>(
+    undefined,
+  )
   const {
     data: storeAppsSwr,
     mutate: refetchApps,
     isLoading: isLoadingApps,
   } = useSWR(
-    token && ["app", appId, skipAppCacheTemp, isManagingApp, postId],
+    token && [
+      "app",
+      appId,
+      skipAppCacheTemp,
+      isManagingApp,
+      postId,
+      loadingAppId,
+    ],
     async () => {
       try {
         if (!token) return
@@ -2125,8 +2173,9 @@ export function AuthProvider({
           token,
           appId,
           chrryUrl,
+          threadId,
           pathname,
-          postId,
+          postId: loadingAppId ? undefined : postId,
           skipCache: isManagingApp
             ? isOwner(app, {
                 userId: user?.id,
@@ -2231,6 +2280,9 @@ export function AuthProvider({
 
   useEffect(() => {
     if (storeAppsSwr) {
+      if (storeAppsSwr.id === commentAppId) {
+        setCommentAppId(undefined)
+      }
       skipAppCacheTemp && setSkipAppCacheTemp(false)
       const a = storeAppsSwr.store?.apps?.find((app) => app.id === loadingAppId)
       if (hasStoreApps(a)) {
@@ -2241,14 +2293,31 @@ export function AuthProvider({
         mergeApps(storeAppsSwr.store?.apps)
       }
     }
-  }, [storeAppsSwr, loadingAppId])
+  }, [storeAppsSwr, loadingAppId, commentAppId])
 
-  const showFocusInitial = searchParams.get("focus") === "true"
-  const isFocus = !postId
-    ? baseApp
-      ? baseApp?.slug === "focus" || showFocusInitial
-      : undefined
+  const _routeSegments = (pathname.split("?")?.[0] || "")
+    .replace(/^\//, "")
+    .split("/")
+  const _routeSlug =
+    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
+      ? _routeSegments[1]
+      : _routeSegments[0]
+  const _isExcluded = _routeSlug
+    ? excludedSlugRoutes?.includes(_routeSlug)
     : false
+
+  const showFocusQuery = searchParams.get("focus") === "true"
+  const showFocusPathname = pathname === "/focus"
+
+  const showFocusInitial = showFocusQuery || showFocusPathname
+
+  const isFocus =
+    !_isExcluded &&
+    (!postId
+      ? siteConfig
+        ? siteConfig?.slug === "focus" || showFocusInitial
+        : showFocusInitial
+      : false)
 
   useEffect(() => {
     setPostId(postIdInitial)
@@ -2256,7 +2325,7 @@ export function AuthProvider({
 
   const [showFocusInternal, setShowFocusInternal] = useLocalStorage<
     boolean | undefined | null
-  >(`showFocus:${app?.slug || "focus"}`, isFocus)
+  >(`focus`, undefined)
 
   const [store, setStore] = useState<storeWithApps | undefined>(app?.store)
 
@@ -2309,9 +2378,7 @@ export function AuthProvider({
   const zarathustra = storeApps.find((app) => app.slug === "zarathustra")
 
   const hasInformedRef = useRef(false)
-  const hasShownThemeLockToastRef = useRef(false)
-  const [hasSeenThemeLockNotification, setHasSeenThemeLockNotification] =
-    useLocalStorage<boolean>("hasSeenThemeLockNotification", false)
+  useLocalStorage<boolean>("burnNotification", false)
   const setBurn = (value: boolean) => {
     setBurnInternal(value)
 
@@ -2531,18 +2598,6 @@ export function AuthProvider({
 
   const showTribeFromPath = pathname === "/tribe"
 
-  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
-  const _routeSegments = (pathname.split("?")?.[0] || "")
-    .replace(/^\//, "")
-    .split("/")
-  const _routeSlug =
-    _routeSegments.length > 1 && locales.includes(_routeSegments[0] as any)
-      ? _routeSegments[1]
-      : _routeSegments[0]
-  const _isExcluded = _routeSlug
-    ? excludedSlugRoutes?.includes(_routeSlug)
-    : false
-
   const showWatermelonInitial = !!(
     (siteConfig.isWatermelon && clearLocale(pathname) === "") ||
     pathname === "/watermelon"
@@ -2573,6 +2628,8 @@ export function AuthProvider({
 
   const tribeQuery = searchParams.get("tribe") === "true"
 
+  // Normalize to first path segment (strip locale prefix if present) for excludedSlugRoutes
+
   const canBeTribeProfile =
     !canShowAllTribe &&
     !_isExcluded &&
@@ -2592,8 +2649,7 @@ export function AuthProvider({
     boolean | undefined | null
   >("showTribe", showTribeInitial)
 
-  const showTribe =
-    showTribeInternal === null ? showTribeInitial : showTribeInternal
+  const showTribe = !!showTribeInternal
 
   const showTribeProfileInternal = canBeTribeProfile
 
@@ -2630,18 +2686,17 @@ export function AuthProvider({
 
   const [isPear, setPearInternal] = useState(isPearInternal)
 
-  const showFocus = showFocusInternal && isFocus
+  const showFocus = showFocusInternal ?? isFocus
 
   useEffect(() => {
-    if (postId) return setShowFocusInternal(false)
-    if (!baseApp?.slug) return
-    if (showFocus === undefined && baseApp?.slug === "focus") {
+    if (postId) setShowFocusInternal(false)
+    if (showFocusInternal === undefined && siteConfig?.slug === "focus") {
       setShowFocusInternal(true)
     }
-    if (showFocusInitial) {
-      setShowFocusInternal(showFocusInitial)
-    }
-  }, [showFocusInitial, showFocus, baseApp?.slug, postId])
+    // if (showFocusInitial) {
+    //   setShowFocusInternal(showFocusInitial)
+    // }
+  }, [showFocusInternal, siteConfig, postId])
 
   const setShowFocus = (sw: boolean) => {
     setShowFocusInternal(sw)
@@ -2655,16 +2710,6 @@ export function AuthProvider({
       showFocus && removeParams("focus")
     }
   }
-
-  useEffect(() => {
-    if (!baseApp || !app) return
-    if (showFocus === undefined && baseApp?.slug) {
-      setShowFocus(
-        (baseApp?.slug === "focus" && app?.slug === "focus") ||
-          pathname === "/focus",
-      )
-    }
-  }, [baseApp, app, pathname]) // Only depend on slugs, not showFocus
 
   const pear = storeApps.find((app) => app.slug === "pear")
 
@@ -2793,6 +2838,15 @@ export function AuthProvider({
     }
   }
 
+  const [modelIdInternal, setModelIdInternal] = useLocalStorage<
+    string | undefined
+  >("modelId", undefined)
+
+  const setModelId = (value: string | undefined) => {
+    setModelIdInternal(value || "")
+  }
+  const modelId = isAdmin ? modelIdInternal : undefined
+
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -2800,20 +2854,6 @@ export function AuthProvider({
       setIsLoading(false)
     }
   }, [user, guest, isSessionLoading])
-
-  const {
-    setColorScheme,
-    setTheme,
-    isThemeLocked,
-    colorScheme,
-    theme,
-    themeMode,
-    reduceMotion,
-  } = useTheme()
-
-  useEffect(() => {
-    reduceMotion && setTickerPaused(reduceMotion)
-  }, [reduceMotion])
 
   const [showCharacterProfiles, setShowCharacterProfiles] = useState(false)
   const [characterProfiles, setCharacterProfiles] = useState<
@@ -2847,13 +2887,6 @@ export function AuthProvider({
 
   const favouriteAgent = aiAgents?.find(
     (agent) => agent.name === (user || guest)?.favouriteAgent,
-  )
-
-  const setAppTheme = useCallback(
-    (themeColor?: string) => {
-      setTheme(themeColor === "#ffffff" ? "light" : "dark")
-    },
-    [setTheme],
   )
 
   const [instructions, setInstructions] = useState<instruction[] | undefined>(
@@ -2903,69 +2936,12 @@ export function AuthProvider({
           refetchInstructions({ appId: newApp?.id })
         }
 
-        // Only update theme if app actually changed
-        // Defer theme updates to avoid "setState during render" error
-        setTimeout(() => {
-          if (!isThemeLocked) {
-            // Detect if dark/light mode will change
-            const isDarkColor = (color: string) => {
-              // Simple heuristic: if hex color is dark (low luminance)
-              const hex = color.replace("#", "")
-              const r = Number.parseInt(hex.substr(0, 2), 16)
-              const g = Number.parseInt(hex.substr(2, 2), 16)
-              const b = Number.parseInt(hex.substr(4, 2), 16)
-              const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-              return luminance < 0.5
-            }
-
-            // Compare previous and new app's background colors to detect actual mode change
-            const prevMode =
-              prevApp?.backgroundColor && isDarkColor(prevApp.backgroundColor)
-                ? "dark"
-                : "light"
-            const newMode =
-              newApp?.backgroundColor && isDarkColor(newApp.backgroundColor)
-                ? "dark"
-                : "light"
-            const modeChanged = prevApp && newMode !== prevMode
-
-            if (newApp?.themeColor) {
-              setColorScheme(newApp.themeColor)
-            }
-            // if (newApp?.backgroundColor) {
-            //   setAppTheme(newApp.backgroundColor)
-            // }
-
-            // Only show toast once ever if dark/light mode changed between apps
-            // Use both ref (for immediate duplicate prevention) and localStorage (for persistence)
-            if (
-              modeChanged &&
-              !hasSeenThemeLockNotification &&
-              !hasShownThemeLockToastRef.current
-            ) {
-              hasShownThemeLockToastRef.current = true
-              setHasSeenThemeLockNotification(true)
-            }
-          }
-        }, 0)
-
         // Merge apps from the new app's store
         newApp?.store?.apps && mergeApps(newApp?.store?.apps)
         return newApp
       })
     },
-    [
-      setColorScheme,
-      setAppTheme,
-      baseApp,
-      mergeApps,
-      user,
-      guest,
-      isThemeLocked,
-      colorScheme,
-      theme,
-      themeMode,
-    ],
+    [baseApp, mergeApps, user, guest],
   )
 
   const [thread, setThreadInternal] = useState<thread | undefined>(
@@ -3679,6 +3655,8 @@ export function AuthProvider({
         loadingApp,
         selectedAgent,
         setSelectedAgent,
+        modelId,
+        setModelId,
         setLoadingApp,
         taskId,
         focus,
@@ -3739,6 +3717,8 @@ export function AuthProvider({
         tribeStripeSession,
         setTribeStripeSession,
         store,
+        isDonutOpen,
+        setIsDonutOpen,
         stores,
         migratedFromGuestRef,
         isDevelopment,
@@ -3771,6 +3751,7 @@ export function AuthProvider({
         lasProcessedSession,
         setWasGifted,
         isPear,
+        donut,
         setSkipAppCacheTemp,
         skipAppCacheTemp,
         setPear,
@@ -3907,9 +3888,12 @@ export function AuthProvider({
         FRONTEND_URL,
         API_URL,
         MAX_FILE_SIZES,
+        commentAppId,
+        setCommentAppId,
         showWatermelonInitial,
         isE2E,
         PRO_PRICE,
+        setPostId,
         PLUS_PRICE,
         selectedInstruction,
         setSelectedInstruction,
@@ -3918,6 +3902,7 @@ export function AuthProvider({
         PROMPT_LIMITS,
         push: router.push,
         versions,
+        isAdmin,
       }}
     >
       {children}

@@ -92,7 +92,10 @@ export default function Affiliate() {
             <P style={styles.subtitle.style}>
               {t(
                 "Earn {{commission}} commission by sharing {{app}} with your audience",
-                { commission: "20%", app: config.name },
+                {
+                  commission: "20%",
+                  app: config.name,
+                },
               )}
             </P>
 

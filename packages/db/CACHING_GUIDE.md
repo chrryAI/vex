@@ -61,12 +61,7 @@ export const updateApp = async (app) => {
 ## Example: Caching getApp
 
 ```typescript
-import {
-  getCachedApp,
-  getCachedAppBySlug,
-  setCachedApp,
-  setCachedAppBySlug,
-} from "./src/cache"
+import { getCachedApp, getCachedAppBySlug, setCachedApp, setCachedAppBySlug } from "./src/cache";
 
 export const getApp = async ({
   name,
@@ -78,41 +73,39 @@ export const getApp = async ({
   isSafe = true,
   depth = 0,
 }: {
-  name?: "Atlas" | "Peach" | "Vault" | "Bloom"
-  id?: string
-  slug?: string
-  userId?: string
-  guestId?: string
-  storeId?: string
-  isSafe?: boolean
-  depth?: number
+  name?: "Atlas" | "Peach" | "Vault" | "Bloom";
+  id?: string;
+  slug?: string;
+  userId?: string;
+  guestId?: string;
+  storeId?: string;
+  isSafe?: boolean;
+  depth?: number;
 }): Promise<appWithStore | undefined> => {
   // Try cache first (only for simple lookups)
   if (id && !userId && !guestId && !storeId) {
-    const cached = await getCachedApp(id)
-    if (cached) return cached
+    const cached = await getCachedApp(id);
+    if (cached) return cached;
   }
 
   if (slug && !userId && !guestId && !storeId) {
-    const cached = await getCachedAppBySlug(slug)
-    if (cached) return cached
+    const cached = await getCachedAppBySlug(slug);
+    if (cached) return cached;
   }
 
   // Cache miss - query database
-  const appConditions = []
+  const appConditions = [];
 
   if (name) {
-    appConditions.push(
-      eq(apps.name, name as "Atlas" | "Peach" | "Vault" | "Bloom"),
-    )
+    appConditions.push(eq(apps.name, name as "Atlas" | "Peach" | "Vault" | "Bloom"));
   }
 
   if (slug) {
-    appConditions.push(eq(apps.slug, slug))
+    appConditions.push(eq(apps.slug, slug));
   }
 
   if (id) {
-    appConditions.push(eq(apps.id, id))
+    appConditions.push(eq(apps.id, id));
   }
 
   // ... rest of your existing query logic ...
@@ -123,52 +116,48 @@ export const getApp = async ({
       store: true,
       // ... other relations
     },
-  })
+  });
 
   // Store in cache (only for simple lookups)
   if (result) {
     if (id && !userId && !guestId && !storeId) {
-      await setCachedApp(id, result)
+      await setCachedApp(id, result);
     }
     if (slug && !userId && !guestId && !storeId) {
-      await setCachedAppBySlug(slug, result)
+      await setCachedAppBySlug(slug, result);
     }
   }
 
-  return result
-}
+  return result;
+};
 ```
 
 ## Example: Invalidating on Create/Update
 
 ```typescript
-import { invalidateApp } from "./src/cache"
+import { invalidateApp } from "./src/cache";
 
 export const createOrUpdateApp = async (app: app) => {
-  const existing = await getApp({ id: app.id })
+  const existing = await getApp({ id: app.id });
 
   if (existing) {
     // Update
-    const [updated] = await db
-      .update(apps)
-      .set(app)
-      .where(eq(apps.id, app.id))
-      .returning()
+    const [updated] = await db.update(apps).set(app).where(eq(apps.id, app.id)).returning();
 
     // Invalidate cache
-    await invalidateApp(updated.id, updated.slug)
+    await invalidateApp(updated.id, updated.slug);
 
-    return updated
+    return updated;
   } else {
     // Create
-    const [created] = await db.insert(apps).values(app).returning()
+    const [created] = await db.insert(apps).values(app).returning();
 
     // Invalidate cache (invalidates list caches too)
-    await invalidateApp(created.id, created.slug)
+    await invalidateApp(created.id, created.slug);
 
-    return created
+    return created;
   }
-}
+};
 ```
 
 ## Cache Strategy
@@ -204,11 +193,11 @@ STORES_LIST: 5 minutes
 
 ```typescript
 // First call - cache miss
-const app1 = await getApp({ id: "123" })
+const app1 = await getApp({ id: "123" });
 // Logs: "Cache MISS: app:123"
 
 // Second call - cache hit
-const app2 = await getApp({ id: "123" })
+const app2 = await getApp({ id: "123" });
 // Logs: "✅ Cache HIT: app:123"
 ```
 
@@ -216,14 +205,14 @@ const app2 = await getApp({ id: "123" })
 
 ```typescript
 // Get app (cached)
-const app = await getApp({ id: "123" })
+const app = await getApp({ id: "123" });
 
 // Update app
-await updateApp({ id: "123", name: "NewName" })
+await updateApp({ id: "123", name: "NewName" });
 // Logs: "🗑️ Cache DELETE: app:123"
 
 // Get app again (cache miss, fresh data)
-const updated = await getApp({ id: "123" })
+const updated = await getApp({ id: "123" });
 // Logs: "Cache MISS: app:123"
 ```
 
@@ -233,11 +222,11 @@ Add to your monitoring:
 
 ```typescript
 // Track cache hit rate
-const cacheHits = await redis.get("stats:cache:hits")
-const cacheMisses = await redis.get("stats:cache:misses")
-const hitRate = cacheHits / (cacheHits + cacheMisses)
+const cacheHits = await redis.get("stats:cache:hits");
+const cacheMisses = await redis.get("stats:cache:misses");
+const hitRate = cacheHits / (cacheHits + cacheMisses);
 
-console.log(`Cache hit rate: ${(hitRate * 100).toFixed(2)}%`)
+console.log(`Cache hit rate: ${(hitRate * 100).toFixed(2)}%`);
 ```
 
 ## Rollout Strategy

@@ -136,9 +136,7 @@ Tauri supports auto-updates for direct distribution:
 {
   "updater": {
     "active": true,
-    "endpoints": [
-      "https://api.chrry.ai/tauri/updates/{{target}}/{{current_version}}"
-    ],
+    "endpoints": ["https://api.chrry.ai/tauri/updates/{{target}}/{{current_version}}"],
     "dialog": true,
     "pubkey": "YOUR_PUBLIC_KEY"
   }

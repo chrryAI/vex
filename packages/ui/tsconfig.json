@@ -39,5 +39,11 @@
     "globals.d.ts",
     "style.d.ts"
   ],
-  "exclude": ["node_modules", "public", "**/*.native.tsx", "**/*.native.ts"]
+  "exclude": [
+    "node_modules",
+    "public",
+    "dist",
+    "**/*.native.tsx",
+    "**/*.native.ts"
+  ]
 }

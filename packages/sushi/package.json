@@ -1,22 +1,23 @@
 {
   "name": "porffor",
-  "version": "0.61.5",
+  "version": "0.61.12",
   "description": "An ahead-of-time JavaScript compiler",
   "homepage": "https://porffor.dev",
   "bugs": {
     "url": "https://github.com/CanadaHonk/porffor/issues"
   },
+  "license": "MIT",
+  "author": "Oliver Medhurst <honk@goose.icu>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CanadaHonk/porffor.git"
   },
-  "license": "MIT",
-  "author": "Oliver Medhurst <honk@goose.icu>",
+  "bin": {
+    "porf": "./runtime/index.js",
+    "sushi": "./cli/sushi.js"
+  },
   "type": "module",
   "main": "./compiler/wrap.js",
-  "bin": {
-    "porf": "./runtime/index.js"
-  },
   "scripts": {
     "test": "node test_suite.js",
     "test:autofix": "node tools/run-autofix.js",

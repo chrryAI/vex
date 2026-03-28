@@ -1,27 +1,31 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.2.41",
+  "version": "2.2.92",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "keywords": [
-    "playwright",
-    "testing",
-    "e2e",
-    "test-utils",
-    "test-helpers",
     "automation",
+    "e2e",
+    "playwright",
+    "test-helpers",
+    "test-utils",
+    "testing",
     "typescript"
   ],
   "homepage": "https://github.com/chrryai/waffles",
   "bugs": {
     "url": "https://github.com/chrryai/waffles/issues"
   },
+  "license": "AGPL-3.0",
+  "author": "Ibrahim Velinov",
   "repository": {
     "type": "git",
     "url": "https://github.com/chrryai/waffles.git"
   },
-  "license": "AGPL-3.0",
-  "author": "Ibrahim Velinov",
+  "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -29,15 +33,14 @@
       "require": "./dist/index.js"
     }
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "e": "pnpm exec playwright install chromium && TEST_URL=http://localhost:5173 playwright test --project chromium",
-    "e2e": "TEST_URL=http://e2e.chrry.ai playwright test --project chromium",
+    "e": "pnpm exec playwright install chromium && playwright test critical.spec.ts --project chromium",
+    "e2e": "playwright test critical.spec.ts --project chromium",
     "lint": "biome check .",
     "sync-goals": "tsx src/scripts/sync-plausible-goals.ts",
     "test:tauri": "TEST_URL=http://localhost:5173 playwright test --project tauri-macos"
@@ -61,8 +64,5 @@
     "@chrryai/chrry": "workspace:*",
     "@playwright/test": "^1.40.0",
     "react": "^18.0.0 || ^19.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

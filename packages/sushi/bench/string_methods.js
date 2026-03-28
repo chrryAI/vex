@@ -1,5 +1,5 @@
-const str = "The quick brown fox jumps over the lazy dog"
-const iterations = 8000
+const str = "The quick brown fox jumps over the lazy dog";
+const iterations = 8000;
 
 const argsMap = {
   // anchor: ['section'],
@@ -62,18 +62,18 @@ const argsMap = {
   // trimEnd: [],
   // repeat: [3],
   // toWellFormed: []
-}
+};
 
-const methods = Object.keys(argsMap)
+const methods = Object.keys(argsMap);
 
 for (const method of methods) {
-  const label = `String.prototype.${method}`
-  const args = argsMap[method] || []
-  const fn = String.prototype[method]
+  const label = `String.prototype.${method}`;
+  const args = argsMap[method] || [];
+  const fn = String.prototype[method];
 
-  console.time(label)
+  console.time(label);
   for (let i = 0; i < iterations; i++) {
-    fn.apply(str, args)
+    fn.apply(str, args);
   }
-  console.timeEnd(label)
+  console.timeEnd(label);
 }

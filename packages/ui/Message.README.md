@@ -13,16 +13,16 @@ The `Message` component is responsible for rendering a single message in the cha
 ## 🚀 Usage
 
 ```tsx
-import { Message } from "@chrryai/chrry"
+import { Message } from "@chrryai/chrry";
 
 function App() {
   const message = {
     id: "1",
     content: "Hello, world!",
     author: "user",
-  }
+  };
 
-  return <Message message={message} />
+  return <Message message={message} />;
 }
 ```
 

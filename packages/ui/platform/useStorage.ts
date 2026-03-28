@@ -3,26 +3,29 @@
  * Uses platform storage (localStorage on web, MMKV on native)
  */
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { storage } from "./storage"
 
 export function useLocalStorage<T>(
   key: string,
   initialValue: T | (() => T),
 ): [T, (value: T | ((prev: T) => T)) => void] {
-  // Initialize state with value from storage or initial value
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  // Initialize state with initial value to match server during hydration
+  const [storedValue, setStoredValue] = useState<T>(
+    initialValue instanceof Function ? initialValue() : initialValue,
+  )
+
+  // Update storage whenever value changes
+  useEffect(() => {
     try {
       const item = storage.getItem(key)
       if (item !== null && item !== undefined) {
-        return item as T
+        setStoredValue(item as T)
       }
-      return initialValue instanceof Function ? initialValue() : initialValue
     } catch (error) {
       console.error(`Error loading ${key} from storage:`, error)
-      return initialValue instanceof Function ? initialValue() : initialValue
     }
-  })
+  }, [key])
 
   // Update storage whenever value changes
   const setValue = useCallback(

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { getURL, wait } from ".."
+import { getURL, wait } from "./index"
 
 const isLive = true
 const isMember = false

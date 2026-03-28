@@ -11,12 +11,12 @@ function makeAdder(x) {
   // Outer function with parameter 'x'
   return function (y) {
     // Inner function
-    return x + y // Inner function accesses outer 'x'
-  }
+    return x + y; // Inner function accesses outer 'x'
+  };
 }
 
-const add5 = makeAdder(5) // x=5 is "captured"
-console.log(add5(10)) // Prints 15 (5 + 10)
+const add5 = makeAdder(5); // x=5 is "captured"
+console.log(add5(10)); // Prints 15 (5 + 10)
 ```
 
 **The Problem:** When `makeAdder(5)` returns, normally `x` would be destroyed. But the inner function still needs it!
@@ -73,8 +73,8 @@ function makeAdder(x) {
   // x is declared here (scope A)
   return function (y) {
     // y is declared here (scope B)
-    return x + y // x is used here but declared in parent scope
-  } // ❗ x is CAPTURED
+    return x + y; // x is used here but declared in parent scope
+  }; // ❗ x is CAPTURED
 }
 ```
 
@@ -172,11 +172,11 @@ When calling a function that needs context:
 ```javascript
 function makeAdder(x) {
   return function (y) {
-    return x + y
-  }
+    return x + y;
+  };
 }
-const add5 = makeAdder(5)
-console.log(add5(10)) // Should print 15
+const add5 = makeAdder(5);
+console.log(add5(10)); // Should print 15
 ```
 
 ### Test 2: Nested Closures
@@ -185,26 +185,26 @@ console.log(add5(10)) // Should print 15
 function outer(a) {
   return function middle(b) {
     return function inner(c) {
-      return a + b + c
-    }
-  }
+      return a + b + c;
+    };
+  };
 }
-console.log(outer(1)(2)(3)) // Should print 6
+console.log(outer(1)(2)(3)); // Should print 6
 ```
 
 ### Test 3: Multiple Captured Variables
 
 ```javascript
 function makeCounter(start, step) {
-  let count = start
+  let count = start;
   return function () {
-    count += step
-    return count
-  }
+    count += step;
+    return count;
+  };
 }
-const counter = makeCounter(0, 5)
-console.log(counter()) // 5
-console.log(counter()) // 10
+const counter = makeCounter(0, 5);
+console.log(counter()); // 5
+console.log(counter()); // 10
 ```
 
 ## Current Status

@@ -62,12 +62,12 @@ export const TestComponentStyleDefs = {
     // ... more states
   },
   // ... more components
-}
+};
 
 // Interactive hook for styles with pseudo-classes
 export const useTestComponentStyles = () => {
   // ... generated hook
-}
+};
 ```
 
 ## What Gets Tested

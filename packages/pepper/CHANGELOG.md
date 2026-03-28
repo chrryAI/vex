@@ -44,5 +44,5 @@ const {
   pathname, // Current path
   searchParams, // URL params
   hash, // URL hash
-} = useNavigation()
+} = useNavigation();
 ```

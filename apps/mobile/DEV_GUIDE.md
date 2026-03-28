@@ -78,7 +78,7 @@ pnpm exec cap sync ios
 **Console.log in React:**
 
 ```tsx
-console.log("Debug:", someVariable)
+console.log("Debug:", someVariable);
 // Shows in Safari Web Inspector Console
 ```
 

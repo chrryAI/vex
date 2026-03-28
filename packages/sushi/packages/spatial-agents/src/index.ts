@@ -3,74 +3,74 @@
  * Uses FalkorDB graph database for agent positioning, communication, and task coordination
  */
 
-import { FalkorDB } from "falkordb"
+import { FalkorDB } from "falkordb";
 
 export interface SpatialConfig {
-  host?: string
-  port?: number
-  graphName?: string
+  host?: string;
+  port?: number;
+  graphName?: string;
 }
 
 export interface Agent {
-  id: string
-  name: string
-  type: "coder" | "tester" | "reviewer" | "planner" | "debugger"
-  position: { x: number; y: number; z: number } // 3D spatial coordinates
-  capabilities: string[]
-  status: "idle" | "working" | "blocked" | "waiting"
-  currentTask?: string
-  metadata?: Record<string, any>
+  id: string;
+  name: string;
+  type: "coder" | "tester" | "reviewer" | "planner" | "debugger";
+  position: { x: number; y: number; z: number }; // 3D spatial coordinates
+  capabilities: string[];
+  status: "idle" | "working" | "blocked" | "waiting";
+  currentTask?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface Task {
-  id: string
-  title: string
-  description: string
-  type: string
-  priority: number
-  status: "pending" | "assigned" | "in_progress" | "completed" | "failed"
-  assignedTo?: string // Agent ID
-  dependencies?: string[] // Task IDs
-  position?: { x: number; y: number; z: number } // Task location in space
-  metadata?: Record<string, any>
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  priority: number;
+  status: "pending" | "assigned" | "in_progress" | "completed" | "failed";
+  assignedTo?: string; // Agent ID
+  dependencies?: string[]; // Task IDs
+  position?: { x: number; y: number; z: number }; // Task location in space
+  metadata?: Record<string, any>;
 }
 
 export interface Message {
-  from: string // Agent ID
-  to: string // Agent ID or 'broadcast'
-  content: string
-  type: "request" | "response" | "notification" | "coordination"
-  timestamp: number
-  metadata?: Record<string, any>
+  from: string; // Agent ID
+  to: string; // Agent ID or 'broadcast'
+  content: string;
+  type: "request" | "response" | "notification" | "coordination";
+  timestamp: number;
+  metadata?: Record<string, any>;
 }
 
 export class SpatialAgentSystem {
-  private db: any = null
-  private graph: any = null
-  private config: Required<SpatialConfig>
+  private db: any = null;
+  private graph: any = null;
+  private config: Required<SpatialConfig>;
 
   constructor(config: SpatialConfig = {}) {
     this.config = {
       host: config.host || "localhost",
       port: config.port || 6380,
       graphName: config.graphName || "spatial_agents",
-    }
+    };
   }
 
   async connect(): Promise<void> {
-    if (this.graph) return
+    if (this.graph) return;
 
     this.db = await FalkorDB.connect({
       socket: { host: this.config.host, port: this.config.port },
-    })
-    this.graph = this.db.selectGraph(this.config.graphName)
+    });
+    this.graph = this.db.selectGraph(this.config.graphName);
   }
 
   async disconnect(): Promise<void> {
     if (this.db) {
-      await this.db.close()
-      this.db = null
-      this.graph = null
+      await this.db.close();
+      this.db = null;
+      this.graph = null;
     }
   }
 
@@ -79,7 +79,7 @@ export class SpatialAgentSystem {
   // ============================================
 
   async registerAgent(agent: Agent): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -112,14 +112,14 @@ export class SpatialAgentSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
   }
 
   async updateAgentPosition(
     agentId: string,
     position: { x: number; y: number; z: number },
   ): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -135,7 +135,7 @@ export class SpatialAgentSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
   }
 
   async updateAgentStatus(
@@ -143,7 +143,7 @@ export class SpatialAgentSystem {
     status: Agent["status"],
     currentTask?: string,
   ): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -158,14 +158,14 @@ export class SpatialAgentSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
   }
 
   async findNearbyAgents(
     position: { x: number; y: number; z: number },
     radius: number,
   ): Promise<Agent[]> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(
       `
@@ -187,9 +187,9 @@ export class SpatialAgentSystem {
           radius,
         },
       },
-    )
+    );
 
-    if (!result || !result.data) return []
+    if (!result || !result.data) return [];
 
     return result.data.map((row: any) => ({
       id: row.id,
@@ -199,7 +199,7 @@ export class SpatialAgentSystem {
       capabilities: JSON.parse(row.capabilities || "[]"),
       status: row.status,
       currentTask: row.currentTask,
-    }))
+    }));
   }
 
   // ============================================
@@ -207,7 +207,7 @@ export class SpatialAgentSystem {
   // ============================================
 
   async createTask(task: Task): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -242,7 +242,7 @@ export class SpatialAgentSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
 
     // Create dependencies
     if (task.dependencies && task.dependencies.length > 0) {
@@ -258,13 +258,13 @@ export class SpatialAgentSystem {
               depId,
             },
           },
-        )
+        );
       }
     }
   }
 
   async assignTask(taskId: string, agentId: string): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Update task
     await this.graph.query(
@@ -279,7 +279,7 @@ export class SpatialAgentSystem {
           timestamp: Date.now(),
         },
       },
-    )
+    );
 
     // Create relationship
     await this.graph.query(
@@ -293,14 +293,14 @@ export class SpatialAgentSystem {
           taskId,
         },
       },
-    )
+    );
 
     // Update agent status
-    await this.updateAgentStatus(agentId, "working", taskId)
+    await this.updateAgentStatus(agentId, "working", taskId);
   }
 
   async findOptimalAgent(task: Task): Promise<Agent | null> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Find idle agents with matching capabilities near task location
     const result = await this.graph.query(
@@ -322,11 +322,11 @@ export class SpatialAgentSystem {
           z: task.position?.z || 0,
         },
       },
-    )
+    );
 
-    if (!result || !result.data || result.data.length === 0) return null
+    if (!result || !result.data || result.data.length === 0) return null;
 
-    const row = result.data[0]
+    const row = result.data[0];
     return {
       id: row.id,
       name: row.name,
@@ -334,7 +334,7 @@ export class SpatialAgentSystem {
       position: { x: row.x, y: row.y, z: row.z },
       capabilities: JSON.parse(row.capabilities || "[]"),
       status: "idle",
-    }
+    };
   }
 
   // ============================================
@@ -342,7 +342,7 @@ export class SpatialAgentSystem {
   // ============================================
 
   async sendMessage(message: Message): Promise<void> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     await this.graph.query(
       `
@@ -366,7 +366,7 @@ export class SpatialAgentSystem {
           metadata: JSON.stringify(message.metadata || {}),
         },
       },
-    )
+    );
 
     // Create relationship
     if (message.to !== "broadcast") {
@@ -382,15 +382,12 @@ export class SpatialAgentSystem {
             timestamp: message.timestamp,
           },
         },
-      )
+      );
     }
   }
 
-  async getMessages(
-    agentId: string,
-    unreadOnly: boolean = false,
-  ): Promise<Message[]> {
-    if (!this.graph) await this.connect()
+  async getMessages(agentId: string, unreadOnly: boolean = false): Promise<Message[]> {
+    if (!this.graph) await this.connect();
 
     const query = unreadOnly
       ? `
@@ -406,13 +403,13 @@ export class SpatialAgentSystem {
         RETURN m.from as from, m.to as to, m.content as content,
                m.type as type, m.timestamp as timestamp, m.metadata as metadata
         ORDER BY m.timestamp DESC
-      `
+      `;
 
     const result = await this.graph.query(query, {
       params: { agentId },
-    })
+    });
 
-    if (!result || !result.data) return []
+    if (!result || !result.data) return [];
 
     return result.data.map((row: any) => ({
       from: row.from,
@@ -421,7 +418,7 @@ export class SpatialAgentSystem {
       type: row.type,
       timestamp: row.timestamp,
       metadata: JSON.parse(row.metadata || "{}"),
-    }))
+    }));
   }
 
   // ============================================
@@ -429,7 +426,7 @@ export class SpatialAgentSystem {
   // ============================================
 
   async getAgentNetwork(agentId: string, depth: number = 2): Promise<any> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     // Get agent's communication network
     const result = await this.graph.query(
@@ -445,9 +442,9 @@ export class SpatialAgentSystem {
           depth,
         },
       },
-    )
+    );
 
-    if (!result || !result.data) return { agents: [], connections: [] }
+    if (!result || !result.data) return { agents: [], connections: [] };
 
     return {
       agents: result.data.map((row: any) => ({
@@ -456,17 +453,17 @@ export class SpatialAgentSystem {
         type: row.type,
         distance: row.distance,
       })),
-    }
+    };
   }
 
   async getSystemStats(): Promise<{
-    totalAgents: number
-    activeAgents: number
-    totalTasks: number
-    completedTasks: number
-    messageCount: number
+    totalAgents: number;
+    activeAgents: number;
+    totalTasks: number;
+    completedTasks: number;
+    messageCount: number;
   }> {
-    if (!this.graph) await this.connect()
+    if (!this.graph) await this.connect();
 
     const result = await this.graph.query(`
       MATCH (a:Agent)
@@ -478,7 +475,7 @@ export class SpatialAgentSystem {
            SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completedTasks
       MATCH (m:Message)
       RETURN totalAgents, activeAgents, totalTasks, completedTasks, COUNT(m) as messageCount
-    `)
+    `);
 
     if (!result || !result.data || result.data.length === 0) {
       return {
@@ -487,18 +484,18 @@ export class SpatialAgentSystem {
         totalTasks: 0,
         completedTasks: 0,
         messageCount: 0,
-      }
+      };
     }
 
-    const row = result.data[0]
+    const row = result.data[0];
     return {
       totalAgents: row.totalAgents || 0,
       activeAgents: row.activeAgents || 0,
       totalTasks: row.totalTasks || 0,
       completedTasks: row.completedTasks || 0,
       messageCount: row.messageCount || 0,
-    }
+    };
   }
 }
 
-export default SpatialAgentSystem
+export default SpatialAgentSystem;

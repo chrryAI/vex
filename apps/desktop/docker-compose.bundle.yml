@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # Vex Local Stack — bundled with the Tauri desktop app
 # Volumes are stored in ~/Library/Application Support/dev.chrry.tribe/

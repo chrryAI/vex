@@ -10,7 +10,7 @@ export const __Atomics_isLockFree = (x: number): boolean => {
   }
 
   return false;
-};`
+};`;
 
   const func = (name, op, args, retType, wasm, only3264 = false) => {
     const signed = (type) => {
@@ -20,75 +20,75 @@ export const __Atomics_isLockFree = (x: number): boolean => {
         case "uint16array":
         case "uint32array":
         case "biguint64array":
-          return false
+          return false;
 
         case "int8array":
         case "int16array":
         case "int32array":
         case "bigint64array":
-          return true
+          return true;
       }
-    }
+    };
 
     const getOp = (type, ret = true) => {
-      if (op === "memory.atomic.notify") return `${op} 2 4\ni32.from_u`
+      if (op === "memory.atomic.notify") return `${op} 2 4\ni32.from_u`;
 
       switch (type) {
         case "uint8array":
         case "uint8clampedarray":
         case "int8array":
-          return `${op}8 0 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`
+          return `${op}8 0 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`;
 
         case "uint16array":
         case "int16array":
-          return `${op}16 1 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`
+          return `${op}16 1 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`;
 
         case "uint32array":
         case "int32array":
-          return `${op} 2 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`
+          return `${op} 2 4${ret ? `\ni32.from${signed(type) ? "" : "_u"}` : ""}`;
 
         case "biguint64array":
         case "bigint64array":
-          return `${op.replace("32", "64")} 3 4${ret ? `\ncall __Porffor_bigint_from${signed(type) ? "S" : "U"}64` : ""}`
+          return `${op.replace("32", "64")} 3 4${ret ? `\ncall __Porffor_bigint_from${signed(type) ? "S" : "U"}64` : ""}`;
       }
-    }
+    };
 
     const bytes = (type) => {
       switch (type) {
         case "uint8array":
         case "uint8clampedarray":
         case "int8array":
-          return 1
+          return 1;
 
         case "uint16array":
         case "int16array":
-          return 2
+          return 2;
 
         case "uint32array":
         case "int32array":
-          return 4
+          return 4;
 
         case "biguint64array":
         case "bigint64array":
-          return 8
+          return 8;
       }
-    }
+    };
 
     const getArg = (type, name, value = false) => {
       if (!value)
         return `local.get ${name}
-i32.to_u`
+i32.to_u`;
 
       switch (type) {
         case "biguint64array":
         case "bigint64array":
           return `local.get ${name}
-call __Porffor_bigint_toI64`
+call __Porffor_bigint_toI64`;
       }
 
       return `local.get ${name}
-i32.to${signed(type) ? "" : "_u"}`
-    }
+i32.to${signed(type) ? "" : "_u"}`;
+    };
 
     out += `export const __Atomics_${name} = (ta: any, index: any, ${args}): ${retType} => {
 ${
@@ -111,15 +111,15 @@ ${
   ${args
     .split(",")
     .map((arg) => {
-      const [name, _] = arg.split(":")
-      if (!_) return
+      const [name, _] = arg.split(":");
+      if (!_) return;
 
-      const [_type, value] = _.split("=")
-      const nonfinite = value?.includes("Infinity")
+      const [_type, value] = _.split("=");
+      const nonfinite = value?.includes("Infinity");
 
       return `
 ${name} = ecma262.ToIntegerOrInfinity(${name});
-${nonfinite ? `if (${name} == Infinity) ${name} = -1;` : ""}`
+${nonfinite ? `if (${name} == Infinity) ${name} = -1;` : ""}`;
     })
     .join("")}
 
@@ -152,10 +152,10 @@ return\`;
   }`,
     )
     .join("\n")}
-};\n`
-  }
+};\n`;
+  };
 
-  func("load", "i32.atomic.load", "", "f64", ({ op }) => `${op()}`)
+  func("load", "i32.atomic.load", "", "f64", ({ op }) => `${op()}`);
   func(
     "store",
     "i32.atomic.store",
@@ -165,7 +165,7 @@ return\`;
 ${arg("value", true)}
 ${op(false)}
 local.get value`,
-  )
+  );
 
   for (const x of ["add", "sub", "and", "or", "xor"])
     func(
@@ -176,7 +176,7 @@ local.get value`,
       ({ arg, op }) => `
 ${arg("value", true)}
 ${op()}`,
-    )
+    );
 
   func(
     "exchange",
@@ -186,7 +186,7 @@ ${op()}`,
     ({ arg, op }) => `
 ${arg("value", true)}
 ${op()}`,
-  )
+  );
   func(
     "compareExchange",
     "i32.atomic.rmw.cmpxchg",
@@ -196,7 +196,7 @@ ${op()}`,
 ${arg("expected", true)}
 ${arg("replacement", true)}
 ${op()}`,
-  )
+  );
 
   // todo: int -> string (0 = ok, 1 = not-equal, 2 = timed-out)
   func(
@@ -213,7 +213,7 @@ i64.mul
 ${op(false)}
 i32.from_u`,
     true,
-  )
+  );
   // todo: waitAsync
 
   func(
@@ -224,7 +224,7 @@ i32.from_u`,
     ({ arg, op }) => `
 ${arg("count")}
 ${op()}`,
-  )
+  );
 
-  return out
-}
+  return out;
+};

@@ -27,7 +27,14 @@ export default function Terms() {
           padding: "0 0px 20px 0px",
         }}
       >
-        <H1 style={{ marginTop: 0 }}>
+        <H1
+          style={{
+            marginTop: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+          }}
+        >
           <Button
             className="link"
             style={utilities.link.style}

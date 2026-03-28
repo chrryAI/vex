@@ -11,8 +11,9 @@ import {
   useRef,
   useState,
 } from "react"
+import { useLocalStorage } from "../hooks"
 import { useWebSocket } from "../hooks/useWebSocket"
-import { Audio, useLocalStorage, usePlatform, useTheme } from "../platform"
+import { Audio, usePlatform, useTheme } from "../platform"
 import type { device, timer } from "../types"
 import { FRONTEND_URL, isSameDay } from "../utils"
 import console from "../utils/log"

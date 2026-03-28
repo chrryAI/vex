@@ -47,14 +47,14 @@ Users needed immediate feedback when profiles were being generated:
 useWebSocket({
   onMessage: ({ type, data }) => {
     if (type === "character_tag_creating") {
-      setLoadingState("Generating character tags...")
+      setLoadingState("Generating character tags...");
     }
     if (type === "character_tag_created") {
-      setCharacterProfile(data)
-      setLoadingState(null)
+      setCharacterProfile(data);
+      setLoadingState(null);
     }
   },
-})
+});
 ```
 
 ### 3. Privacy-First Design
@@ -134,20 +134,20 @@ CREATE TABLE character_profiles (
 
 ```typescript
 export function checkThreadSummaryLimit({ user, guest, thread }) {
-  const summary = thread.summary
-  const limit = getUserTierLimit(user, guest) // 5-75 based on plan
+  const summary = thread.summary;
+  const limit = getUserTierLimit(user, guest); // 5-75 based on plan
 
   // One profile per thread per day
   if (summary?.createdOn) {
-    const today = new Date().setHours(0, 0, 0, 0)
-    const summaryDate = new Date(summary.createdOn).setHours(0, 0, 0, 0)
+    const today = new Date().setHours(0, 0, 0, 0);
+    const summaryDate = new Date(summary.createdOn).setHours(0, 0, 0, 0);
 
     if (summaryDate === today) {
-      return summary.messageCount < limit
+      return summary.messageCount < limit;
     }
   }
 
-  return true // Allow if no summary or from previous day
+  return true; // Allow if no summary or from previous day
 }
 ```
 
@@ -175,7 +175,7 @@ Generate JSON with:
   "conversationStyle": "Their communication approach"
 }
 
-Focus on communication patterns, problem-solving approach, and interaction style.`
+Focus on communication patterns, problem-solving approach, and interaction style.`;
 ```
 
 ## Lessons Learned

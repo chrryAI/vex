@@ -2526,5 +2526,14 @@
   "Next Step": "Volgende Stap",
   "Edit your agent": "Bewerk uw agent",
   "Go to agent": "Ga naar agent",
-  "Deleting": "Verwijderen"
+  "Deleting": "Verwijderen",
+  "privacy.google.accessed.content": "We hebben toegang tot de volgende Google-gebruikersgegevens via OAuth met scopes: openid, e-mail en profiel: E-mailadres - Uw primaire Google-account e-mail; Naam - Uw weergavenaam van uw Google-profiel; Profielfoto - Uw Google-account avatar afbeelding URL.",
+  "privacy.google.accessed.title": "Geopende Gegevens",
+  "privacy.google.content": "Wanneer u inlogt met Google, hebben we toegang tot specifieke informatie van uw Google-account om uw account te maken en te verifiëren. Deze sectie beschrijft welke gegevens we openen en hoe we deze gebruiken in overeenstemming met het Google API Services Gebruikersgegevensbeleid.",
+  "privacy.google.handling.content": "We verkopen, verhuren of delen uw Google-gebruikersgegevens niet met derden. Uw gegevens worden veilig opgeslagen en alleen gebruikt om onze diensten aan u te leveren. U kunt uw account en bijbehorende gegevens op elk moment verwijderen door contact met ons op te nemen via iliyan@chrry.ai.",
+  "privacy.google.handling.title": "Gegevensverwerking",
+  "privacy.google.title": "Google Gebruikersgegevens",
+  "privacy.google.usage.content": "De Google-gebruikersgegevens waartoe we toegang hebben, worden uitsluitend gebruikt voor de volgende doeleinden: Accountcreatie - Om uw gebruikersaccount in ons systeem te maken; Authenticatie - Om uw identiteit te verifiëren en u veilig in te loggen; Profielweergave - Om uw naam en avatar binnen de app weer te geven; Communicatie - Om belangrijke accountgerelateerde meldingen naar uw e-mail te sturen.",
+  "privacy.google.usage.title": "Gegevensgebruik",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Ons gebruik en overdracht naar elke andere app van informatie ontvangen via Google API's zal voldoen aan het Google API Services Gebruikersgegevensbeleid, inclusief de vereisten voor beperkt gebruik."
 }

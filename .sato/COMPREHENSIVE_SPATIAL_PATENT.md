@@ -35,13 +35,13 @@ A computer-implemented system for generating infinite independent applications f
 
 ```typescript
 interface Store {
-  id: string
-  slug: string // URL identifier
-  name: string // Display name
-  domain: string // Primary domain (vex.chrry.ai)
-  parentStoreId?: string // Nested store support
-  appId: string // Default "base app" for this store
-  visibility: "public" | "private"
+  id: string;
+  slug: string; // URL identifier
+  name: string; // Display name
+  domain: string; // Primary domain (vex.chrry.ai)
+  parentStoreId?: string; // Nested store support
+  appId: string; // Default "base app" for this store
+  visibility: "public" | "private";
 }
 
 // Example Hierarchy:
@@ -52,21 +52,21 @@ interface Store {
 
 ```typescript
 interface App {
-  id: string
-  slug: string // URL identifier
-  name: string // Display name
-  storeId: string // Primary store (Y-axis position)
-  extends: string[] // Parent apps (inheritance chain)
-  domain?: string // Optional dedicated domain
+  id: string;
+  slug: string; // URL identifier
+  name: string; // Display name
+  storeId: string; // Primary store (Y-axis position)
+  extends: string[]; // Parent apps (inheritance chain)
+  domain?: string; // Optional dedicated domain
 
   // Cross-platform builds
-  installType: "web" | "hybrid" | "native"
+  installType: "web" | "hybrid" | "native";
 
   // Platform-specific
-  appStoreUrl?: string // iOS App Store
-  playStoreUrl?: string // Google Play
-  bundleId?: string // iOS identifier
-  packageName?: string // Android identifier
+  appStoreUrl?: string; // iOS App Store
+  playStoreUrl?: string; // Google Play
+  bundleId?: string; // iOS identifier
+  packageName?: string; // Android identifier
 }
 
 // Example:
@@ -79,14 +79,14 @@ interface App {
 
 ```typescript
 interface SushiDirectory {
-  appId: string
-  path: ".sushi/"
+  appId: string;
+  path: ".sushi/";
 
   contents: {
-    "DNA.md": string // Project structure
-    "mutations/": Mutation[] // Test results
-    "agents/": AgentState[] // AI agent XP/level
-  }
+    "DNA.md": string; // Project structure
+    "mutations/": Mutation[]; // Test results
+    "agents/": AgentState[]; // AI agent XP/level
+  };
 }
 
 // Deep linking:
@@ -99,26 +99,26 @@ interface SushiDirectory {
 
 ```typescript
 interface SpatialCoordinate {
-  x: string // App position (vex, atlas, vault)
-  y: string // Store position (chrry.ai, vex.chrry.ai, atlas.chrry.ai)
-  z: string // Depth level (/, /.sushi, /.sushi/mutations)
+  x: string; // App position (vex, atlas, vault)
+  y: string; // Store position (chrry.ai, vex.chrry.ai, atlas.chrry.ai)
+  z: string; // Depth level (/, /.sushi, /.sushi/mutations)
 
   // Computed properties
-  url: string // Full URL combining x+y+z
-  context: AppContext // Resolved app behavior
+  url: string; // Full URL combining x+y+z
+  context: AppContext; // Resolved app behavior
 }
 
 function resolveCoordinate(coord: SpatialCoordinate): AppContext {
-  const store = getStore(coord.y)
-  const app = getApp(coord.x) || store.defaultApp
-  const depth = parseDepth(coord.z)
+  const store = getStore(coord.y);
+  const app = getApp(coord.x) || store.defaultApp;
+  const depth = parseDepth(coord.z);
 
   return {
     app: resolveInheritance(app), // Merge parent features
     store,
     depth,
     url: `${coord.y}${coord.x}${coord.z}`,
-  }
+  };
 }
 ```
 
@@ -129,23 +129,22 @@ function resolveCoordinate(coord: SpatialCoordinate): AppContext {
 ```typescript
 // Server-side routing (apps/api/index.ts)
 app.get("*", (req) => {
-  const hostname = req.headers.get("host") // vex.chrry.ai
-  const path = new URL(req.url).pathname // /atlas
+  const hostname = req.headers.get("host"); // vex.chrry.ai
+  const path = new URL(req.url).pathname; // /atlas
 
   // Y-axis: Resolve store from domain
   const store =
-    stores.find((s) => s.domain.includes(hostname)) ||
-    getStoreBySlug(hostname.split(".")[0])
+    stores.find((s) => s.domain.includes(hostname)) || getStoreBySlug(hostname.split(".")[0]);
 
   // X-axis: Resolve app from path or store default
-  const appSlug = path.split("/")[1] || store.appId
-  const app = getApp(appSlug)
+  const appSlug = path.split("/")[1] || store.appId;
+  const app = getApp(appSlug);
 
   // Z-axis: Check for depth navigation
-  const depth = path.includes("/.sushi") ? parseSushiPath(path) : null
+  const depth = path.includes("/.sushi") ? parseSushiPath(path) : null;
 
-  return renderApp({ app, store, depth })
-})
+  return renderApp({ app, store, depth });
+});
 ```
 
 **2. Cross-Platform Polymorphic Builds**
@@ -187,18 +186,18 @@ export const apps = pgTable("apps", {
   systemPrompt: text("system_prompt"),
   tools: text("tools").array(), // ["calendar", "location"]
   features: jsonb("features"), // {moodTracking: true}
-})
+});
 
 // Runtime inheritance resolution
 async function resolveInheritance(app: App): Promise<ResolvedApp> {
-  if (!app.extends?.length) return app
+  if (!app.extends?.length) return app;
 
-  const parents = await Promise.all(app.extends.map((id) => getApp(id)))
+  const parents = await Promise.all(app.extends.map((id) => getApp(id)));
 
   return {
     ...mergeDeep(parents), // Merge parent features
     ...app, // Override with child features
-  }
+  };
 }
 
 // Example:
@@ -216,7 +215,7 @@ export const storeInstalls = pgTable("store_installs", {
   featured: boolean("featured").default(false),
   displayOrder: integer("display_order"),
   customDescription: text("custom_description"),
-})
+});
 
 // Apps can exist in multiple stores with different descriptions!
 // Example:
@@ -235,20 +234,20 @@ A cross-platform UI component library that enables write-once-run-anywhere devel
 ```typescript
 // scripts/scss-to-universal.js
 function convertScssToUniversal(scssPath: string) {
-  const scss = fs.readFileSync(scssPath, "utf-8")
-  const ast = parseSCSS(scss)
+  const scss = fs.readFileSync(scssPath, "utf-8");
+  const ast = parseSCSS(scss);
 
   const universalStyles = {
     web: convertToCSS(ast),
     native: convertToReactNativeStyles(ast),
     extension: convertToCSS(ast, { scopePrefix: "chrry-" }),
-  }
+  };
 
   // Generate platform-specific style files
   fs.writeFileSync(
     scssPath.replace(".scss", ".styles.ts"),
     generateUniversalStylesCode(universalStyles),
-  )
+  );
 }
 
 // Generated output:
@@ -256,7 +255,7 @@ export const buttonStyles = Platform.select({
   web: { padding: "12px 24px", borderRadius: "8px" },
   native: { padding: 12, borderRadius: 8 },
   default: { padding: "12px 24px", borderRadius: "8px" },
-})
+});
 ```
 
 **B. Platform Detection & Conditional Rendering**
@@ -350,8 +349,8 @@ A build system that generates multiple independent applications from a single co
 
 ```typescript
 // apps/extension/vite.config.ts
-const mode = process.env.MODE || "vex" // atlas, vault, vex, focus, etc.
-const app = await getApp({ slug: mode })
+const mode = process.env.MODE || "vex"; // atlas, vault, vex, focus, etc.
+const app = await getApp({ slug: mode });
 
 export default defineConfig({
   define: {
@@ -378,11 +377,11 @@ export default defineConfig({
             theme_color: app.themeColor,
             background_color: app.backgroundColor,
           }),
-        })
+        });
       },
     },
   ],
-})
+});
 ```
 
 **B. Runtime App Context Resolution**
@@ -495,12 +494,12 @@ A system for installing applications across multiple stores with customized desc
 // Each installation has custom metadata
 
 interface StoreInstall {
-  storeId: string
-  appId: string
-  featured: boolean // Show in featured section
-  displayOrder: number // Position in store
-  customDescription?: string // Store-specific description
-  customIcon?: string // Store-specific icon
+  storeId: string;
+  appId: string;
+  featured: boolean; // Show in featured section
+  displayOrder: number; // Position in store
+  customDescription?: string; // Store-specific description
+  customIcon?: string; // Store-specific icon
 }
 
 // Example: Atlas app exists in 3 stores with different descriptions
@@ -509,18 +508,16 @@ await createStoreInstall({
   appId: "atlas",
   featured: true,
   displayOrder: 3,
-  customDescription:
-    "Your intelligent travel companion for exploring the world",
-})
+  customDescription: "Your intelligent travel companion for exploring the world",
+});
 
 await createStoreInstall({
   storeId: "compass", // atlas.chrry.ai
   appId: "atlas",
   featured: true,
   displayOrder: 0, // Primary app in this store
-  customDescription:
-    "Plan trips, discover destinations, and navigate like a local",
-})
+  customDescription: "Plan trips, discover destinations, and navigate like a local",
+});
 
 await createStoreInstall({
   storeId: "lifeOS", // vex.chrry.ai
@@ -528,7 +525,7 @@ await createStoreInstall({
   featured: true,
   displayOrder: 5,
   customDescription: "Integrated travel planning for your AI-powered life",
-})
+});
 ```
 
 **B. Store Discovery Flow**
@@ -545,14 +542,14 @@ await createStoreInstall({
 function navigateToApp(app: App, currentStore: Store) {
   if (app.domain) {
     // App has dedicated domain, navigate there
-    window.location.href = app.domain
+    window.location.href = app.domain;
   } else if (app.storeId !== currentStore.id) {
     // App belongs to different store, navigate to that store
-    const targetStore = getStore(app.storeId)
-    window.location.href = `${targetStore.domain}/${app.slug}`
+    const targetStore = getStore(app.storeId);
+    window.location.href = `${targetStore.domain}/${app.slug}`;
   } else {
     // Same store, just navigate to app path
-    router.push(`/${app.slug}`)
+    router.push(`/${app.slug}`);
   }
 }
 ```
@@ -567,7 +564,7 @@ const booksStore = {
   domain: "https://zarathustra.chrry.ai",
   appId: "zarathustra", // Default app for this store
   parentStoreId: "blossom",
-}
+};
 
 // Zarathustra is the BASE app for Books store
 // But Books store also installs other apps:
@@ -575,19 +572,19 @@ await createStoreInstall({
   storeId: "books",
   appId: "1984",
   customDescription: "Orwell's dystopian warning through Zarathustra's lens",
-})
+});
 
 await createStoreInstall({
   storeId: "books",
   appId: "meditations",
   customDescription: "Marcus Aurelius's Stoic wisdom meets Nietzsche",
-})
+});
 
 await createStoreInstall({
   storeId: "books",
   appId: "dune",
   customDescription: "Herbert's epic examined through philosophical depth",
-})
+});
 
 // Now Books store has 4 apps:
 // - Zarathustra (base app, philosophy guide)
@@ -603,14 +600,14 @@ await createStoreInstall({
 const moviesStore = {
   appId: "popcorn", // Base app
   domain: "https://popcorn.chrry.ai",
-}
+};
 
 // Popcorn extends Chrry (marketplace features)
 const popcorn = {
   extends: ["chrry"],
   systemPrompt: "You are Popcorn, cinema universe curator...",
   tools: ["calendar", "location", "weather"],
-}
+};
 
 // FightClub extends Popcorn (inherits cinema features) + Chrry (marketplace)
 const fightClub = {
@@ -618,10 +615,10 @@ const fightClub = {
   systemPrompt: "You are Fight Club, underground cinema companion...",
   tools: ["calendar", "location", "weather"], // Inherited from Popcorn
   highlights: fightClubInstructions, // Custom to FightClub
-}
+};
 
 // Runtime resolution:
-const resolvedFightClub = await resolveInheritance(fightClub)
+const resolvedFightClub = await resolveInheritance(fightClub);
 // Result:
 // {
 //   systemPrompt: "You are Fight Club..." (FightClub's custom prompt),
@@ -639,33 +636,33 @@ A routing system that changes application behavior based on domain and path with
 
 ```typescript
 // apps/api/index.ts - Single Hono server handles ALL domains
-const app = new Hono()
+const app = new Hono();
 
 app.get("*", async (c) => {
-  const hostname = c.req.header("host") // vex.chrry.ai, atlas.chrry.ai, etc.
-  const path = new URL(c.req.url).pathname
+  const hostname = c.req.header("host"); // vex.chrry.ai, atlas.chrry.ai, etc.
+  const path = new URL(c.req.url).pathname;
 
   // Store resolution (Y-axis)
-  let store = await getStoreByDomain(hostname)
+  let store = await getStoreByDomain(hostname);
   if (!store && hostname.includes(".chrry.ai")) {
     // Subdomain like atlas.chrry.ai
-    const subdomain = hostname.split(".")[0]
-    store = await getStore({ slug: subdomain })
+    const subdomain = hostname.split(".")[0];
+    store = await getStore({ slug: subdomain });
   }
   if (!store) {
-    store = await getStore({ slug: "blossom" }) // Default to chrry.ai
+    store = await getStore({ slug: "blossom" }); // Default to chrry.ai
   }
 
   // App resolution (X-axis)
-  const appSlug = path.split("/")[1] // /atlas → "atlas"
-  let app = appSlug ? await getApp({ slug: appSlug }) : null
+  const appSlug = path.split("/")[1]; // /atlas → "atlas"
+  let app = appSlug ? await getApp({ slug: appSlug }) : null;
   if (!app) {
-    app = await getApp({ id: store.appId }) // Use store's default app
+    app = await getApp({ id: store.appId }); // Use store's default app
   }
 
   // Render app with store context
-  return renderApp({ app, store, path })
-})
+  return renderApp({ app, store, path });
+});
 
 // Examples:
 // chrry.ai → Blossom store, Chrry app
@@ -756,22 +753,22 @@ function handleAppClick(app: App, currentStore: Store) {
   // Check if app has dedicated domain
   if (app.domain) {
     // Navigate to primary store
-    window.location.href = app.domain
-    return
+    window.location.href = app.domain;
+    return;
   }
 
   // Check if app belongs to different store
   if (app.storeId !== currentStore.id) {
-    const targetStore = getStore(app.storeId)
+    const targetStore = getStore(app.storeId);
     if (targetStore.domain !== window.location.hostname) {
       // Navigate to app's primary store
-      window.location.href = `${targetStore.domain}/${app.slug}`
-      return
+      window.location.href = `${targetStore.domain}/${app.slug}`;
+      return;
     }
   }
 
   // Same store, just navigate to app path
-  router.push(`/${app.slug}`)
+  router.push(`/${app.slug}`);
 }
 ```
 
@@ -1068,12 +1065,12 @@ const AUTHORIZED_DOMAINS = [
   "atlas.chrry.ai",
   "zarathustra.chrry.ai",
   // ... all subdomains
-]
+];
 
 function validateDomain() {
-  const hostname = window.location.hostname
+  const hostname = window.location.hostname;
   if (!AUTHORIZED_DOMAINS.some((d) => hostname.endsWith(d))) {
-    throw new Error("Unauthorized domain")
+    throw new Error("Unauthorized domain");
   }
 }
 ```

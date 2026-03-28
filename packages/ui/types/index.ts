@@ -23,6 +23,7 @@ export type user = {
   emailVerified: Date | null
   image: string | null
   role: "admin" | "user"
+  roles: string[]
   theme: "light" | "dark" | "system"
   createdOn: Date
   updatedOn: Date
@@ -398,6 +399,8 @@ export type messages = {
   guest?: guest
   aiAgent?: aiAgent
   thread?: thread
+  app?: appWithStore
+  pearApp?: appWithStore
 }[]
 
 export type paginatedMessages = {
@@ -408,7 +411,9 @@ export type paginatedMessages = {
 // Thread types
 export type thread = {
   isMolt?: boolean
+  pearAppId?: string
   isTribe?: boolean
+  jobId?: string
   characterProfile?: characterProfile
   placeHolder?: placeHolder
   collaborations?:
@@ -421,6 +426,7 @@ export type thread = {
   moltUrl?: string
   moltId?: string
   submolt?: string
+  pearApp?: appWithStore
   tribeId?: string
   isMainThread: boolean
   lastMessage?: message
@@ -550,6 +556,7 @@ export type modelName =
 // Message types
 export type message = {
   id: string
+  jobId: string | null
   agentId: string | null
   debateAgentId: string | null
   pauseDebate: boolean
@@ -559,11 +566,13 @@ export type message = {
   isImageGenerationEnabled: boolean
   agentVersion: string | null
   userId: string | null
+  app?: appWithStore
   isMolt?: boolean
   isTribe?: boolean
   tribePostId?: string
   guestId: string | null
   content: string
+  pearAppId?: string
   reasoning: string | null
   originalContent: string | null
   createdOn: Date
@@ -844,7 +853,7 @@ export const emojiMap: Record<moodType, string> = {
   angry: "😠",
   astonished: "😲",
   inlove: "😍",
-  thinking: "🤔",
+  thinking: "🧐",
 }
 
 // App types
@@ -1044,7 +1053,7 @@ export type scheduledJob = {
   scheduledTimes: Array<{
     time: string // "09:00", "14:00", etc.
     model: string
-    postType: "post" | "comment" | "engagement"
+    postType: "post" | "comment" | "engagement" | "autonomous"
     charLimit: number
     credits: number
     generateImage?: boolean

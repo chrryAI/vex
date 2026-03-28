@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-
+import AppLink from "./AppLink"
 import A from "./a/A"
 import Bookmark from "./Bookmark"
 import CollaborationStatus from "./CollaborationStatus"
@@ -16,6 +16,7 @@ import {
 import { useStyles } from "./context/StylesContext"
 import EmptyStateTips from "./EmptyStateTips"
 import { useHasHydrated } from "./hooks"
+import { useResponsiveCount } from "./hooks/useResponsiveCount"
 import Img from "./Image"
 import {
   ArrowLeft,
@@ -25,7 +26,6 @@ import {
   LoaderCircle,
   Lock,
   LockOpen,
-  MessageCirclePlus,
   PanelRight,
   Search,
   Tornado,
@@ -159,6 +159,20 @@ export default function Menu({
     }
   }, [tauri])
 
+  const count = useResponsiveCount([
+    { height: 500, count: 0 },
+    { height: 550, count: 0 },
+    { height: 600, count: 1 },
+    { height: 650, count: 2 },
+    { height: 700, count: 3 },
+    { height: 750, count: 4 },
+    { height: 800, count: 5 },
+    { height: 850, count: 6 },
+    { height: 900, count: 7 },
+    { height: 950, count: 8 },
+    { height: 1000, count: 9 },
+  ])
+
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -187,7 +201,7 @@ export default function Menu({
     setIsThemeLocked,
   } = useTheme()
 
-  const toggleMenu = ({ timeout = 200 }: { timeout?: number } = {}) => {
+  const toggleMenu = ({ timeout = 100 }: { timeout?: number } = {}) => {
     addHapticFeedback()
     plausible({
       name: ANALYTICS_EVENTS.MENU_TOGGLE,
@@ -505,38 +519,21 @@ export default function Menu({
                   )}
                 </Button>
               </Div>
-              <A
-                data-testid="new-chat-button"
-                href={FRONTEND_URL}
-                onClick={(e) => {
-                  plausible({
-                    name: ANALYTICS_EVENTS.NEW_CHAT_CLICK,
-                  })
-                  if (e.metaKey || e.ctrlKey) {
-                    return
-                  }
-                  e.preventDefault()
-
-                  setBurn(false)
-                  setShowFocus(false)
-                  setShowTribe(false)
-
-                  isSmallDevice ? toggleMenu() : addHapticFeedback()
-                  setIsNewChat({
-                    value: true,
-                  })
-                  reload()
-                }}
-                style={styles.menuItemButton.style}
-                className="button transparent"
-              >
-                {showTribeLink ? (
+              {app && (
+                <AppLink
+                  onClick={() => {
+                    isSmallDevice ? toggleMenu() : addHapticFeedback()
+                  }}
+                  isTribe={false}
+                  app={app}
+                  dataTestId="new-chat-button"
+                  style={styles.menuItemButton.style}
+                  className="button transparent"
+                >
                   <Img app={app} size={18} />
-                ) : (
-                  <MessageCirclePlus size={18} />
-                )}{" "}
-                {t("New chat")}
-              </A>
+                  {t("New chat")}
+                </AppLink>
+              )}
               <Button
                 onClick={() => {
                   isSmallDevice ? toggleMenu() : addHapticFeedback()
@@ -714,6 +711,7 @@ export default function Menu({
                         className="menuThreadList"
                         style={{
                           ...styles.threadsList.style,
+                          marginTop: 15,
                         }}
                       >
                         {threads?.threads
@@ -723,12 +721,7 @@ export default function Menu({
                               (a.isMainThread ? 1 : 0)
                             )
                           })
-                          .slice(
-                            0,
-                            canShowAllTribe || isPear
-                              ? 1
-                              : threads?.threads?.length,
-                          )
+                          .slice(0, canShowAllTribe || isPear ? 1 : count)
                           .map((thread, index) => (
                             <MotiView
                               key={`${thread.id}-${thread.bookmarks?.length}-${animationKey}`}
@@ -750,20 +743,32 @@ export default function Menu({
                               data-testid="menu-thread-item"
                               style={{
                                 ...styles.threadItem.style,
-                                paddingRight:
-                                  collaborationStatus === "pending" ? 0 : 17,
+                                paddingRight: 0,
+                                alignItems: "flex-start",
+                                flexDirection: "column",
+                                gap: "0.15rem",
                               }}
                               ref={(el: any) => {
                                 threadRefs.current[thread.id] = el
                               }}
                               className="menuThreadItem"
                             >
-                              {thread.isMainThread ? (
+                              {thread.pearAppId ? (
+                                <Span style={{ display: "flex", gap: 5 }}>
+                                  <Img app={thread.app} size={15} />
+                                  <Img slug="pear" size={15} />
+                                  <Img app={thread.pearApp} size={15} />
+                                </Span>
+                              ) : thread.isMainThread ? (
                                 <Span
+                                  style={{ display: "flex", gap: 10 }}
                                   title={t("DNA thread")}
-                                  style={{ marginRight: 3, fontSize: 11 }}
                                 >
-                                  🧬
+                                  🧬 <Img slug={thread?.app?.slug} size={15} />
+                                </Span>
+                              ) : thread.app ? (
+                                <Span>
+                                  <Img slug={thread?.app?.slug} size={15} />
                                 </Span>
                               ) : thread.visibility !== "private" ||
                                 thread.collaborations?.length ? (
@@ -813,6 +818,9 @@ export default function Menu({
                                     data-testid="menu-thread-link"
                                     style={{
                                       ...styles.threadItem.style,
+                                      color: isDark
+                                        ? "var(--blue-600)"
+                                        : "var(--blue-600)",
                                     }}
                                     onClick={(e) => {
                                       const threadApp = storeApps.find(

@@ -5,13 +5,14 @@ import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
-import { useAuth, useNavigationContext } from "./context/providers"
+import { useAuth, useChat, useNavigationContext } from "./context/providers"
 import { useStyles } from "./context/StylesContext"
 import EditThread from "./EditThread"
-import { useLocalStorage } from "./hooks"
+
 import Img from "./Image"
 import {
   ArrowLeft,
+  ArrowRight,
   AtSign,
   BellDot,
   CalendarIcon,
@@ -22,12 +23,13 @@ import {
 } from "./icons"
 import Loading from "./Loading"
 import { A, Button, Div, H2, P, Span, useTheme } from "./platform"
+
 import { MotiView } from "./platform/MotiView"
 import Search from "./Search"
 import Share from "./Share"
 import Skeleton from "./Skeleton"
 import { useThreadsStyles } from "./Threads.styles"
-import { pageSizes } from "./utils"
+import { isOwner, pageSizes } from "./utils"
 
 const Threads = ({ className }: { className?: string; userName?: string }) => {
   const { t } = useAppContext()
@@ -48,7 +50,11 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
 
   const [animationKey, setAnimationKey] = useState(0)
 
-  const [selectedApp, setSelectedApp] = useState<string | undefined>(undefined)
+  const [selectedApp, setSelectedAppInternal] = useState<string | undefined>(
+    undefined,
+  )
+
+  const selectedAppRef = useRef(selectedApp)
 
   useEffect(() => {
     if (!reduceMotion) {
@@ -60,7 +66,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     token,
     user,
     language,
-    setProfile,
+    guest,
     profile,
     app,
     storeApps,
@@ -71,11 +77,20 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     setLoadingAppId,
     hasStoreApps,
     actions,
+    setShowCharacterProfiles,
   } = useAuth()
+
+  const { setThreadsAppId, ...chat } = useChat()
+
+  const setSelectedApp = (value: string | undefined) => {
+    selectedAppRef.current = value
+    setThreadsAppId(value)
+    setSelectedAppInternal(value)
+  }
 
   const styles = useThreadsStyles()
 
-  const [sortByDate, setSortByDate] = useLocalStorage("sortByDate", true)
+  const [sortByDate, setSortByDate] = useState(true)
 
   const [threads, setThreads] = useState<{
     threads: (thread & {
@@ -89,23 +104,50 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     nextPage: null,
   })
 
+  const currentSearchStatus = searchParams.get("collaborationStatus") as
+    | "pending"
+    | "active"
+    | null
+
+  const [localCollaborationStatus, setCollaborationStatusInitial] = useState<
+    "pending" | "active" | string | undefined | null
+  >(currentSearchStatus || currentSearchStatus)
+
+  useEffect(() => {
+    if (currentSearchStatus) {
+      setCollaborationStatusInternal(currentSearchStatus)
+      setCollaborationStatusInitial(currentSearchStatus)
+    }
+  }, [currentSearchStatus])
+
   const setCollaborationStatus = (
     status: "pending" | "active" | undefined | null,
     pn: string = pathname,
   ) => {
     setCollaborationStatusInternal(status)
+    setCollaborationStatusInitial(status)
 
-    const currentSearchStatus = searchParams.get("collaborationStatus")
-
-    if (currentSearchStatus === status) {
-      return
-    }
     if (status) {
-      router.push(`${pn}?collaborationStatus=${status}`)
-    } else {
-      router.push(pn)
+      setIsDNA(false)
+      setIsTribe(false)
+      setHasPearApp(false)
     }
+
+    // if (currentSearchStatus === status) {
+    //   return
+    // }
+    // if (status) {
+    //   router.push(`${pn}?collaborationStatus=${status}`)
+    // } else {
+    //   router.push(pn)
+    // }
   }
+
+  useEffect(() => {
+    setCollaborationStatus(
+      currentSearchStatus as "active" | "pending" | undefined | null,
+    )
+  }, [currentSearchStatus])
 
   const [loadingThreadId, setLoadingThreadId] = useState<string | null>(null)
 
@@ -127,11 +169,27 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     const uniqueAppIds = new Set(
       sortedThreads.map((t) => t.appId).filter(Boolean),
     )
-    return storeApps.filter((app) => uniqueAppIds.has(app.id))
+    return storeApps.filter(
+      (app) =>
+        uniqueAppIds.has(app.id) ||
+        isOwner(app, { userId: user?.id, guestId: guest?.id }),
+    )
   }, [sortedThreads, storeApps])
 
   const threadRefs = useRef<{ [id: string]: HTMLDivElement | null }>({})
-  const isSwarm = appsWithThreads.length > 1 || selectedApp
+  const isSwarm = appsWithThreads.length > 1
+  const canShowPearsInitial = appsWithThreads.some((a) =>
+    isOwner(a, { userId: user?.id, guestId: guest?.id }),
+  )
+
+  const [canShowPears, setCanShowPears] = useState(canShowPearsInitial)
+
+  useEffect(() => {
+    if (canShowPearsInitial) {
+      setCanShowPears(canShowPearsInitial)
+    }
+  }, [canShowPearsInitial])
+
   useEffect(() => {
     if (lastStarredId && threadRefs.current[lastStarredId]) {
       threadRefs.current[lastStarredId]?.scrollIntoView({
@@ -146,7 +204,50 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   const [search, setSearch] = useState("")
 
   const [isLoading, setIsLoading] = useState(true)
+  const [hasPearApp, setHasPearAppFinal] = useState<boolean | undefined>(
+    undefined,
+  )
 
+  const setHasPearAppInternal = (v: boolean | undefined) => {
+    setHasPearAppFinal(v)
+    chat.setHasPearApp(v)
+  }
+  const [isDNA, setIsDNAFinal] = useState<boolean | undefined>(undefined)
+
+  const setIsDNAInternal = (v: boolean | undefined) => {
+    setIsDNAFinal(v)
+    chat.setIsDNA(v)
+  }
+
+  const [showAllProfiles, setShowAllProfiles] = useState<boolean>(false)
+  const [isTribe, setIsTribeFinal] = useState<boolean | undefined>(false)
+
+  const setIsTribeInternal = (v: boolean | undefined) => {
+    setIsTribeFinal(v)
+    chat.setIsTribe(v)
+  }
+
+  const setHasPearApp = (v: boolean) => {
+    setHasPearAppInternal(v)
+    chat.setHasPearApp(v)
+    v && setCollaborationStatusInternal(null)
+    isDNA && v && setIsDNAInternal(undefined)
+    isTribe && v && setIsTribeInternal(undefined)
+  }
+  const setIsDNA = (v: boolean) => {
+    setIsDNAInternal(v)
+    v && setCollaborationStatusInternal(null)
+    hasPearApp && v && setHasPearAppInternal(undefined)
+    isTribe && v && setIsTribeInternal(undefined)
+  }
+
+  const setIsTribe = (v: boolean) => {
+    setIsTribeInternal(v)
+
+    v && setCollaborationStatusInternal(null)
+    hasPearApp && v && setHasPearAppInternal(undefined)
+    isDNA && v && setIsDNAInternal(undefined)
+  }
   const {
     data: threadsData,
     mutate: refetch,
@@ -154,7 +255,16 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     isValidating,
     error,
   } = useSWR(
-    ["threads", until, search, sortByDate, selectedApp],
+    [
+      "threads",
+      until,
+      search,
+      sortByDate,
+      selectedApp,
+      hasPearApp,
+      isDNA,
+      isTribe,
+    ],
     () => {
       if (!token) return
       return actions.getThreads({
@@ -164,6 +274,8 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
         sort: sortByDate ? "date" : "bookmark",
         // userName,
         collaborationStatus: collaborationStatus ?? undefined,
+        hasPearApp,
+        isDNA,
       })
     },
     {
@@ -200,8 +312,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
             <Img
               style={{ ...styles.profileImage.style }}
               src={profile?.image!}
-              width={22}
-              height={22}
+              size={32}
               alt={profile?.name || ""}
             />
           ) : (
@@ -224,19 +335,23 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
             </a>
           )}
         </H2>
-        <Div style={{ ...styles.characterProfiles.style }}>
+        <Div
+          style={{
+            ...styles.characterProfiles.style,
+            display: "flex",
+            flexDirection: "column",
+            flexWrap: "wrap",
+          }}
+        >
           {(profile?.characterProfiles || [])
-            .slice(0, 3)
+            .slice(0, showAllProfiles ? undefined : 3)
             .map((characterProfile) => (
-              <a
+              <Button
                 key={characterProfile.id}
-                onClick={(e) => {
-                  e.preventDefault()
-
-                  router.push(`/u?similarTo=${characterProfile.id}`)
+                className="button inverted small"
+                onClick={() => {
+                  setShowCharacterProfiles(true)
                 }}
-                className="button inverted xSmall"
-                href={`/u?similarTo=${characterProfile.id}`}
               >
                 <Sparkles
                   size={16}
@@ -244,10 +359,33 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                   fill="var(--accent-1)"
                 />
                 {characterProfile.name}
-              </a>
+              </Button>
             ))}
+          {!profile?.characterProfiles?.length ? undefined : (
+            <Button
+              style={{
+                marginTop: 7.5,
+              }}
+              className="link"
+              onClick={() => setShowAllProfiles(!showAllProfiles)}
+            >
+              {t(showAllProfiles ? "Show less" : "+ {{number}}", {
+                number: profile?.characterProfiles?.length - 3,
+              })}
+              {!showAllProfiles && <ArrowRight size={14} />}
+            </Button>
+          )}
         </Div>
-        <Div style={{ ...styles.searchContainer.style }}>
+
+        <Div
+          style={{
+            ...styles.searchContainer.style,
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+          }}
+        >
           <>
             <Search
               loading={isLoading || isLoadingThreads}
@@ -259,6 +397,49 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
 
             {!isVisitor && (
               <>
+                {canShowPears && (
+                  <>
+                    <Button
+                      data-testid="threads-dnas"
+                      className={isDNA ? "inverted" : "transparent"}
+                      title={t("Pending Collaborations")}
+                      onClick={() => {
+                        setIsDNA(!isDNA)
+                      }}
+                    >
+                      <Span
+                        title={t("DNA thread")}
+                        style={{
+                          marginRight: 3,
+                          marginLeft: 3,
+                          fontSize: 15,
+                        }}
+                      >
+                        🧬
+                      </Span>
+                    </Button>
+                    <Button
+                      data-testid="threads-pears"
+                      className={hasPearApp ? "inverted" : "transparent"}
+                      title={t("Pending Collaborations")}
+                      onClick={() => {
+                        setHasPearApp(!hasPearApp)
+                      }}
+                    >
+                      <Img slug="pear" size={20} />{" "}
+                    </Button>
+                    <Button
+                      data-testid="threads-pears"
+                      className={isTribe ? "inverted" : "transparent"}
+                      title={t("Pending Collaborations")}
+                      onClick={() => {
+                        setIsTribe(!isTribe)
+                      }}
+                    >
+                      <Img slug="zarathustra" size={20} />{" "}
+                    </Button>
+                  </>
+                )}
                 <Button
                   data-testid="threads-collaboration"
                   className={"inverted"}
@@ -352,7 +533,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                   flexWrap: "wrap",
                 }}
               >
-                {appsWithThreads.slice(0, 10).map((item, i) => {
+                {appsWithThreads.map((item, i) => {
                   return (
                     <MotiView
                       key={`post-${item.id}`}
@@ -373,7 +554,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                     >
                       <Button
                         onClick={() => {
-                          selectedApp
+                          selectedApp === item.id
                             ? setSelectedApp(undefined)
                             : setSelectedApp(item.id)
                         }}
@@ -425,7 +606,12 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                     }}
                     className={"threadsItem"}
                   >
-                    <Div style={{ ...styles.threadItemTitle.style }}>
+                    <Div style={{ ...styles.threadItemTitle.style, gap: 12 }}>
+                      <Img size={20} slug={thread.app?.slug} />
+                      {thread.pearAppId && <Img size={20} slug={"pear"} />}
+                      {thread.pearApp && (
+                        <Img size={20} slug={thread.pearApp.slug} />
+                      )}
                       {loadingThreadId === thread.id ? (
                         <Loading
                           style={{
@@ -436,6 +622,7 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                       ) : (
                         !isVisitor && (
                           <EditThread
+                            size={16}
                             refetch={async () => {
                               await refetch()
                             }}
@@ -444,40 +631,6 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                           />
                         )
                       )}
-                      {(() => {
-                        const url = `/threads/${thread.id}`
-                        return (
-                          <A
-                            data-testid="threads-item-title"
-                            onClick={(e) => {
-                              if (e.metaKey || e.ctrlKey) {
-                                return
-                              }
-
-                              e.preventDefault()
-
-                              const threadApp = storeApps.find(
-                                (app) => app.id === thread.appId,
-                              )
-
-                              if (
-                                thread.appId &&
-                                (!threadApp || !hasStoreApps(threadApp))
-                              ) {
-                                setLoadingThreadId(thread.id)
-                                setLoadingAppId(thread.appId)
-                                return
-                              }
-
-                              router.push(url)
-                            }}
-                            href={url}
-                            key={thread.id}
-                          >
-                            {thread.title}
-                          </A>
-                        )
-                      })()}
 
                       {!isVisitor && (
                         <>
@@ -487,13 +640,14 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                               style={{
                                 marginRight: 3,
                                 marginLeft: 3,
-                                fontSize: 12,
+                                fontSize: 15,
                               }}
                             >
                               🧬
                             </Span>
                           ) : null}
                           <Bookmark
+                            size={16}
                             dataTestId="threads"
                             onSave={() => {
                               refetch()
@@ -503,22 +657,63 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                           />
                         </>
                       )}
+
                       <Div style={{ ...styles.right.style }}>
                         <Span style={{ ...styles.threadItemDate.style }}>
                           {timeAgo(thread.createdOn, language)}
                         </Span>
-                        {!isVisitor && <Share thread={thread} size={13} />}
+                        {!isVisitor && <Share thread={thread} size={24} />}
                       </Div>
                     </Div>
+                    {(() => {
+                      const url = `/threads/${thread.id}`
+                      return (
+                        <A
+                          data-testid="threads-item-title"
+                          onClick={(e) => {
+                            if (e.metaKey || e.ctrlKey) {
+                              return
+                            }
 
-                    <Span style={{ ...styles.threadAiResponse.style }}>
+                            e.preventDefault()
+
+                            const threadApp = storeApps.find(
+                              (app) => app.id === thread.appId,
+                            )
+
+                            if (
+                              thread.appId &&
+                              (!threadApp || !hasStoreApps(threadApp))
+                            ) {
+                              setLoadingThreadId(thread.id)
+                              setLoadingAppId(thread.appId)
+                              return
+                            }
+
+                            router.push(url)
+                          }}
+                          href={url}
+                          key={thread.id}
+                          style={{ marginTop: 5 }}
+                        >
+                          {thread.title}
+                        </A>
+                      )
+                    })()}
+
+                    <Div
+                      style={{ ...styles.threadAiResponse.style, marginTop: 5 }}
+                    >
                       {thread.aiResponse}
-                    </Span>
+                    </Div>
                   </Div>
                 </MotiView>
               ))}
-              {threads?.threads?.length === 0 && <P>{t("Nothing here yet")}</P>}
-              {threads?.hasNextPage && (
+              {!(isLoading || isLoadingThreads) &&
+                threads?.threads?.length === 0 && (
+                  <P>{t("Nothing here yet")}</P>
+                )}
+              {!(isLoading || isLoadingThreads) && threads?.hasNextPage && (
                 <Div style={{ ...styles.loadMoreButtonContainer.style }}>
                   <Button
                     onClick={() => {

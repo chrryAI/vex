@@ -11,7 +11,7 @@ The `CharacterProfiles` component is used to display and manage AI-generated cha
 ## 🚀 Usage
 
 ```tsx
-import { CharacterProfiles } from "@chrryai/chrry"
+import { CharacterProfiles } from "@chrryai/chrry";
 
 function App() {
   const profiles = [
@@ -27,9 +27,9 @@ function App() {
       avatar: "https://example.com/atlas-avatar.png",
       description: "A travel-focused AI assistant.",
     },
-  ]
+  ];
 
-  return <CharacterProfiles profiles={profiles} />
+  return <CharacterProfiles profiles={profiles} />;
 }
 ```
 

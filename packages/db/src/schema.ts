@@ -52,6 +52,26 @@ export const PROMPT_LIMITS = {
   THREAD_TITLE: 100,
 }
 
+export type scheduleTimeType = {
+  modelId?: string
+  time: string // "09:00"
+  model: string
+  postType: "post" | "comment" | "engagement" | "autonomous"
+  charLimit: number
+  credits: number
+  generateImage?: boolean
+  generateVideo?: boolean
+  feedbackApps?: string[]
+  feedbackCollect?: string[]
+  bidApp?: string[]
+  bidStore?: string[]
+  swapApp?: string[]
+  fetchNews?: boolean
+  languages?: string[]
+  maxTokens?: number // Optional max tokens for AI generation
+  intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
+}
+
 export const users = pgTable(
   "user",
   {
@@ -90,6 +110,10 @@ export const users = pgTable(
     role: text("role", { enum: ["admin", "user"] })
       .notNull()
       .default("user"),
+    roles: jsonb("roles")
+      .$type<Array<"admin" | "user" | "tester" | string>>()
+      .default(["user"]),
+
     tribeCredits: integer("tribeCredits")
       .notNull()
       .default(MEMBER_FREE_TRIBE_CREDITS),
@@ -252,6 +276,12 @@ export const feedbackTransactions = pgTable("feedbackTransactions", {
   }),
   creditsRemaining: integer("creditsRemaining").default(0),
 
+  // M2M tracking
+  source: text("source", { enum: ["human", "m2m"] }).default("human"),
+  sourceAppId: uuid("sourceAppId").references(() => apps.id, {
+    onDelete: "set null",
+  }),
+
   metadata: jsonb("metadata").$type<{
     feedbackId?: string
     subscriptionId?: string
@@ -349,6 +379,12 @@ export const guests = pgTable("guest", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  role: text("role", { enum: ["admin", "guest"] })
+    .notNull()
+    .default("guest"),
+  roles: jsonb("roles")
+    .$type<Array<"admin" | "guest" | "tester" | string>>()
+    .default(["guest"]),
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -712,6 +748,10 @@ export const threads = pgTable("threads", {
   createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
+  pearAppId: uuid("pearAppId").references(() => apps.id, {
+    onDelete: "cascade",
+  }),
+
   updatedOn: timestamp("updatedOn", { mode: "date", withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -739,6 +779,10 @@ export const threads = pgTable("threads", {
   submolt: text("submolt"),
 
   tribeId: uuid("tribeId").references(() => tribes.id, {
+    onDelete: "set null",
+  }),
+
+  jobId: uuid("jobId").references((): AnyPgColumn => scheduledJobs.id, {
     onDelete: "set null",
   }),
 
@@ -945,6 +989,10 @@ export const messages = pgTable(
 
     moltCommentId: uuid("moltCommentId").references(() => moltComments.id, {
       onDelete: "set null",
+    }),
+
+    pearAppId: uuid("pearAppId").references(() => apps.id, {
+      onDelete: "cascade",
     }),
 
     moltReplyId: uuid("moltReplyId").references(() => moltComments.id, {
@@ -1827,6 +1875,7 @@ export const scheduledJobs = pgTable(
         "moltbook_engage",
         "tribe_comment", // Tribe comment checking
         "tribe_engage", // Tribe engagement
+        "autonomous",
       ],
     }).notNull(),
 
@@ -1835,22 +1884,7 @@ export const scheduledJobs = pgTable(
       enum: ["once", "daily", "weekly", "custom"],
     }).notNull(),
     scheduledTimes: jsonb("scheduledTimes")
-      .$type<
-        Array<{
-          modelId?: string
-          time: string // "09:00"
-          model: string
-          postType: "post" | "comment" | "engagement"
-          charLimit: number
-          credits: number
-          generateImage?: boolean
-          generateVideo?: boolean
-          fetchNews?: boolean
-          languages?: string[]
-          maxTokens?: number // Optional max tokens for AI generation
-          intervalMinutes?: number // Optional interval for custom frequency (e.g., 60 = every hour)
-        }>
-      >()
+      .$type<Array<scheduleTimeType>>()
       .notNull(), // Full schedule slot objects
     timezone: text("timezone").notNull().default("UTC"),
     startDate: timestamp("startDate", {
@@ -1910,7 +1944,7 @@ export const scheduledJobs = pgTable(
 
     // Calendar integration
     calendarEventId: uuid("calendarEventId").references(
-      () => calendarEvents.id,
+      (): AnyPgColumn => calendarEvents.id,
       {
         onDelete: "set null",
       },
@@ -1929,16 +1963,7 @@ export const scheduledJobs = pgTable(
       languages?: string[]
       // Schedule history for revert - complete snapshot
       previousSchedule?: {
-        scheduledTimes: Array<{
-          time: string
-          model: string
-          postType: "post" | "comment" | "engagement"
-          charLimit: number
-          credits: number
-          maxTokens?: number
-          languages?: string[]
-          intervalMinutes?: number // Optional interval for custom frequency
-        }>
+        scheduledTimes: Array<scheduleTimeType>
         frequency: "once" | "daily" | "weekly" | "custom"
         startDate: string
         endDate?: string
@@ -2140,6 +2165,7 @@ export const creditUsages = pgTable(
       .references(() => aiAgents.id, { onDelete: "cascade" })
       .notNull(),
     creditCost: integer("creditCost").notNull(),
+
     messageType: text("messageType", {
       enum: [
         "user",
@@ -2702,7 +2728,7 @@ export const calendarEvents = pgTable(
       .default([]),
 
     // Integration with AI and threads
-    threadId: uuid("threadId").references(() => threads.id, {
+    threadId: uuid("threadId").references((): AnyPgColumn => threads.id, {
       onDelete: "set null",
     }), // Link to conversation that created this event
     agentId: uuid("agentId").references(() => aiAgents.id, {
@@ -3497,6 +3523,10 @@ export const appExtends = pgTable(
         onDelete: "cascade",
       })
       .notNull(),
+
+    campaignId: uuid("campaignId").references(() => appCampaigns.id, {
+      onDelete: "cascade",
+    }),
 
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
       .defaultNow()
@@ -4614,6 +4644,14 @@ export const pearFeedback = pgTable(
       .notNull()
       .default("pending"),
 
+    // M2M (Machine-to-Machine) feedback tracking
+    source: text("source", { enum: ["human", "m2m"] })
+      .notNull()
+      .default("human"),
+    sourceAppId: uuid("sourceAppId").references(() => apps.id, {
+      onDelete: "set null",
+    }),
+
     // Timestamps
     createdOn: timestamp("createdOn", { mode: "date", withTimezone: true })
       .defaultNow()
@@ -4634,6 +4672,16 @@ export const pearFeedback = pgTable(
       table.sentimentScore,
     ),
     createdOnIdx: index("pearFeedback_createdOn_idx").on(table.createdOn),
+    sourceIdx: index("pearFeedback_source_idx").on(table.source),
+    m2mDedupIdx: index("pearFeedback_m2m_dedup_idx").on(
+      table.sourceAppId,
+      table.appId,
+      table.source,
+    ),
+    m2mSourceRequired: check(
+      "pearFeedback_m2m_source_required",
+      sql`"source" != 'm2m' OR "sourceAppId" IS NOT NULL`,
+    ),
   }),
 )
 
@@ -4983,7 +5031,9 @@ export const talentEarnings = pgTable(
       .notNull(),
     recruitmentFlowId: uuid("recruitmentFlowId").references(
       () => recruitmentFlows.id,
-      { onDelete: "cascade" },
+      {
+        onDelete: "cascade",
+      },
     ),
 
     // Transaction

@@ -14,12 +14,7 @@ import useSWR from "swr"
 import { useUserScroll } from "../../hooks/useUserScroll"
 import { useWebSocket } from "../../hooks/useWebSocket"
 
-import {
-  useLocalStorage,
-  useNavigation,
-  usePlatform,
-  useTheme,
-} from "../../platform"
+import { useNavigation, usePlatform, useTheme } from "../../platform"
 import type {
   aiAgent,
   app,
@@ -78,6 +73,14 @@ const ChatContext = createContext<
       showTribe: boolean | undefined
       setAbout: (value: string | undefined) => void
       setAsk: (value: string | undefined) => void
+      threadsAppId: string | undefined
+      setThreadsAppId: (threadsAppId: string | undefined) => void
+      hasPearApp?: boolean
+      setHasPearApp: (hasPearApp?: boolean) => void
+      isDNA?: boolean
+      setIsDNA: (isDNA?: boolean) => void
+      isTribe?: boolean
+      setIsTribe: (isTribe?: boolean) => void
       setIsImageGenerationEnabled: (
         value: boolean,
         forAgent?: aiAgent | null,
@@ -164,11 +167,13 @@ const ChatContext = createContext<
         to,
         tribe,
         pear,
+        postId,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
         pear?: boolean
+        postId?: string
       }) => void
     }
   | undefined
@@ -239,6 +244,7 @@ export function ChatProvider({
     actions,
     setShowWatermelon,
     appId,
+    setPostId,
     ...auth
   } = useAuth()
 
@@ -260,6 +266,7 @@ export function ChatProvider({
       guest?: guest
       aiAgent?: aiAgent
       thread?: thread
+      app?: appWithStore
     }[]
   >(auth.threadData?.messages.messages || [])
 
@@ -333,6 +340,11 @@ export function ChatProvider({
     }
   }, [user])
 
+  const [threadsAppId, setThreadsAppId] = useState<string | undefined>()
+  const [hasPearApp, setHasPearApp] = useState<boolean | undefined>(undefined)
+  const [isDNA, setIsDNA] = useState<boolean | undefined>(undefined)
+  const [isTribe, setIsTribe] = useState<boolean | undefined>(undefined)
+
   const {
     data: threadsSwr,
     mutate: refetchThreads,
@@ -340,7 +352,17 @@ export function ChatProvider({
     error: threadsError,
   } = useSWR(
     token && shouldFetchThreads && session
-      ? ["contextThreads", toFetch, appId, collaborationStatus, isNewChat]
+      ? [
+          "contextThreads",
+          toFetch,
+          appId,
+          collaborationStatus,
+          isNewChat,
+          threadsAppId,
+          hasPearApp,
+          isDNA,
+          isTribe,
+        ]
       : null,
     async () => {
       try {
@@ -350,8 +372,11 @@ export function ChatProvider({
               setShouldFetchThreads(false)
             }
           },
-          appId,
+          hasPearApp: pathname.includes("/threads") ? hasPearApp : undefined,
+          appId: pathname.includes("/threads") ? threadsAppId : appId,
+          isDNA: pathname.includes("/threads") ? isDNA : undefined,
           userName: userNameByUrl,
+          isTribe: pathname.includes("/threads") ? isTribe : undefined,
           pageSize: pageSizes.menuThreads - (isMobile ? 2 : 0),
           sort: "bookmark",
           collaborationStatus:
@@ -435,13 +460,19 @@ export function ChatProvider({
       setPendingCollaborationThreadsCount(threads.totalCount)
   }
 
+  const currentSearchStatus = searchParams.get("collaborationStatus")
+
   const setCollaborationStatus = (
     newStatus: "pending" | "active" | undefined | null,
   ) => {
+    if (!newStatus && currentSearchStatus) {
+      removeParams("collaborationStatus")
+    }
     if (newStatus === collaborationStatus) {
       return
     }
     setCollaborationStatusInternal(newStatus)
+
     fetchActiveCollaborationThreadsCount()
     fetchPendingCollaborationThreadsCount()
   }
@@ -502,31 +533,38 @@ export function ChatProvider({
     to = app?.slug ? getAppSlug(app) : "/",
     tribe,
     pear,
+    postId,
   }: {
     value: boolean
     to?: string
     tribe?: boolean
     pear?: boolean
+    postId?: string
   }) => {
     if (value) {
       shouldStopAutoScrollRef.current = true
+      setPostId(undefined)
 
       setLikedInternal(undefined)
       setShowFocus(false)
-      setShowTribe(tribe === true)
       setShowWatermelon(false)
 
       setCollaborationStep(0)
       setThread(undefined)
-      setProfile(undefined)
       setStatus(null)
       burn && setWasIncognito(true)
+      setShowTribe(tribe === true)
+
       setCollaborationStatus(null)
       setIsChatFloating(false)
       setThreadId(undefined)
       setMessages([])
       threadIdRef.current = undefined
-      router.push(to)
+      if (postId) {
+        router.push(`/p/${postId}`)
+      } else {
+        router.push(to)
+      }
     } else {
       shouldStopAutoScrollRef.current = false
       // Ensure tribe view resets when closing a new chat
@@ -546,14 +584,6 @@ export function ChatProvider({
       fetchThreads()
     }
   }, [app])
-
-  useEffect(() => {
-    setWasIncognito(burn)
-    if (burn) {
-      // setThread(undefined)
-      setProfile(undefined)
-    }
-  }, [burn])
 
   const userOrGuest = user || guest
 
@@ -728,11 +758,13 @@ export function ChatProvider({
   }, [toFetch])
 
   useEffect(() => {
-    if (profile) {
-      setIsVisitor(user?.id === profile.id)
+    if (!profile) return
+    if (!user && !guest) return
+    if (profile && user) {
+      setIsVisitor(user?.id !== profile.id)
       return
-    } else if (userNameByUrl) {
-      setIsVisitor(user?.userName === userNameByUrl)
+    } else if (userNameByUrl && user) {
+      setIsVisitor(user?.userName !== userNameByUrl)
       return
     }
 
@@ -857,9 +889,9 @@ export function ChatProvider({
 
   const onlyAgent = !!app?.onlyAgent
 
-  const [debateAgent, setDebateAgentInternal] = useLocalStorage<
+  const [debateAgent, setDebateAgentInternal] = useState<
     aiAgent | undefined | null
-  >("debateAgent", undefined)
+  >(undefined)
 
   useEffect(() => {
     if (debateAgent) {
@@ -1456,7 +1488,15 @@ export function ChatProvider({
         artifacts,
         setArtifacts,
         setAsk,
+        threadsAppId,
+        setThreadsAppId,
+        hasPearApp,
+        setHasPearApp,
         setAbout,
+        isDNA,
+        setIsDNA,
+        isTribe,
+        setIsTribe,
       }}
     >
       {children}

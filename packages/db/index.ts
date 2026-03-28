@@ -22,6 +22,7 @@ import {
   not,
   notInArray,
   or,
+  type SQL,
   sql,
   sum,
 } from "drizzle-orm"
@@ -227,6 +228,7 @@ export {
   baSessions,
   baVerifications,
   cosineDistance,
+  count,
   desc,
   eq,
   gt,
@@ -296,7 +298,7 @@ export const canCollaborate = ({
   return isOwner(thread, { userId, guestId })
     ? true
     : thread?.collaborations?.some(
-        (collaboration) =>
+        (collaboration: { collaboration: collaboration; user: user }) =>
           collaboration.user.id === userId &&
           collaboration.collaboration.status &&
           ["active", "pending"].includes(collaboration.collaboration.status),
@@ -1160,6 +1162,10 @@ export const getUser = async ({
           collaborationStatus: ["active"],
         }).then((res) => res.totalCount),
 
+        roles: result?.user?.roles?.includes(result.user.role)
+          ? result.user.roles
+          : (result.user.roles || []).concat(result.user.role),
+
         subscription,
       }
     : undefined
@@ -1503,6 +1509,12 @@ export const getMessage = async ({
       }
     : undefined
 
+  const pearApp = result?.message?.pearAppId
+    ? await getSimpleApp({
+        id: result?.message?.pearAppId,
+      })
+    : undefined
+
   const guest = result?.guest
     ? {
         id: result.guest?.id,
@@ -1513,6 +1525,7 @@ export const getMessage = async ({
     ? {
         ...result,
         user,
+        pearApp,
         guest,
       }
     : undefined
@@ -1596,7 +1609,12 @@ export const getMessages = async ({
   const conditionsArray = [
     isPear ? eq(messages.isPear, true) : undefined,
     userId ? eq(messages.userId, userId) : undefined,
-    isTribe !== undefined ? eq(messages.isTribe, isTribe) : undefined,
+    isTribe !== undefined
+      ? and(
+          eq(messages.isTribe, isTribe),
+          isTribe ? isNotNull(messages.jobId) : isNull(messages.jobId),
+        )
+      : undefined,
     isMolt !== undefined ? eq(messages.isMolt, isMolt) : undefined,
     appId ? eq(messages.appId, appId) : undefined,
     guestId ? eq(messages.guestId, guestId) : undefined,
@@ -1645,6 +1663,7 @@ export const getMessages = async ({
       guest: guests,
       aiAgent: aiAgents,
       thread: threads,
+      app: apps,
     })
     .from(messages)
     .where(conditions)
@@ -1652,6 +1671,7 @@ export const getMessages = async ({
     .leftJoin(guests, eq(messages.guestId, guests.id))
     .leftJoin(aiAgents, eq(messages.agentId, aiAgents.id))
     .innerJoin(threads, eq(messages.threadId, threads.id))
+    .leftJoin(apps, eq(messages.appId, apps.id))
     .orderBy(isAsc ? asc(messages.createdOn) : desc(messages.createdOn))
     .limit(pageSize)
     .offset((page - 1) * pageSize)
@@ -1669,25 +1689,41 @@ export const getMessages = async ({
 
   return {
     messages: await Promise.all(
-      result.map(async (message) => ({
-        ...message,
-        parentMessage: message.message.clientId
-          ? await getMessage({
-              clientId: message.message.id,
-            }).then((res) => res?.message)
-          : undefined,
-        user: {
-          id: message.user?.id,
-          createdOn: message.user?.createdOn,
-          updatedOn: message.user?.updatedOn,
-          userName: message.user?.userName,
-          name: message.user?.name,
-          image: message.user?.image,
-        },
-        mood: await getMood({
-          id: message.message.id,
-        }),
-      })),
+      result.map(async (message) => {
+        // const app = message.message?.appId
+        //   ? await getApp({ id: message.message.appId })
+        //   : undefined
+        const pearApp = message.message?.pearAppId
+          ? await getSimpleApp({
+              id: message.message?.pearAppId,
+            })
+          : undefined
+        const app = message.message?.appId
+          ? await getPureApp({ id: message.message.appId })
+          : undefined
+
+        return {
+          ...message,
+          parentMessage: message.message.clientId
+            ? await getMessage({
+                clientId: message.message.id,
+              }).then((res) => res?.message)
+            : undefined,
+          app,
+          pearApp,
+          user: {
+            id: message.user?.id,
+            createdOn: message.user?.createdOn,
+            updatedOn: message.user?.updatedOn,
+            userName: message.user?.userName,
+            name: message.user?.name,
+            image: message.user?.image,
+          },
+          mood: await getMood({
+            id: message.message.id,
+          }),
+        }
+      }),
     ),
     totalCount,
     hasNextPage,
@@ -2670,6 +2706,24 @@ export const getThread = async ({
     .leftJoin(characterProfiles, eq(threads.id, characterProfiles.threadId))
     .limit(1)
 
+  const pearApp = result?.threads?.pearAppId
+    ? await getSimpleApp({
+        id: result.threads.pearAppId,
+      })
+    : undefined
+
+  const app = result?.threads?.appId
+    ? await getSimpleApp({
+        id: result.threads.appId,
+      })
+    : undefined
+  // const app = result?.threads?.appId
+  //   ? await getApp({
+  //       id: result.threads.appId,
+  //       userId,
+  //       guestId,
+  //     })
+  //   : undefined
   return result
     ? {
         ...result.threads,
@@ -2689,6 +2743,7 @@ export const getThread = async ({
         collaborations: await getCollaborations({
           threadId: result.threads.id,
         }),
+        pearApp,
         characterProfile: await getCharacterProfile({
           threadId: result.threads.id,
           userId: result.threads.userId || undefined,
@@ -2703,14 +2758,7 @@ export const getThread = async ({
           userId: result.threads.userId || undefined,
           guestId: result.threads.guestId || undefined,
         }),
-        app: result.threads.appId
-          ? await getPureApp({
-              id: result.threads.appId,
-              userId,
-              guestId,
-              isSafe: true,
-            })
-          : undefined,
+        app: app,
       }
     : undefined
 }
@@ -2784,6 +2832,9 @@ export const getThreads = async ({
   appId,
   appIds,
   ownerId,
+  hasPearApp,
+  isDNA,
+  isTribe,
 }: {
   page?: number
   pageSize?: number
@@ -2800,6 +2851,9 @@ export const getThreads = async ({
   appId?: string
   appIds?: string[]
   ownerId?: string
+  hasPearApp?: boolean
+  isTribe?: boolean
+  isDNA?: boolean
 }) => {
   // const user = userId ? await getUser({ id: userId }) : undefined
   // const guest = guestId ? await getGuest({ id: guestId }) : undefined
@@ -2864,6 +2918,24 @@ export const getThreads = async ({
     ownerId
       ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
       : undefined,
+    isDNA === true
+      ? eq(threads.isMainThread, true)
+      : isDNA === false
+        ? eq(threads.isMainThread, false)
+        : undefined,
+    isTribe === true
+      ? or(
+          eq(threads.isTribe, false),
+          isNotNull(threads.tribeId),
+          isNotNull(threads.jobId),
+        )
+      : isTribe === false
+        ? or(
+            eq(threads.isTribe, false),
+            isNull(threads.tribeId),
+            isNull(threads.jobId),
+          )
+        : undefined,
 
     appIds && appIds.length > 0
       ? or(
@@ -2930,6 +3002,33 @@ export const getThreads = async ({
       : undefined,
   ].filter(Boolean)
 
+  const orderParams = [
+    ...(appId
+      ? [sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`]
+      : []),
+    ...(hasPearApp
+      ? [sql`CASE WHEN ${threads.pearAppId} IS NOT NULL THEN 0 ELSE 1 END`]
+      : []),
+    ...(sort === "bookmark"
+      ? [
+          bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+            ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
+                bookmarkedThreadIds.map((id) => sql`${id}`),
+                sql`, `,
+              )}]::uuid[]) THEN 0 ELSE 1 END`
+            : undefined,
+          appId || (appIds && appIds.length > 0)
+            ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
+            : undefined,
+          sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
+          desc(
+            sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
+          ),
+          desc(threads.updatedOn),
+        ]
+      : [desc(threads.updatedOn)]),
+  ].filter(Boolean) as SQL[]
+
   if (search && search.length >= 3) {
     // Subquery for thread IDs with FTS on messages.content
     const subquery = db
@@ -2944,32 +3043,7 @@ export const getThreads = async ({
       .where(inArray(threads.id, subquery))
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
-      .orderBy(
-        appId
-          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-          : sql`1`,
-        ...(sort === "bookmark"
-          ? [
-              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
-                    bookmarkedThreadIds.map((id) => sql`${id}`),
-                    sql`, `,
-                  )}]::uuid[]) THEN 0 ELSE 1 END`
-                : sql`1`,
-              // Main thread first for app owners
-              appId || (appIds && appIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
-              // Prioritize threads bookmarked by current user
-              // Then by total bookmark count (popular threads)
-              sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
-              desc(
-                sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
-              ),
-              desc(threads.updatedOn),
-            ]
-          : [desc(threads.updatedOn)]),
-      )
+      .orderBy(...orderParams)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
@@ -2997,33 +3071,49 @@ export const getThreads = async ({
 
     return {
       threads: await Promise.all(
-        result.map(async (thread) => ({
-          ...thread.threads,
-          user: thread.user
-            ? {
-                id: thread.user?.id,
-                name: thread.user?.name,
-                userName: thread.user?.userName,
-                createdOn: thread.user?.createdOn,
-                updatedOn: thread.user?.updatedOn,
-                characterProfiles: await getCharacterProfiles({
-                  userId: thread.user?.id,
-                  visibility: "public",
-                }),
-                // activeOn: thread.user?.activeOn,
-                // isOnline: thread.user?.isOnline,
-              }
-            : null,
-          collaborations: await getCollaborations({
-            threadId: thread.threads.id,
-          }),
-          lastMessage: (
-            await getMessages({
-              pageSize: 1,
+        result.map(async (thread) => {
+          const app = thread.threads.appId
+            ? await getSimpleApp({
+                id: thread.threads.appId,
+              })
+            : undefined
+
+          const pearApp = thread?.threads?.pearAppId
+            ? await getSimpleApp({
+                id: thread?.threads?.pearAppId,
+              })
+            : undefined
+
+          return {
+            ...thread.threads,
+            user: thread.user
+              ? {
+                  id: thread.user?.id,
+                  name: thread.user?.name,
+                  userName: thread.user?.userName,
+                  createdOn: thread.user?.createdOn,
+                  updatedOn: thread.user?.updatedOn,
+                  characterProfiles: await getCharacterProfiles({
+                    userId: thread.user?.id,
+                    visibility: "public",
+                  }),
+                  // activeOn: thread.user?.activeOn,
+                  // isOnline: thread.user?.isOnline,
+                }
+              : null,
+            collaborations: await getCollaborations({
               threadId: thread.threads.id,
-            })
-          ).messages.at(0)?.message,
-        })),
+            }),
+            app: app ?? undefined,
+            pearApp: pearApp ?? undefined,
+            lastMessage: (
+              await getMessages({
+                pageSize: 1,
+                threadId: thread.threads.id,
+              })
+            ).messages.at(0)?.message,
+          }
+        }),
       ),
       totalCount,
       hasNextPage,
@@ -3036,33 +3126,7 @@ export const getThreads = async ({
       .where(and(...conditionsArray))
       .leftJoin(users, eq(threads.userId, users.id))
       .leftJoin(apps, eq(threads.appId, apps.id))
-      .orderBy(
-        appId
-          ? sql`CASE WHEN ${threads.appId} = ${appId} THEN 0 ELSE 1 END`
-          : sql`1`,
-        ...(sort === "bookmark"
-          ? [
-              bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-                ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
-                    bookmarkedThreadIds.map((id) => sql`${id}`),
-                    sql`, `,
-                  )}]::uuid[]) THEN 0 ELSE 1 END`
-                : sql`1`,
-              // Main thread first for app owners
-              appId || (appIds && appIds.length > 0)
-                ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-                : sql`1`,
-              // Prioritize threads bookmarked by current user
-
-              // Then by total bookmark count (popular threads)
-              sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
-              desc(
-                sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
-              ),
-              desc(threads.updatedOn),
-            ]
-          : [desc(threads.updatedOn)]),
-      )
+      .orderBy(...orderParams)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
@@ -3081,32 +3145,53 @@ export const getThreads = async ({
 
     return {
       threads: await Promise.all(
-        result.map(async (thread) => ({
-          ...thread.threads,
-          user: thread.user
-            ? {
-                id: thread.user?.id,
-                createdOn: thread.user?.createdOn,
-                updatedOn: thread.user?.updatedOn,
-                userName: thread.user?.userName,
-                name: thread.user?.name,
-                characterProfiles: await getCharacterProfiles({
-                  userId: thread.user?.id,
-                  visibility: "public",
-                }),
-              }
-            : null,
+        result.map(async (thread) => {
+          const pearApp = thread?.threads?.pearAppId
+            ? await getSimpleApp({
+                id: thread?.threads?.pearAppId,
+              })
+            : undefined
+          const app = thread.threads.appId
+            ? await db.query.apps.findFirst({
+                where: eq(apps.id, thread.threads.appId),
+                columns: {
+                  id: true,
+                  name: true,
+                  icon: true,
+                  slug: true,
+                },
+              })
+            : undefined
 
-          collaborations: await getCollaborations({
-            threadId: thread.threads.id,
-          }),
-          lastMessage: (
-            await getMessages({
-              pageSize: 1,
+          return {
+            ...thread.threads,
+            app,
+            pearApp,
+            user: thread.user
+              ? {
+                  id: thread.user?.id,
+                  createdOn: thread.user?.createdOn,
+                  updatedOn: thread.user?.updatedOn,
+                  userName: thread.user?.userName,
+                  name: thread.user?.name,
+                  characterProfiles: await getCharacterProfiles({
+                    userId: thread.user?.id,
+                    visibility: "public",
+                  }),
+                }
+              : null,
+
+            collaborations: await getCollaborations({
               threadId: thread.threads.id,
-            })
-          ).messages.at(0)?.message,
-        })),
+            }),
+            lastMessage: (
+              await getMessages({
+                pageSize: 1,
+                threadId: thread.threads.id,
+              })
+            ).messages.at(0)?.message,
+          }
+        }),
       ),
       totalCount,
       hasNextPage,
@@ -4361,11 +4446,7 @@ export const getCities = async ({
                 ? sql`LOWER(${cities.name}) = LOWER(${name})`
                 : sql`LOWER(${cities.country}) = LOWER(${country})`
           } THEN 0
-          WHEN ${
-            name && country
-              ? sql`LOWER(${cities.name}) = LOWER(${name})`
-              : sql`FALSE`
-          } THEN 1
+          WHEN ${name && country ? sql`LOWER(${cities.name}) = LOWER(${name})` : sql`FALSE`} THEN 1
           ELSE 2
         END
       `,
@@ -5166,6 +5247,7 @@ export const getApp = async ({
   skipCache = false,
   ownerId,
   threadId,
+  isSystem,
   role,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom"
@@ -5181,6 +5263,7 @@ export const getApp = async ({
   skipCache?: boolean
   ownerId?: string
   threadId?: string
+  isSystem?: boolean
   role?: "admin" | "user"
 }): Promise<appWithStore | undefined> => {
   // Build app identification conditions
@@ -5218,6 +5301,13 @@ export const getApp = async ({
 
   if (storeDomain) {
     appConditions.push(eq(stores.domain, storeDomain))
+  }
+  if (isSystem) {
+    appConditions.push(eq(stores.isSystem, isSystem))
+  }
+
+  if (isSystem === false) {
+    appConditions.push(not(stores.isSystem))
   }
 
   // Build access conditions (can user/guest access this app?)
@@ -5382,11 +5472,14 @@ export const getApp = async ({
   const result = {
     ...(isSafe
       ? (toSafeApp({
-          app: { ...app.app, characterProfiles: appCharacterProfiles },
+          app: {
+            ...app.app,
+            characterProfiles: appCharacterProfiles ?? undefined,
+          },
           userId,
           guestId,
         }) as unknown as app)
-      : { ...app.app, characterProfiles: appCharacterProfiles }),
+      : { ...app.app, characterProfiles: appCharacterProfiles ?? undefined }),
     extends: await getAppExtends({
       appId: app.app.id,
     }),
@@ -5418,15 +5511,195 @@ export const getApp = async ({
 
   return result
 }
-export const getPureApp = async ({
-  name,
+
+export const getSimpleApp = async ({
   id,
   slug,
   userId,
   guestId,
   storeId,
   isSafe = true,
+  storeSlug,
+  storeDomain,
+  ownerId,
+  threadId,
+  isSystem,
+  role,
+  name,
   depth = 0,
+  skipCache = false,
+  includeCharacterProfiles = false,
+}: {
+  id?: string
+  slug?: string
+  userId?: string
+  guestId?: string
+  storeId?: string
+  isSafe?: boolean
+  depth?: number
+  storeDomain?: string
+  storeSlug?: string
+  ownerId?: string
+  threadId?: string
+  isSystem?: boolean
+  name?: string
+  role?: "admin" | "user"
+  skipCache?: boolean
+  includeCharacterProfiles?: boolean
+}): Promise<appWithStore | undefined> => {
+  // Build app identification conditions
+  const appConditions = []
+
+  if (slug) {
+    appConditions.push(eq(apps.slug, slug))
+  }
+
+  if (ownerId) {
+    appConditions.push(or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId)))
+  }
+
+  if (id) {
+    appConditions.push(eq(apps.id, id))
+  }
+
+  if (role) {
+    appConditions.push(eq(users.role, role))
+  }
+
+  if (storeId) {
+    appConditions.push(eq(apps.storeId, storeId))
+  }
+
+  if (storeSlug) {
+    appConditions.push(eq(stores.slug, storeSlug))
+  }
+
+  if (storeDomain) {
+    appConditions.push(eq(stores.domain, storeDomain))
+  }
+  if (isSystem) {
+    appConditions.push(eq(stores.isSystem, isSystem))
+  }
+
+  if (isSystem === false) {
+    appConditions.push(not(stores.isSystem))
+  }
+
+  // Build access conditions (can user/guest access this app?)
+  // Skip access check when searching by ID or ownerId (direct lookup)
+  const accessConditions =
+    id || ownerId
+      ? undefined
+      : or(
+          // User's own apps
+          userId ? eq(apps.userId, userId) : undefined,
+          // Guest's own apps
+          guestId ? eq(apps.guestId, guestId) : undefined,
+          eq(apps.visibility, "public"),
+        )
+
+  // Use user-specific cache key if userId/guestId provided (for placeholders)
+  // Otherwise use public cache key
+  const cacheKey =
+    userId || guestId
+      ? `simple-app:${id}:slug:${slug}:name:${name}:user:${userId}:guest:${guestId}:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+      : `simple-app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+
+  // Try cache first
+
+  if (!skipCache) {
+    const cached = await getCache<appWithStore>(cacheKey)
+    if (cached) {
+      return cached
+    }
+  }
+
+  // Build query with conditional store join
+  const query = db
+    .select({
+      app: apps,
+      user: users,
+      guest: guests,
+      store: stores,
+    })
+    .from(apps)
+    .leftJoin(users, eq(apps.userId, users.id))
+    .leftJoin(guests, eq(apps.guestId, guests.id))
+    .leftJoin(stores, eq(apps.storeId, stores.id))
+
+  // Only add store join if storeDomain is provided
+
+  const [app] = await query.where(
+    and(
+      appConditions.length > 0 ? and(...appConditions) : undefined,
+      accessConditions,
+    ),
+  )
+
+  if (!app) return undefined
+
+  const appCharacterProfiles = !includeCharacterProfiles
+    ? null
+    : ((await getCharacterProfiles({
+        appId: app.app.id,
+        threadId,
+      })) ??
+      (await getCharacterProfiles({
+        appId: app.app.id,
+        isAppOwner: true,
+      })))
+
+  const result = {
+    ...(isSafe
+      ? (toSafeApp({
+          app: {
+            ...app.app,
+            characterProfiles: appCharacterProfiles ?? undefined,
+          },
+          userId,
+          guestId,
+        }) as unknown as app)
+      : { ...app.app, characterProfiles: appCharacterProfiles ?? undefined }),
+    user: toSafeUser({ user: app.user }),
+    guest: toSafeGuest({ guest: app.guest }),
+    store: app.store,
+  } as unknown as appWithStore
+
+  const r = {
+    ...result,
+    store: result.store
+      ? {
+          ...result.store,
+          apps: [],
+        }
+      : undefined,
+  }
+
+  // Determine if user is owner from query result (no extra DB queries needed)
+  const isOwner =
+    (userId && app.app.userId === userId) ||
+    (guestId && app.app.guestId === guestId)
+
+  // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
+  setCache(cacheKey, result, isOwner ? 60 * 5 : 60 * 60)
+
+  // Cross-seed public cache if owner-specific request
+  if (isOwner) {
+    const publicCacheKey = `simple-app:${id}:slug:${slug}:name:${name}:public:store:${storeId}:storeDomain:${storeDomain}:depth:${depth}:storeSlug:${storeSlug}:isSafe:${isSafe}:role:${role}:includeCharacterProfiles:${includeCharacterProfiles}`
+    // Sanitize user-specific data (placeholders)
+    const publicResult = { ...r, placeHolder: undefined }
+    setCache(publicCacheKey, publicResult, 60 * 60)
+  }
+
+  return r
+}
+export const getPureApp = async ({
+  name,
+  id,
+  slug,
+  userId,
+  guestId,
+  isSafe = true,
   includeScheduledJobs = false,
 }: {
   name?: "Atlas" | "Peach" | "Vault" | "Bloom" | "Vex"
@@ -5713,6 +5986,12 @@ export function toSafeUser({ user }: { user?: Partial<user> | null }) {
     image: user?.image,
     // email: user?.email,
     role: user.role,
+    roles:
+      user.role && user.roles?.includes(user.role)
+        ? user.roles
+        : user?.role
+          ? (user.roles || []).concat(user?.role)
+          : user.roles,
     // createdOn: user.createdOn,
     // updatedOn: user.updatedOn,
   }
@@ -8133,11 +8412,8 @@ export const getTribePosts = async ({
                   })
                 }
 
-                const app = row.app?.id
-                  ? await getApp({
-                      id: row.app?.id,
-                      depth: 1,
-                    })
+                const app = row?.app?.id
+                  ? await getSimpleApp({ id: row.app.id, userId, guestId })
                   : undefined
 
                 if (!app) return null

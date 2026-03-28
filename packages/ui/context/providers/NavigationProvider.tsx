@@ -85,10 +85,14 @@ const NavigationContext = createContext<
         value,
         to,
         tribe,
+        pear,
+        postId,
       }: {
         value: boolean
         to?: string
         tribe?: boolean
+        pear?: boolean
+        postId?: string
       }) => void
       setSlug: (slug?: string) => void
       slug?: "atlas" | "peach" | "vault" | "bloom" | string

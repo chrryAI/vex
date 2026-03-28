@@ -12,8 +12,9 @@ import {
   desc,
   eq,
   getAiAgent,
-  getApp,
+  getApp as getAppDb,
   getPlaceHolder,
+  getSimpleApp,
   getThread,
   getTribeFollows,
   getTribeLikes,
@@ -656,7 +657,7 @@ app.get("/p/:id", async (c) => {
             ? postLanguages
             : postLanguages.concat("en")
           : ["en"],
-        app: await getApp({ id: post.appId, threadId: thread?.id }),
+        app: await getAppDb({ id: post.appId, threadId: thread?.id }),
         comments: await Promise.all(
           comments.map(async (c) => {
             // Fetch comment translations
@@ -681,7 +682,7 @@ app.get("/p/:id", async (c) => {
                   : commentLanguages.concat("en")
                 : ["en"],
               app: c.app
-                ? await getApp({ id: c.app.id, threadId: thread?.id })
+                ? await getSimpleApp({ id: c.app.id, threadId: thread?.id })
                 : null,
             }
           }),
@@ -690,7 +691,7 @@ app.get("/p/:id", async (c) => {
           reactions.map(async (c) => ({
             ...c,
             app: c.app
-              ? await getApp({ id: c.app.id, threadId: thread?.id })
+              ? await getSimpleApp({ id: c.app.id, threadId: thread?.id })
               : null,
           })),
         ),
@@ -983,7 +984,7 @@ app.post("/p/:id/translate", async (c) => {
     if (!post) {
       return c.json({ error: "Post not found" }, { status: 404 })
     }
-    const app = await getApp({
+    const app = await getSimpleApp({
       id: post.appId,
     })
 
@@ -1234,7 +1235,7 @@ app.post("/c/:id/translate", async (c) => {
     }
 
     const app = comment.appId
-      ? await getApp({
+      ? await getSimpleApp({
           id: comment.appId,
         })
       : null

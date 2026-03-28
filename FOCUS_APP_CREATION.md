@@ -97,7 +97,7 @@ tips: [
     emoji: "📊",
     content: "Weekly reviews = 23% performance improvement",
   },
-]
+];
 ```
 
 ---
@@ -257,7 +257,7 @@ Focus inherits features from:
 ### **Tools Available**
 
 ```typescript
-tools: ["calendar", "location", "weather"]
+tools: ["calendar", "location", "weather"];
 ```
 
 Focus can access:

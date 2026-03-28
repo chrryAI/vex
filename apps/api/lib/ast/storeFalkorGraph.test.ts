@@ -43,7 +43,9 @@ describe("storeFalkorGraph", () => {
     await findFunctionCallers("myFunc")
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("name: $functionName"),
-      { params: { functionName: "myFunc" } },
+      {
+        params: { functionName: "myFunc" },
+      },
     )
   })
 
@@ -51,7 +53,9 @@ describe("storeFalkorGraph", () => {
     await findImportUsage("my-module")
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("CONTAINS $moduleName"),
-      { params: { moduleName: "my-module" } },
+      {
+        params: { moduleName: "my-module" },
+      },
     )
   })
 
@@ -59,7 +63,9 @@ describe("storeFalkorGraph", () => {
     await getFunctionCallChain("myFunc", 5)
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("name: $functionName"),
-      { params: { functionName: "myFunc" } },
+      {
+        params: { functionName: "myFunc" },
+      },
     )
     expect(graph.query).toHaveBeenCalledWith(
       expect.stringContaining("CALLS*1..5"),

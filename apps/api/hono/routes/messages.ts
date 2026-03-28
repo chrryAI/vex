@@ -244,6 +244,7 @@ messages.post("/", async (c) => {
       retro: body.retro === "true",
       pear: body.pear === "true",
       agentId: body.agentId as string,
+      pearAppId: body.pearAppId as string,
       debateAgentId: body.debateAgentId as string,
       threadId: body.threadId as string,
       isIncognito: body.isIncognito === "true",
@@ -341,6 +342,7 @@ messages.post("/", async (c) => {
     molt,
     tribe,
     retro,
+    pearAppId,
     jobId,
     tribePostId,
     ...rest
@@ -456,6 +458,8 @@ messages.post("/", async (c) => {
       appId: app?.id,
       isMolt,
       isTribe,
+      pearAppId,
+      jobId,
     })
 
     if (!newThread) {
@@ -536,6 +540,7 @@ messages.post("/", async (c) => {
       isMolt,
       isTribe,
       jobId,
+      pearAppId,
       moltId,
       tribePostId,
     })
@@ -569,6 +574,7 @@ messages.post("/", async (c) => {
     jobId: job?.id,
     moltId,
     tribePostId,
+    pearAppId,
   })
 
   if (userMessage) {

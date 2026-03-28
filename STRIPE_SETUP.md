@@ -153,16 +153,13 @@ Body: Stripe event payload
 ## Feature Gating Example
 
 ```typescript
-import { hasPremiumAccess } from "@repo/db"
+import { hasPremiumAccess } from "@repo/db";
 
 // In your API route
-const hasGrapeAccess = await hasPremiumAccess(userId, "grape_analytics")
+const hasGrapeAccess = await hasPremiumAccess(userId, "grape_analytics");
 
 if (!hasGrapeAccess) {
-  return c.json(
-    { error: "Upgrade to Grape Analytics to access this feature" },
-    403,
-  )
+  return c.json({ error: "Upgrade to Grape Analytics to access this feature" }, 403);
 }
 
 // Proceed with premium feature

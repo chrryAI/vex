@@ -101,7 +101,7 @@ import {
   processMessageForRAG,
 } from "../../lib/actions/ragService"
 import { uploadArtifacts } from "../../lib/actions/uploadArtifacts"
-import { cleanAiResponse } from "../../lib/ai/cleanAiResponse"
+import { cleanAiResponse, sanitizeForAI } from "../../lib/ai/cleanAiResponse"
 import { generateImage } from "../../lib/ai/mediaGeneration"
 import { PerformanceTracker } from "../../lib/analytics"
 import { getDNAThreadArtifacts } from "../../lib/appRAG"
@@ -1231,7 +1231,7 @@ ai.post("/", async (c) => {
   // const startTime = Date.now()
   // console.log("🚀 POST /api/ai - Request received")
   // console.time("messageProcessing")
-
+  const shushiFileModel = "claude"
   const member = await tracker.track("auth_member", () =>
     getMember(c, { skipCache: true, skipMasking: true }),
   )
@@ -1271,13 +1271,16 @@ ai.post("/", async (c) => {
     // Handle file uploads
     const formData = (await request.formData()) as unknown as FormData
     requestData = {
+      swarm: formData.get("wasPear"),
       wasPear: formData.get("wasPear") === "true",
+      pearAppId: formData.get("pearAppId") as string,
       stream: formData.get("stream"),
       postId: formData.get("postId") as string,
       placeholder: formData.get("placeholder") as string,
       appId: formData.get("appId") as string,
       fp: formData.get("fingerprint") as string,
       slug: formData.get("slug") as string,
+      modelId: formData.get("slug") as string,
       selectedAgentId: (formData.get("selectedAgentId") as string) || "",
       pauseDebate: formData.get("pauseDebate") === "true",
       debateAgentId: (formData.get("debateAgentId") as string) || "",
@@ -1293,6 +1296,7 @@ ai.post("/", async (c) => {
       about: formData.get("about") === "true",
       isSpeechActive: formData.get("isSpeechActive") === "true",
       pear: formData.get("pear") === "true",
+      byokModelId: formData.get("modelId") === "true",
       weather: formData.get("weather")
         ? JSON.parse(formData.get("weather") as string)
         : null,
@@ -1340,6 +1344,9 @@ ai.post("/", async (c) => {
     deviceId,
     fingerprint: fp,
     postType,
+    pearAppId,
+    modelId,
+    byokModelId,
     ...rest
   } = requestData
 
@@ -1363,6 +1370,9 @@ ai.post("/", async (c) => {
     return c.json({ error: "Message not found" }, { status: 404 })
   }
 
+  // let swarm = rest.swarm || []
+  // const speaker = []
+
   // Parallelize thread and app fetching
   let [thread, requestApp] = await Promise.all([
     tracker.track("get_thread", () =>
@@ -1375,14 +1385,11 @@ ai.post("/", async (c) => {
             depth: 1,
             userId: member?.id,
             guestId: guest?.id,
-            skipCache: true,
+            // skipCache: true,
           }),
         )
       : Promise.resolve(undefined),
   ])
-
-  // let swarm = []
-  // const speaker = []
 
   const appExtends = requestApp
     ? requestApp?.store?.apps.filter((a) => a.id !== requestApp?.id) || []
@@ -1483,9 +1490,14 @@ ai.post("/", async (c) => {
       },
       c,
     }
-    shouldStream
-      ? notifyOwnerAndCollaborationsInternal(payload)
-      : (canPostToMolt || canPostToTribe) && broadcast(payload)
+
+    notifyOwnerAndCollaborationsInternal({
+      ...payload,
+      types: ["stream", "email", "ws"].filter((type) =>
+        shouldStream ? type : type !== "ws",
+      ) as notifyOwnerAndCollaborationsPayload["types"],
+    })
+    !shouldStream && (canPostToMolt || canPostToTribe) && broadcast(payload)
   }
 
   async function enhancedStreamChunk({
@@ -1582,9 +1594,7 @@ ${
   parentApp.highlights && parentApp.highlights?.length > 0
     ? `
 **Inherited Capabilities:**
-${parentApp.highlights
-  .map((h: any) => `${h.emoji || "•"} **${h.title}**: ${h.content}`)
-  .join("\n")}
+${parentApp.highlights.map((h: any) => `${h.emoji || "•"} **${h.title}**: ${h.content}`).join("\n")}
 `
     : ""
 }
@@ -1776,7 +1786,13 @@ ${
       ? await getMessages({ threadId: thread.id, pageSize: dynamicPageSize })
       : { messages: [], totalCount: 0, hasNextPage: false, nextPage: null }
 
-    const messages = messagesData.messages || []
+    const messages = (messagesData.messages || []).map((msg: any) => ({
+      ...msg,
+      content:
+        typeof msg.content === "string"
+          ? sanitizeForAI(msg.content)
+          : msg.content,
+    })) as ModelMessage[]
 
     // Only main app (depth 0) provides instructions and artifacts
     const instructions = depth === 0 ? thread?.instructions || "" : ""
@@ -1948,7 +1964,7 @@ ${
       // Only log credits when BOTH channels are disabled (not when one is active)
       !canPostToTribe &&
         !canPostToMolt &&
-        shouldStream &&
+        !job &&
         (await logCreditUsage({
           userId: member?.id,
           guestId: guest?.id,
@@ -2286,7 +2302,7 @@ You can enable these in your settings anytime!"
 
   // 🍇 Grape Context (Global - all apps should know about available apps)
   const grapeContext =
-    requestApp?.store?.apps && requestApp.store.apps.length > 0
+    requestApp?.store?.apps && requestApp.store?.apps?.length > 0
       ? `
 
 ## 🍇 Grape (Discover Apps, Earn Credits)
@@ -2930,50 +2946,20 @@ If the user asks for statistics, data, or concrete numbers regarding specific gr
   // Build calendar context (limit to 15 most relevant events)
   const calendarContext =
     calendarEvents && calendarEvents.length > 0
-      ? `
-
-## 📅 User's Calendar Events
-
-You have access to the user's calendar. Here are their upcoming and recent events:
-
-${calendarEvents
-  .slice(0, 15)
-  .map((event) => {
-    const start = new Date(event.startTime)
-    const end = new Date(event.endTime)
-    const isPast = start < now
-    const isToday = start.toDateString() === now.toDateString()
-    const isTomorrow =
-      start.toDateString() ===
-      new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString()
-
-    const timeLabel = isPast
-      ? "(Past)"
-      : isToday
-        ? "(Today)"
-        : isTomorrow
-          ? "(Tomorrow)"
-          : ""
-
-    return `- **${event.title}** ${timeLabel}
-  ${event.isAllDay ? "All day" : `${start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`}
-  ${start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-  ${event.location ? `📍 ${event.location}` : ""}
-  ${event.description ? `📝 ${event.description.slice(0, 100)}${event.description.length > 100 ? "..." : ""}` : ""}`
-  })
-  .join("\n\n")}
-
-${calendarEvents.length > 15 ? `\n...and ${calendarEvents.length - 15} more events` : ""}
-
-**How to use calendar context:**
-- Help users remember upcoming events when relevant
-- Suggest scheduling around their calendar
-- Remind them of conflicts when they mention plans
-- Be proactive but not pushy about their schedule
-- Reference specific events naturally in conversation
-
-Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would you like to prepare anything for that?"
-`
+      ? `\n\n## 📅 User's Calendar Events (JSON)\n\n\`\`\`json\n${JSON.stringify(
+          calendarEvents.slice(0, 15).map((e) => ({
+            id: e.id,
+            title: e.title,
+            startTime: e.startTime,
+            endTime: e.endTime,
+            location: e.location,
+            description: e.description,
+            isAllDay: e.isAllDay,
+            isPast: new Date(e.startTime) < now,
+          })),
+          null,
+          2,
+        )}\n\`\`\`\n\n### 🧭 Calendar Guidelines:\n- **Help users remember** upcoming events when relevant.\n- **Suggest scheduling** around their existing calendar.\n- **Remind them of conflicts** when they mention new plans.\n- **Be proactive but not pushy** about their schedule.\n- **Reference specific events naturally** in conversation.\n\nExample: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would you like to prepare anything for that?"\n`
       : ""
 
   // Vault and Focus data already fetched in parallel above
@@ -2984,173 +2970,98 @@ Example: "I see you have a meeting with the Tokyo team tomorrow at 10 AM. Would 
     (vaultExpenses?.expenses.length ||
       vaultBudgets?.budgets.length ||
       vaultSharedExpenses?.sharedExpenses.length)
-      ? `
-
-## 💰 User's Financial Overview
-
-${
-  vaultExpenses?.expenses.length
-    ? `### Recent Expenses (Last ${vaultExpenses.expenses.length})
-${vaultExpenses.expenses
-  .slice(0, 10)
-  .map((exp) => {
-    const amount = (exp.amount / 100).toFixed(2)
-    const date = new Date(exp.date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    })
-    return `- **$${amount}** - ${exp.description} (${exp.category}) - ${date}`
-  })
-  .join("\n")}
-${vaultExpenses.expenses.length > 10 ? `\n...and ${vaultExpenses.expenses.length - 10} more expenses` : ""}
-
-**Total spent**: $${(vaultExpenses.expenses.reduce((sum, e) => sum + e.amount, 0) / 100).toFixed(2)}
-`
-    : ""
-}
-
-${
-  vaultBudgets?.budgets.length
-    ? `### Active Budgets
-${vaultBudgets.budgets
-  .map((budget) => {
-    const budgetAmount = (budget.amount / 100).toFixed(2)
-    // Calculate spending for this category
-    const categorySpending =
-      vaultExpenses?.expenses
-        .filter((e) => e.category === budget.category)
-        .reduce((sum, e) => sum + e.amount, 0) || 0
-    const spent = (categorySpending / 100).toFixed(2)
-    const remaining = ((budget.amount - categorySpending) / 100).toFixed(2)
-    const percentUsed = ((categorySpending / budget.amount) * 100).toFixed(0)
-    const status =
-      categorySpending > budget.amount
-        ? "⚠️ OVER"
-        : Number(percentUsed) > 80
-          ? "⚡ HIGH"
-          : "✅ OK"
-
-    return `- **${budget.category}**: $${spent}/$${budgetAmount} (${percentUsed}% used) ${status}
-  Remaining: $${remaining}`
-  })
-  .join("\n")}
-`
-    : ""
-}
-
-${
-  vaultSharedExpenses?.sharedExpenses.length
-    ? `### Shared Expenses (This Conversation)
-${vaultSharedExpenses.sharedExpenses
-  .map((se) => {
-    const paidCount = se.splits.filter((s) => s.paid).length
-    const unpaidCount = se.splits.filter((s) => !s.paid).length
-    const totalOwed = se.splits
-      .filter((s) => !s.paid)
-      .reduce((sum, s) => sum + s.amount, 0)
-    const totalPaid = se.splits
-      .filter((s) => s.paid)
-      .reduce((sum, s) => sum + s.amount, 0)
-
-    return `- **Shared Expense** (${se.splits.length} splits)
-  Paid: ${paidCount} people ($${(totalPaid / 100).toFixed(2)})
-  Unpaid: ${unpaidCount} people ($${(totalOwed / 100).toFixed(2)})`
-  })
-  .join("\n")}
-`
-    : ""
-}
-
-**How to use financial context:**
-- Reference spending patterns when relevant ("I see you've been spending a lot on dining out")
-- Warn about budget overages proactively
-- Suggest budget adjustments based on actual spending
-- Remind about outstanding shared expenses
-- Be helpful but not judgmental about spending habits
-`
+      ? `\n\n## 💰 User's Financial Overview (JSON)\n\n\`\`\`json\n${JSON.stringify(
+          {
+            recentExpenses: vaultExpenses?.expenses.slice(0, 10).map((e) => ({
+              amount: (e.amount / 100).toFixed(2),
+              description: e.description,
+              category: e.category,
+              date: new Date(e.date).toLocaleDateString(),
+            })),
+            activeBudgets: vaultBudgets?.budgets.map((b) => {
+              const categorySpending =
+                vaultExpenses?.expenses
+                  .filter((e) => e.category === b.category)
+                  .reduce((sum, e) => sum + e.amount, 0) || 0
+              return {
+                category: b.category,
+                limit: (b.amount / 100).toFixed(2),
+                spent: (categorySpending / 100).toFixed(2),
+                remaining: ((b.amount - categorySpending) / 100).toFixed(2),
+                percentUsed: ((categorySpending / b.amount) * 100).toFixed(0),
+              }
+            }),
+            sharedExpenses: vaultSharedExpenses?.sharedExpenses.map((se) => ({
+              participants: se.splits.length,
+              paidCount: se.splits.filter((s) => s.paid).length,
+              totalOwed: (
+                se.splits
+                  .filter((s) => !s.paid)
+                  .reduce((sum, s) => sum + s.amount, 0) / 100
+              ).toFixed(2),
+            })),
+          },
+          null,
+          2,
+        )}\n\`\`\`\n\n### 💰 Financial Guidelines:\n- **Reference spending patterns** when relevant ("I see you've been spending a lot on dining out").\n- **Warn about budget overages** proactively.\n- **Suggest budget adjustments** based on actual spending.\n- **Remind about outstanding shared expenses** naturally.\n- **Be helpful but NOT judgmental** about spending habits.\n`
       : ""
 
   // Build Focus context (tasks, moods, timer settings)
   const focusContext =
     hasFocus && (focusTasks?.length || focusMoods?.length || focusTimer)
-      ? `
-
-## 🎯 User's Focus & Wellness Overview
-
-${
-  focusTasks?.length
-    ? `### Recent Tasks (Last ${focusTasks.length})
-${focusTasks
-  .slice(0, 10)
-  .map((task) => {
-    const totalTime = task.total?.reduce((sum, t) => sum + t.count, 0) || 0
-    const hours = Math.floor(totalTime / 3600)
-    const mins = Math.floor((totalTime % 3600) / 60)
-    return `- **${task.title}** ${totalTime > 0 ? `(${hours}h ${mins}m)` : "(not started)"}`
-  })
-  .join("\n")}
-`
-    : ""
-}
-
-${
-  focusMoods?.length
-    ? `### Recent Mood Trends (Last ${focusMoods.length} entries)
-${(() => {
-  const moodCounts = focusMoods.reduce(
-    (acc, m) => {
-      acc[m.type] = (acc[m.type] || 0) + 1
-      return acc
-    },
-    {} as Record<string, number>,
-  )
-  const latestMood = focusMoods[0]
-  if (!latestMood) return "No mood data available"
-
-  return `Latest: ${moodEmojis[latestMood.type as keyof typeof moodEmojis]} ${latestMood.type} (${new Date(latestMood.createdOn).toLocaleDateString()})
-Distribution: ${Object.entries(moodCounts)
-    .map(([mood, count]) => `${mood} (${count})`)
-    .join(", ")}`
-})()}
-`
-    : ""
-}
-
-${
-  focusTimer
-    ? `### Timer Status & Preferences
-${focusTimer.isCountingDown ? "⏱️ **TIMER IS ACTIVE** - User is currently in a focus session!" : "⏸️ Timer is idle"}
-- Preset 1: ${focusTimer.preset1} min
-- Preset 2: ${focusTimer.preset2} min
-- Preset 3: ${focusTimer.preset3} min
-- Total sessions completed: ${focusTimer.count}
-`
-    : ""
-}
-
-**How to use focus context:**
-- **If timer is ACTIVE:** Be brief and supportive. Don't interrupt their flow. Encourage them to stay focused.
-- **If timer is IDLE:** Suggest starting a focus session if they seem scattered or need to tackle a task.
-- Suggest breaks when user seems stressed or frustrated (check mood trends)
-- Recommend focus sessions based on their timer preferences (they prefer ${focusTimer?.preset1 || 25}min sessions)
-- Reference task progress naturally ("You've spent 2h on that project")
-- Notice mood patterns and offer wellness suggestions
-- Be supportive about productivity without being pushy
-- Correlate mood with work patterns when helpful
-
-**Mood Tracking Permission:**
-${
-  member?.characterProfilesEnabled || guest?.characterProfilesEnabled
-    ? "✅ User has enabled character profiles - you CAN create moods using the createMood tool"
-    : "⚠️ User has NOT enabled character profiles - you MUST ask for permission before logging moods. Tell them to enable it via: 1) The sparkles icon ✨ in the header (top right), or 2) The settings at the bottom of the thread (top of chat box). Explain that enabling character profiles allows mood tracking for better wellness insights."
-}
-
-**Examples:**
-- Timer ACTIVE: "Great job staying focused! 💪 Keep it up!"
-- Timer IDLE + stressed mood: "I notice you've been feeling stressed. Want to start a ${focusTimer?.preset1 || 25}min focus session to tackle that task?"
-- Timer IDLE + good mood: "You seem energized! Perfect time for a productive focus session! 🚀"
-- After many sessions: "Wow, ${focusTimer?.count} sessions completed! You're crushing it! 🎉"
-`
+      ? `\n\n## 🎯 User's Focus & Wellness Overview (JSON)\n\n\`\`\`json\n${JSON.stringify(
+          {
+            recentTasks: focusTasks?.slice(0, 10).map((task) => {
+              const totalTime =
+                task.total?.reduce((sum, t) => sum + t.count, 0) || 0
+              return {
+                title: task.title,
+                totalTimeSeconds: totalTime,
+                hours: Math.floor(totalTime / 3600),
+                minutes: Math.floor((totalTime % 3600) / 60),
+              }
+            }),
+            moodTrends: focusMoods?.length
+              ? {
+                  latest: focusMoods[0]
+                    ? {
+                        type: focusMoods[0].type,
+                        emoji:
+                          moodEmojis[
+                            focusMoods[0].type as keyof typeof moodEmojis
+                          ],
+                        date: new Date(focusMoods[0].createdOn).toISOString(),
+                      }
+                    : null,
+                  distribution: focusMoods.reduce(
+                    (acc, m) => {
+                      acc[m.type] = (acc[m.type] || 0) + 1
+                      return acc
+                    },
+                    {} as Record<string, number>,
+                  ),
+                }
+              : null,
+            timer: focusTimer
+              ? {
+                  isActive: focusTimer.isCountingDown,
+                  presets: [
+                    focusTimer.preset1,
+                    focusTimer.preset2,
+                    focusTimer.preset3,
+                  ],
+                  totalSessionsCompleted: focusTimer.count,
+                }
+              : null,
+            moodTrackingPermission:
+              member?.characterProfilesEnabled ||
+              guest?.characterProfilesEnabled
+                ? "GRANTED"
+                : "PENDING_PERMISSION",
+          },
+          null,
+          2,
+        )}\n\`\`\`\n\n### 🎯 Focus Guidelines:\n- **If timer is ACTIVE:** Be extremely brief and supportive. Don't interrupt their flow. Encourage them to stay focused (e.g., "Great job staying focused! 💪").\n- **If timer is IDLE:** Suggest starting a focus session if they seem scattered or need to tackle a task.\n- **Notice mood patterns:** offer wellness suggestions or suggest breaks when user seems stressed/frustrated.\n- **Recommend sessions:** based on their timer preferences (e.g., they might prefer ${focusTimer?.preset1 || 25}min sessions).\n- **Be supportive:** about productivity without being pushy.\n`
       : ""
 
   // Build Task context (if current thread has a taskId, it's a task thread)
@@ -3158,99 +3069,36 @@ ${
   const taskMessages = appKnowledge?.messages?.messages || []
   const taskContext =
     currentTask && message.thread.taskId
-      ? `
-
-## 📋 Current Task Context
-
-**🎯 IMPORTANT: The user is actively working on THIS SPECIFIC TASK right now.**
-
-**When the user asks "which task am I working on?" or "what am I working on?", the answer is:**
-**"${currentTask.title}"**
-
-### Task Details
-- **Title:** ${currentTask.title}
-- **ID:** ${currentTask.id}
-- **Created:** ${new Date(currentTask.createdOn).toLocaleDateString()}
-${currentTask.description ? `- **Description:** ${currentTask.description}` : ""}
-- **Status:** 🟢 ACTIVELY WORKING ON THIS TASK (this thread is linked to this task)
-
-### Work History (${taskMessages.length} messages in this task)
-${
-  taskMessages.length > 0
-    ? taskMessages
-        .slice(0, 10)
-        .map((msg, idx) => {
-          const moodEmoji = msg?.mood
-            ? moodEmojis[msg.mood.type as keyof typeof moodEmojis]
-            : ""
-          const timeAgo = Math.floor(
-            msg.message.createdOn.getTime() / (1000 * 60 * 60),
-          )
-          const preview =
-            msg.message.content.slice(0, 60) +
-            (msg.message.content.length > 60 ? "..." : "")
-          return `${idx + 1}. ${moodEmoji} **${preview}** (${timeAgo}h ago)`
-        })
-        .join("\n")
-    : "No messages yet in this task"
-}
-
-### Total Time Invested
-${(() => {
-  const totalSeconds =
-    currentTask.total?.reduce((sum, t) => sum + (t.count || 0), 0) || 0
-  const hours = Math.floor(totalSeconds / 3600)
-  const mins = Math.floor((totalSeconds % 3600) / 60)
-  return hours > 0 || mins > 0
-    ? `⏱️ ${hours}h ${mins}m spent on this task`
-    : "⏱️ No time tracked yet"
-})()}
-
-### Mood Journey
-${(() => {
-  const moods =
-    taskMessages
-      .map((msg) => msg.mood)
-      .filter(Boolean)
-      .slice(0, 5) || []
-  if (moods.length === 0) return "No mood data for this task"
-
-  const moodEmojis = {
-    happy: "😊",
-    sad: "😢",
-    angry: "😠",
-    astonished: "😲",
-    inlove: "😍",
-    thinking: "🤔",
-  }
-  return moods
-    .map((m) => moodEmojis[m?.type as keyof typeof moodEmojis])
-    .join(" → ")
-})()}
-
-**How to use task context:**
-- **CRITICAL:** When user asks "which task am I working on?", respond: "You're working on '${currentTask.title}'"
-- **DO NOT** list all their tasks - they're asking about THIS SPECIFIC task
-- **DO NOT** say "none of them are marked as in progress" - THIS task IS in progress (they're chatting about it)
-- Reference the task naturally: "For your '${currentTask.title}' task..."
-- Acknowledge their work history: "I see you've logged ${taskMessages.length} messages"
-- Notice mood patterns: "I notice your mood changed from X to Y while working on this"
-- Suggest next steps based on conversation and progress
-- Be specific and actionable - they want help with THIS task
-- If they seem stuck (angry/sad moods), offer debugging help
-- If making progress (happy moods), encourage and suggest next milestones
-- Reference time invested to show you understand their commitment
-
-**Examples:**
-- "I see you've spent ${(() => {
-          const totalSeconds =
-            currentTask.total?.reduce((sum, t) => sum + (t.count || 0), 0) || 0
-          const hours = Math.floor(totalSeconds / 3600)
-          return hours
-        })()} hours on '${currentTask.title}'. Let's make this time count!"
-- "Your last message shows you were ${taskMessages[0]?.mood?.type || "thinking"}. What's the current blocker?"
-- "Based on your ${taskMessages.length} messages, you're making steady progress. What's next?"
-`
+      ? `\n\n## 📋 Current Task Context (JSON)\n\n\`\`\`json\n${JSON.stringify(
+          {
+            task: {
+              id: currentTask.id,
+              title: currentTask.title,
+              description: currentTask.description,
+              createdOn: currentTask.createdOn,
+              status: "ACTIVE_IN_THIS_THREAD",
+            },
+            workHistory: taskMessages.slice(0, 10).map((msg) => ({
+              contentPreview: msg.message.content.slice(0, 60) + "...",
+              mood: msg.mood?.type,
+              timestamp: msg.message.createdOn,
+            })),
+            analytics: {
+              totalSeconds:
+                currentTask.total?.reduce(
+                  (sum, t) => sum + (t.count || 0),
+                  0,
+                ) || 0,
+              messageCount: taskMessages.length,
+              moodJourney: taskMessages
+                .map((msg) => msg.mood?.type)
+                .filter(Boolean)
+                .slice(0, 5),
+            },
+          },
+          null,
+          2,
+        )}\n\`\`\`\n\n### 📋 Task Guidelines:\n- **🎯 IMPORTANT:** The user is actively working on **THIS SPECIFIC TASK** right now.\n- **CRITICAL:** When asked "what am I working on?", respond: "You're working on '${currentTask.title}'".\n- **DO NOT** list all tasks - they're asking about THIS specific one.\n- **DO NOT** say "none are in progress" - THIS task is in progress because they're chatting about it.\n- **Acknowledge work history:** Mention they've logged ${taskMessages.length} messages and reference their progress.\n`
       : ""
 
   // Get news context based on app
@@ -3278,6 +3126,61 @@ ${(() => {
     requestApp?.slug && beasts.includes(requestApp?.slug)
       ? await getPearContext()
       : ""
+
+  // Load target apps for feedback generation
+  let feedbackAppsContext = ""
+
+  const toFeedBack = pearAppId
+    ? await getApp({
+        id: pearAppId,
+        userId: member?.id,
+        guestId: guest?.id,
+        // skipCache: true,
+        depth: 1,
+      })
+    : undefined
+
+  if (toFeedBack) {
+    // Get character profile for personality insights
+    const characterProfile = await db.query.characterProfiles.findFirst({
+      where: (profiles, { eq }) => eq(profiles.appId, toFeedBack.id),
+    })
+
+    // Get recent posts for content quality analysis
+    const recentPosts = await db.query.tribePosts.findMany({
+      where: (posts, { eq }) => eq(posts.appId, toFeedBack.id),
+      orderBy: (posts, { desc }) => [desc(posts.createdOn)],
+      limit: 5,
+    })
+
+    // Build comprehensive structured context
+    const contextData = {
+      app: {
+        id: toFeedBack.id,
+        name: toFeedBack.name,
+        title: toFeedBack.title,
+        subtitle: toFeedBack.subtitle,
+        description: toFeedBack.description,
+        systemPrompt: toFeedBack.systemPrompt,
+        highlights: toFeedBack.highlights,
+        tips: toFeedBack.tips,
+        rules: (toFeedBack as any).rules,
+      },
+      characterProfile: characterProfile
+        ? {
+            personality: characterProfile.personality,
+            traits: characterProfile.traits,
+            goals: (characterProfile as any).goals,
+          }
+        : null,
+      recentPosts: recentPosts.map((p) => ({
+        content: p.content,
+        createdOn: p.createdOn,
+      })),
+    }
+
+    feedbackAppsContext = `\n\n## 🍐 App to Review for Feedback (JSON Data)\n\n\`\`\`json\n${JSON.stringify(contextData, null, 2)}\n\`\`\`\n\n**Your Task:** Analyze this app comprehensively and provide constructive Pear feedback. Consider:\n- Feature completeness and usefulness\n- System prompt quality and personality alignment\n- Content quality from recent posts\n- Tips and highlights effectiveness\n- Character profile consistency\n- Overall platform presence and value proposition\n\nProvide specific, actionable feedback as a JSON object with: content (200-1000 chars), feedbackType (suggestion/praise/complaint/feature_request/bug), category (ux/feature/ui_design/analytics/performance/other), and credits (3-10 quality score).\n`
+  }
 
   // When Pear mode is active, remind the AI to nudge the user to leave feedback
   const pearNudgeAllowed = isPear && !canPostToTribe && !canPostToMolt
@@ -3364,16 +3267,14 @@ This data helps maintain system integrity and ensure comprehensive test coverage
       }
 
       await updateApp({
-        ...requestApp!,
+        id: requestApp.id,
         mainThreadId: thread.id,
       })
 
-      requestApp = await getApp({
-        id: requestApp!.id,
-        userId: member?.id,
-        guestId: guest?.id,
-        skipCache: true,
-      })
+      requestApp = {
+        ...requestApp,
+        mainThreadId: thread.id,
+      }
     } catch (error) {
       captureException(error)
     }
@@ -3507,58 +3408,64 @@ Now, how can I help you get started with ${requestApp.name}?
     CREDITS_PRICE,
   })
 
-  const subscriptionContext = `
-
-## 💳 SUBSCRIPTION PLANS REFERENCE
-
-${ask && about === "subscribe" ? `**USER CONTEXT**: The user is asking about subscription plans. They want to know: "${message.message.content}"\nProvide a helpful, detailed response about the specific plan they're asking about.\n\n` : ""}You have knowledge of all available subscription plans. Only provide detailed information when users specifically ask about plans, pricing, subscriptions, or upgrades.
-
-**Core Plans:**
-
-🍒 **Chrry (Credits)** - Pay-as-you-go
-${creditsFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
-
-🆓 **Free Member**
-${memberFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
-
-🍓 **Strawberry (Plus)** - €${PLUS_PRICE}/month
-${plusFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
-- ${FREE_DAYS} days free trial
-
-🫐 **Raspberry (Pro)** - €${PRO_PRICE}/month
-${proFeatures.map((f) => `${f.emoji} ${f.text}`).join("\n")}
-- ${FREE_DAYS} days free trial
-
-**Premium Brand Plans:**
-
-🍇 **Grape** (White-label branding)
-- Free Tier: ${grapeFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Plus Tier: ${grapePlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Pro Tier: ${grapeProFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-
-🍐 **Pear** (Feedback & Analytics)
-- Free Tier: ${pearFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Plus Tier: ${pearPlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Pro Tier: ${pearProFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-
-🍣 **Sushi** (Developer-focused)
-- Free Tier: ${sushiFreeFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Coder Tier: ${sushiCoderFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Architect Tier: ${sushiArchitectFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-
-🍉 **Watermelon** (Agency/Enterprise)
-- Standard: ${watermelonFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-- Plus: ${watermelonPlusFeatures.map((f) => `${f.emoji} ${f.text}`).join(", ")}
-
-**When users ask about plans:**
-- Explain the differences clearly and concisely
-- Help them choose based on their usage needs
-- Mention the ${FREE_DAYS}-day free trial for subscriptions
-- Be helpful but not pushy about upgrading
-- Focus on value and benefits, not just features
-
-**Important**: Only discuss subscription details when the user explicitly asks. Don't proactively suggest upgrades unless directly relevant to their question or need.
-`
+  const subscriptionContext = `\n\n## 💳 SUBSCRIPTION PLANS REFERENCE (JSON)\n\n\`\`\`json\n${JSON.stringify(
+    {
+      userContext:
+        ask && about === "subscribe"
+          ? `The user is asking about plans: "${message.message.content}"`
+          : null,
+      corePlans: [
+        {
+          name: "Chrry (Credits)",
+          type: "pay-as-you-go",
+          pricing: `€${CREDITS_PRICE} per ${ADDITIONAL_CREDITS} credits`,
+          features: creditsFeatures.map((f) => f.text),
+        },
+        {
+          name: "Free Member",
+          type: "free",
+          features: memberFeatures.map((f) => f.text),
+        },
+        {
+          name: "Strawberry (Plus)",
+          type: "subscription",
+          price: `€${PLUS_PRICE}/month`,
+          trial: `${FREE_DAYS} days`,
+          features: plusFeatures.map((f) => f.text),
+        },
+        {
+          name: "Raspberry (Pro)",
+          type: "subscription",
+          price: `€${PRO_PRICE}/month`,
+          trial: `${FREE_DAYS} days`,
+          features: proFeatures.map((f) => f.text),
+        },
+      ],
+      brandPlans: {
+        grape: {
+          free: grapeFreeFeatures.map((f) => f.text),
+          plus: grapePlusFeatures.map((f) => f.text),
+          pro: grapeProFeatures.map((f) => f.text),
+        },
+        pear: {
+          free: pearFreeFeatures.map((f) => f.text),
+          plus: pearPlusFeatures.map((f) => f.text),
+          pro: pearProFeatures.map((f) => f.text),
+        },
+        sushi: {
+          free: sushiFreeFeatures.map((f) => f.text),
+          coder: sushiCoderFeatures.map((f) => f.text),
+          architect: sushiArchitectFeatures.map((f) => f.text),
+        },
+        watermelon: {
+          standard: watermelonFeatures.map((f) => f.text),
+          plus: watermelonPlusFeatures.map((f) => f.text),
+        },
+      },
+    },
+    null,
+    2,
+  )}\n\`\`\`\n\n### 💳 Subscription Guidelines:\n- **Explain differences** clearly and concisely when asked.\n- **Help users choose** based on their specific usage needs.\n- **Mention the trial:** Always mention the ${FREE_DAYS}-day free trial for new upgrades.\n- **Be helpful NOT pushy:** Don't proactively suggest upgrades unless directly relevant.\n- **Focus on value:** Emphasize benefits (e.g., more credits, better models) over technical features.\n`
 
   // Sato Mode: Custom communication style example for Chrry ecosystem
   // NOTE: This is just ONE example of custom slang/personality.
@@ -3675,6 +3582,7 @@ When message language is unclear, default to this language.`
     grapeContext, // Available apps in Grape button (GLOBAL - all apps need this)
     analyticsContext, // Live analytics for Grape
     pearContext, // Recent feedback for Pear
+    feedbackAppsContext, // Target apps for feedback generation with full context
     pearModeReminder, // Nudge user to submit feedback when Pear mode is on
     e2eContext, // E2E testing analytics for system integrity
     dnaContext, // App owner's foundational knowledge
@@ -3709,11 +3617,11 @@ When message language is unclear, default to this language.`
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
   const isE2E =
-    (!!fingerprint &&
-      !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
-      !!isE2EInternal &&
-      !job) ||
-    isDevelopment
+    !!fingerprint &&
+    !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
+    !!isE2EInternal &&
+    !job &&
+    !process.env.BELES
 
   // isE2E and fingerprint already declared earlier for performance optimization
 
@@ -5227,8 +5135,8 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
 
   const computedAgentName =
     agent.name === "sushi"
-      ? imageGenerationEnabled
-        ? "claude"
+      ? files.length
+        ? shushiFileModel
         : "deepseek"
       : agent.name
 
@@ -5377,22 +5285,23 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
   let model: Awaited<ReturnType<typeof getModelProvider>>
 
   if (files.length > 0 && agent.name === "sushi") {
-    const claude = await getAiAgent({
-      name: "claude",
+    const sushiFileAgent = await getAiAgent({
+      name: shushiFileModel,
     })
 
-    if (!claude) {
+    if (!sushiFileAgent) {
       console.log("❌ Claude not found")
       return c.json({ error: "Claude not found" }, { status: 404 })
     }
     console.log("🤖 Using Claude for multimodal (images/videos/PDFs)")
     model = await getModelProvider({
       app: requestApp,
-      name: claude.name,
+      name: sushiFileAgent.name,
       job,
       activeSchedule,
       user: member,
       guest,
+      byokModelId,
     })
   } else if (rest.webSearchEnabled && agent.name === "sushi") {
     const perplexityAgent = await getAiAgent({
@@ -5410,6 +5319,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       activeSchedule,
       user: member,
       guest,
+      byokModelId,
     })
     agent = perplexityAgent // Switch to Perplexity for citation processing
   } else {
@@ -5424,6 +5334,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       job,
       activeSchedule,
       user: member,
+      byokModelId,
       guest,
     })
     console.log(
@@ -5444,11 +5355,11 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
 
   searchContext
     ? console.log("🌐 Web search enabled")
-    : console.log("❌ Web search disabled")
+    : console.log("😁 Web search disabled")
 
   agent.capabilities.webSearch
     ? console.log("🤖 Agent supports web search")
-    : console.log("❌ Agent does not support web search")
+    : console.log("😁 Agent does not support web search")
 
   // Function to extract web search results from web search response and process citations
   // Supports any agent with webSearch capability (Perplexity, Sushi, etc.)
@@ -5810,7 +5721,13 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
       )
     }
 
-    return response || c.json({ success: true })
+    // Return message data so callers can extract AI content from the response
+    return c.json({
+      success: true,
+      message: latestAiMessage || { message: aiMessage },
+      text: testResponse,
+      content: testResponse,
+    })
   }
 
   checkThreadSummaryLimit({ user: member, guest, thread }) &&
@@ -5843,6 +5760,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
           activeSchedule,
           user: member,
           guest,
+          byokModelId,
         })
         const enhanceModelId =
           typeof deepseekEnhanceProvider.provider === "string"
@@ -5996,34 +5914,6 @@ Respond in JSON format:
         if (isDevelopment)
           console.debug("Generating image with enhanced Flux prompt...")
 
-        // Prioritize app-specific Replicate/OpenRouter key if provided (Image Gen usually via Replicate directly)
-        // If the app has a specific key for 'replicate', use it.
-        // Note: Currently Agent.tsx might not have a dedicated 'replicate' field, but if it exists in DB, we use it.
-        let replicateAuth = requestApp?.tier === "free" ? REPLICATE_API_KEY : ""
-        const appReplicateKey = requestApp?.apiKeys?.replicate
-        if (appReplicateKey) {
-          try {
-            replicateAuth = decrypt(appReplicateKey)
-            console.log("✅ Using app-specific Replicate API key")
-          } catch (e) {
-            captureException(e)
-            console.warn("⚠️ Failed to decrypt Replicate key, using as-is")
-            replicateAuth = appReplicateKey
-          }
-        }
-
-        let falAuth = ""
-        const appFalKey = requestApp?.apiKeys?.fal
-        if (appFalKey) {
-          try {
-            falAuth = decrypt(appFalKey)
-            console.log("✅ Using app-specific Fal.ai API key")
-          } catch (e) {
-            captureException(e)
-            falAuth = appFalKey
-          }
-        }
-
         // Generate image using unified utility (handles both Replicate and Fal.ai)
         let permanentUrl: string
         let title: string
@@ -6031,8 +5921,6 @@ Respond in JSON format:
           const result = await generateImage({
             prompt: enhancedPrompt,
             aspectRatio: "1:1",
-            apiKey: replicateAuth,
-            falKey: falAuth,
             app: requestApp,
             user: member,
             guest,
@@ -6171,7 +6059,10 @@ Respond in JSON format:
         typeof model === "string"
           ? model
           : (model as any).modelId || "deepseek-reasoner"
-      const tokenCheck = checkTokenLimit(messages, modelId)
+      const tokenCheck = checkTokenLimit(
+        messages,
+        files.length ? shushiFileModel : modelId,
+      )
 
       console.log(`📊 Token check for ${tokenCheck.modelName}:`, {
         estimated: tokenCheck.estimatedTokens,
@@ -6206,7 +6097,16 @@ Respond in JSON format:
         }
         newMessages.push(...split.recentMessages)
 
-        messages = newMessages as ModelMessage[]
+        const sanitizedMessages = (newMessages as ModelMessage[]).map(
+          (msg: any) => ({
+            ...msg,
+            content:
+              typeof msg.content === "string"
+                ? sanitizeForAI(msg.content)
+                : msg.content,
+          }),
+        ) as ModelMessage[]
+        messages = sanitizedMessages
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,
           tokenCheck.maxTokens,
@@ -6225,6 +6125,7 @@ Respond in JSON format:
 
       try {
         console.log("🍣 Step 1: Creating streamText result...")
+
         const result = streamText({
           model: model.provider,
           messages,
@@ -7450,7 +7351,11 @@ Respond in JSON format:
       let tokenLimitWarning: string | null = null
 
       const toolsForModel =
-        job || agent.name === "perplexity" ? undefined : allTools
+        process.env.BELES === "true" || agent.name === "perplexity"
+          ? undefined
+          : job
+            ? allTools
+            : undefined
 
       // Sato optimization #12: Global context protection for all providers (especially Claude 200k limit)
       const modelId =
@@ -7481,7 +7386,16 @@ Respond in JSON format:
           })
         }
         newMessages.push(...split.recentMessages)
-        messages = newMessages as ModelMessage[]
+        const sanitizedMessages2 = (newMessages as ModelMessage[]).map(
+          (msg: any) => ({
+            ...msg,
+            content:
+              typeof msg.content === "string"
+                ? sanitizeForAI(msg.content)
+                : msg.content,
+          }),
+        ) as ModelMessage[]
+        messages = sanitizedMessages2
 
         tokenLimitWarning = createTokenLimitError(
           tokenCheck.estimatedTokens,

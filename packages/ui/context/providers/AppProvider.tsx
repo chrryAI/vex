@@ -223,10 +223,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { searchParams, pathname, removeParams, addParams } = useNavigation()
 
-  // useEffect(() => {
-  //   session?.apps.length && setApps(session?.apps)
-  // }, [session?.apps, apps])
-
   const step = searchParams.get("step") as
     | "add"
     | "success"

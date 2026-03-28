@@ -14,13 +14,9 @@ try {
       connectTimeout: 3000, // Fail fast in CI / dev environments
     },
   })
-  // Verify it's actually FalkorDB by sending a test GRAPH.QUERY
-  await (_falkor as any).sendCommand([
-    "GRAPH.QUERY",
-    "_healthcheck",
-    "RETURN 1",
-    "--compact",
-  ])
+  // Verify it's actually FalkorDB by sending a test query
+  const testGraph = _falkor.selectGraph("_healthcheck")
+  await testGraph.query("RETURN 1")
   _graphAvailable = true
 } catch (err: any) {
   console.warn(
@@ -41,7 +37,7 @@ export const graph =
 export async function checkGraphConnection() {
   if (!_falkor) return false
   try {
-    await (_falkor as any).sendCommand(["PING"])
+    await _falkor.list()
     console.log(`✅ Connected to FalkorDB at ${FALKORDB_HOST}:${FALKORDB_PORT}`)
     return true
   } catch (error) {

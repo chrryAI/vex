@@ -1,6 +1,9 @@
 // "use client"
 // // import "./styles.scss"
 
+import { v4 as uuidv4 } from "uuid"
+import Chrry from "./Chrry"
+
 // // // Only import styles on web platforms (not React Native)
 // // // React Native will skip these imports during bundling
 // // if (typeof window !== "undefined") {
@@ -15,6 +18,12 @@
 
 // import Chrry from "./Chrry"
 
-// export default function Donut({}: {}) {
-//   return <Chrry donut />
-// }
+export default function Donut({
+  children,
+  apiKey,
+}: {
+  children?: React.ReactNode
+  apiKey?: string
+}) {
+  return <Chrry key={apiKey} donut deviceId={uuidv4()} apiKey={apiKey}></Chrry>
+}

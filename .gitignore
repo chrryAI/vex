@@ -1,5 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Random/temp files that might be accidentally created (e.g., apps/zibISwDk - 111MB binary)
+apps/zi*
+# Ignore extensionless files in apps root (potential temp/bin files)
+apps/*[^.][^.][^.][^.][^.]$
+
 # dependencies
 node_modules
 .pnp
@@ -48,6 +53,10 @@ dist/
 playwright-report/
 reports
 .stryker
+
+# typedoc generated docs (auto-deployed to GitHub Pages)
+docs/api/
+docs/api-markdown/
 .stryker-tmp
 stryker.log
 
@@ -112,3 +121,4 @@ dev.log
 *.log
 
 junit.xml
+apps/ziiCisfe

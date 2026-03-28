@@ -312,7 +312,7 @@ function matchAdsToUser(user, availableAds) {
       }),
     }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
+    .slice(0, 10);
 }
 ```
 
@@ -449,7 +449,7 @@ const involuntaryAds = {
   thisMonth: 6234,
   earnings: 0, // $0 for involuntary ads
   cpi: 78,
-}
+};
 
 // Platform tracks voluntary ads
 const voluntaryAds = {
@@ -458,7 +458,7 @@ const voluntaryAds = {
   thisMonth: 150,
   earnings: 255, // $255 for voluntary ads
   cpi: 15,
-}
+};
 
 // Combined insights
 const insights = {
@@ -466,7 +466,7 @@ const insights = {
     "You saw 247 involuntary ads today (CPI: 78) but earned $0. You saw 5 voluntary ads and earned $8.50. Voluntary ads are 49x more efficient for your time.",
   recommendation:
     "Block involuntary ads and increase Grape sessions to 2/day to earn $100/month while reducing CPI to <20.",
-}
+};
 ```
 
 ---

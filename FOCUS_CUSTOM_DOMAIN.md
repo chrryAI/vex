@@ -11,7 +11,7 @@ Focus now has its own **separate site mode** with custom domain support, indepen
 ### **1. New siteMode: "focus"**
 
 ```typescript
-export type siteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus"
+export type siteMode = "chrryDev" | "vex" | "chrryAI" | "chrryStore" | "focus";
 ```
 
 Focus is now a first-class site mode alongside Chrry, Vex, and others.
@@ -37,16 +37,16 @@ yourfocus.com → "focus" mode (add to detectsiteModeDomain)
 
 ```typescript
 export function detectsiteModeDomain(hostname?: string): siteMode {
-  const host = hostname || window.location.hostname
+  const host = hostname || window.location.hostname;
 
   // Focus custom domain - checked BEFORE general chrry.ai
   if (host.includes("focus.chrry.ai") || host.includes("getfocus.ai")) {
-    return "focus"
+    return "focus";
   }
 
   // Other chrry.ai subdomains
   if (host.includes("chrry.ai") && !host.includes("vex.chrry.ai")) {
-    return "chrryAI"
+    return "chrryAI";
   }
 
   // ... other domains
@@ -137,7 +137,7 @@ features: [
     icon: "🧠",
     link: "/deep-work",
   },
-]
+];
 ```
 
 ---
@@ -169,25 +169,25 @@ focus: {
 
 ```typescript
 // Client-side - automatic
-const config = getSiteConfig()
-console.log(config.mode) // "focus" when on focus.chrry.ai
+const config = getSiteConfig();
+console.log(config.mode); // "focus" when on focus.chrry.ai
 
 // Server-side - pass hostname
-import { headers } from "next/headers"
+import { headers } from "next/headers";
 
-const headersList = await headers()
-const hostname = headersList.get("host") || ""
-const config = getSiteConfig(hostname)
-console.log(config.mode) // "focus"
+const headersList = await headers();
+const hostname = headersList.get("host") || "";
+const config = getSiteConfig(hostname);
+console.log(config.mode); // "focus"
 ```
 
 ### **Direct Mode**
 
 ```typescript
 // Pass mode directly
-const config = getSiteConfig("focus")
-console.log(config.name) // "Focus"
-console.log(config.logo) // "⏱️"
+const config = getSiteConfig("focus");
+console.log(config.name); // "Focus"
+console.log(config.logo); // "⏱️"
 ```
 
 ---
@@ -238,7 +238,7 @@ if (
   host.includes("getfocus.ai") ||
   host.includes("yourfocus.com") // Add your domain
 ) {
-  return "focus"
+  return "focus";
 }
 ```
 
@@ -347,10 +347,7 @@ curl https://yourfocus.com
   content="Master your time and achieve your goals with AI-powered focus sessions, task management, and productivity insights."
 />
 <meta property="og:title" content="Focus - AI Productivity Assistant" />
-<meta
-  property="og:description"
-  content="AI-powered productivity assistant..."
-/>
+<meta property="og:description" content="AI-powered productivity assistant..." />
 <meta property="og:url" content="https://focus.chrry.ai" />
 <link rel="canonical" href="https://focus.chrry.ai" />
 ```
@@ -372,29 +369,29 @@ curl https://yourfocus.com
 
 ```typescript
 // Test Focus subdomain
-detectsiteModeDomain("focus.chrry.ai") // → "focus" ✅
+detectsiteModeDomain("focus.chrry.ai"); // → "focus" ✅
 
 // Test custom domain
-detectsiteModeDomain("getfocus.ai") // → "focus" ✅
+detectsiteModeDomain("getfocus.ai"); // → "focus" ✅
 
 // Test other chrry.ai subdomains
-detectsiteModeDomain("bloom.chrry.ai") // → "chrryAI" ✅
-detectsiteModeDomain("chrry.ai") // → "chrryAI" ✅
+detectsiteModeDomain("bloom.chrry.ai"); // → "chrryAI" ✅
+detectsiteModeDomain("chrry.ai"); // → "chrryAI" ✅
 
 // Test vex
-detectsiteModeDomain("vex.chrry.ai") // → "vex" ✅
+detectsiteModeDomain("vex.chrry.ai"); // → "vex" ✅
 ```
 
 ### **Test Site Config**
 
 ```typescript
-const config = getSiteConfig("focus")
+const config = getSiteConfig("focus");
 
-console.log(config.mode) // "focus"
-console.log(config.name) // "Focus"
-console.log(config.logo) // "⏱️"
-console.log(config.primaryColor) // "#3B82F6"
-console.log(config.features.length) // 8
+console.log(config.mode); // "focus"
+console.log(config.name); // "Focus"
+console.log(config.logo); // "⏱️"
+console.log(config.primaryColor); // "#3B82F6"
+console.log(config.features.length); // 8
 ```
 
 ---
@@ -410,7 +407,7 @@ VITE_SITE_MODE=focus
 
 ```typescript
 // Will return "focus" mode
-detectsiteMode() // → "focus"
+detectsiteMode(); // → "focus"
 ```
 
 ---
@@ -468,13 +465,13 @@ detectsiteMode() // → "focus"
 
 ```typescript
 // Automatic detection
-const config = getSiteConfig()
+const config = getSiteConfig();
 
 // With hostname (SSR)
-const config = getSiteConfig(hostname)
+const config = getSiteConfig(hostname);
 
 // Direct mode
-const config = getSiteConfig("focus")
+const config = getSiteConfig("focus");
 ```
 
 ### **Domains**

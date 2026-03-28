@@ -11,7 +11,7 @@ The `Agent` component allows users to select from a variety of AI agents, each w
 ## 🚀 Usage
 
 ```tsx
-import { Agent } from "@chrryai/chrry"
+import { Agent } from "@chrryai/chrry";
 
 function App() {
   const agents = [
@@ -27,9 +27,9 @@ function App() {
       avatar: "https://example.com/atlas-avatar.png",
       description: "A travel-focused AI assistant.",
     },
-  ]
+  ];
 
-  return <Agent agents={agents} />
+  return <Agent agents={agents} />;
 }
 ```
 

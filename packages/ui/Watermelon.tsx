@@ -116,6 +116,9 @@ export default function Watermelon() {
     plausible,
     tickerPaused: paused,
     setTickerPaused: setPaused,
+    isAdmin,
+    modelId,
+    setModelId,
   } = useAuth()
 
   const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
@@ -123,7 +126,7 @@ export default function Watermelon() {
   const { t, captureException } = useAppContext()
 
   const openRouterApiKeyInitialValue =
-    user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || ""
+    user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || modelId
 
   const replicateApiKeyInternal =
     user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
@@ -715,6 +718,11 @@ export default function Watermelon() {
                       if (
                         !validateApiKey("openrouter", openRouterApiKey.trim())
                       ) {
+                        if (isAdmin) {
+                          setModelId(openRouterApiKey)
+                          toast.success(t("Mermi gibi set edildi."))
+                          return
+                        }
                         toast.error(
                           t(
                             "Invalid OpenRouter API key format (Expected sk-or-v1-...)",
@@ -810,6 +818,12 @@ export default function Watermelon() {
                         disabled={isDeletingOpenRouterApiKey}
                         processing={isDeletingOpenRouterApiKey}
                         onConfirm={async () => {
+                          if (modelId && isAdmin) {
+                            setModelId(undefined)
+                            setOpenRouterApiKey(undefined)
+                            toast.success(t("Custom modelId gone hocam!"))
+                            return
+                          }
                           try {
                             setIsDeletingOpenRouterApiKey(true)
                             if (user) {
@@ -1459,7 +1473,6 @@ export default function Watermelon() {
               >
                 {app && (
                   <AppLink
-                    isTribe={false}
                     app={app}
                     icon={
                       <Img app={app} alt={app.name} width={22} height={22} />

@@ -1093,6 +1093,7 @@ const create = async () => {
       name: VEX_TEST_NAME,
       password: passwordToSalt(VEX_TEST_PASSWORD),
       role: "admin",
+      roles: ["admin"],
       userName: "ibsukru",
       // credits: !isSeedSafe ? 99999999 : undefined,
       city: "Amsterdam",
@@ -1133,6 +1134,7 @@ const create = async () => {
       role: "user",
       userName: VEX_TEST_NAME_2,
       fingerprint: TEST_MEMBER_FINGERPRINTS[0],
+      roles: ["admin"],
     })
     if (!feedback) throw new Error("Failed to add user")
     console.log("✅ Feedback user created")
@@ -1359,6 +1361,7 @@ const create = async () => {
       role: "user",
       userName: VEX_TEST_NAME_3,
       fingerprint: TEST_MEMBER_FINGERPRINTS[1],
+      roles: ["admin"],
     })
     if (!diplomatic) throw new Error("Failed to add user")
     console.log("✅ Diplomatic user created")
@@ -1378,6 +1381,7 @@ const create = async () => {
       role: "user",
       userName: VEX_TEST_NAME_4,
       fingerprint: TEST_MEMBER_FINGERPRINTS[2],
+      roles: ["admin"],
     })
     if (!localswaphub) throw new Error("Failed to add user")
     console.log("✅ Localswaphub user created")

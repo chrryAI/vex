@@ -31,29 +31,24 @@ npm install @chrryai/waffles @playwright/test
 ## 🚀 Quick Start
 
 ```typescript
-import { test, expect } from "@playwright/test"
-import {
-  wait,
-  simulateInputPaste,
-  waitForElement,
-  generateTestEmail,
-} from "@chrryai/waffles"
+import { test, expect } from "@playwright/test";
+import { wait, simulateInputPaste, waitForElement, generateTestEmail } from "@chrryai/waffles";
 
 test("chat interaction", async ({ page }) => {
-  await page.goto("https://yourapp.com")
+  await page.goto("https://yourapp.com");
 
   // Wait for chat to load
-  await waitForElement(page, '[data-testid="chat-textarea"]')
+  await waitForElement(page, '[data-testid="chat-textarea"]');
 
   // Simulate pasting text
-  await simulateInputPaste(page, "Hello, AI!")
+  await simulateInputPaste(page, "Hello, AI!");
 
   // Wait for response
-  await wait(1000)
+  await wait(1000);
 
   // Assert
-  await expect(page.locator(".message")).toBeVisible()
-})
+  await expect(page.locator(".message")).toBeVisible();
+});
 ```
 
 ## 📚 API Reference
@@ -65,7 +60,7 @@ test("chat interaction", async ({ page }) => {
 Wait for a specified number of milliseconds.
 
 ```typescript
-await wait(1000) // Wait 1 second
+await wait(1000); // Wait 1 second
 ```
 
 #### `waitForElement(page, selector, timeout?)`
@@ -73,7 +68,7 @@ await wait(1000) // Wait 1 second
 Wait for an element to be visible.
 
 ```typescript
-await waitForElement(page, ".loading-spinner", 5000)
+await waitForElement(page, ".loading-spinner", 5000);
 ```
 
 #### `waitForElementToDisappear(page, selector, timeout?)`
@@ -81,7 +76,7 @@ await waitForElement(page, ".loading-spinner", 5000)
 Wait for an element to disappear.
 
 ```typescript
-await waitForElementToDisappear(page, ".loading-spinner")
+await waitForElementToDisappear(page, ".loading-spinner");
 ```
 
 ### Input Simulation
@@ -91,7 +86,7 @@ await waitForElementToDisappear(page, ".loading-spinner")
 Simulate pasting text into a textarea.
 
 ```typescript
-await simulateInputPaste(page, "Pasted content")
+await simulateInputPaste(page, "Pasted content");
 ```
 
 #### `simulatePaste(page, text, buttonSelector?)`
@@ -99,7 +94,7 @@ await simulateInputPaste(page, "Pasted content")
 Simulate pasting using clipboard API and clicking paste button.
 
 ```typescript
-await simulatePaste(page, "Clipboard content")
+await simulatePaste(page, "Clipboard content");
 ```
 
 ### Navigation
@@ -114,7 +109,7 @@ const url = getURL({
   path: "/chat",
   isMember: true,
   memberFingerprint: "abc-123",
-})
+});
 ```
 
 #### `scrollToBottom(page)`
@@ -122,7 +117,7 @@ const url = getURL({
 Scroll to the bottom of the page.
 
 ```typescript
-await scrollToBottom(page)
+await scrollToBottom(page);
 ```
 
 ### Utilities
@@ -132,7 +127,7 @@ await scrollToBottom(page)
 Capitalize the first letter of a string.
 
 ```typescript
-capitalizeFirstLetter("hello") // "Hello"
+capitalizeFirstLetter("hello"); // "Hello"
 ```
 
 #### `generateTestEmail(prefix?)`
@@ -140,7 +135,7 @@ capitalizeFirstLetter("hello") // "Hello"
 Generate a unique test email.
 
 ```typescript
-const email = generateTestEmail("user") // user-1234567890-abc123@test.com
+const email = generateTestEmail("user"); // user-1234567890-abc123@test.com
 ```
 
 #### `generateTestPassword(length?)`
@@ -148,7 +143,7 @@ const email = generateTestEmail("user") // user-1234567890-abc123@test.com
 Generate a random password for testing.
 
 ```typescript
-const password = generateTestPassword(16)
+const password = generateTestPassword(16);
 ```
 
 ### Cleanup
@@ -158,7 +153,7 @@ const password = generateTestPassword(16)
 Clear browser local storage.
 
 ```typescript
-await clearLocalStorage(page)
+await clearLocalStorage(page);
 ```
 
 #### `clearCookies(page)`
@@ -166,7 +161,7 @@ await clearLocalStorage(page)
 Clear browser cookies.
 
 ```typescript
-await clearCookies(page)
+await clearCookies(page);
 ```
 
 ### Screenshots
@@ -176,7 +171,7 @@ await clearCookies(page)
 Take a screenshot with a custom name.
 
 ```typescript
-await takeScreenshot(page, "error-state", true)
+await takeScreenshot(page, "error-state", true);
 ```
 
 ## 🎨 Real-World Examples
@@ -184,43 +179,43 @@ await takeScreenshot(page, "error-state", true)
 ### Testing Chat Flow
 
 ```typescript
-import { test } from "@playwright/test"
-import { simulateInputPaste, waitForElement, wait } from "@chrryai/waffles"
+import { test } from "@playwright/test";
+import { simulateInputPaste, waitForElement, wait } from "@chrryai/waffles";
 
 test("complete chat interaction", async ({ page }) => {
-  await page.goto("https://app.com/chat")
+  await page.goto("https://app.com/chat");
 
   // Wait for chat to be ready
-  await waitForElement(page, '[data-testid="chat-textarea"]')
+  await waitForElement(page, '[data-testid="chat-textarea"]');
 
   // Send message
-  await simulateInputPaste(page, "What's the weather?")
-  await page.click('[data-testid="send-button"]')
+  await simulateInputPaste(page, "What's the weather?");
+  await page.click('[data-testid="send-button"]');
 
   // Wait for AI response
-  await wait(2000)
-  await waitForElement(page, ".ai-message")
-})
+  await wait(2000);
+  await waitForElement(page, ".ai-message");
+});
 ```
 
 ### Testing Authentication
 
 ```typescript
-import { test } from "@playwright/test"
-import { generateTestEmail, generateTestPassword, wait } from "@chrryai/waffles"
+import { test } from "@playwright/test";
+import { generateTestEmail, generateTestPassword, wait } from "@chrryai/waffles";
 
 test("user registration", async ({ page }) => {
-  const email = generateTestEmail("newuser")
-  const password = generateTestPassword()
+  const email = generateTestEmail("newuser");
+  const password = generateTestPassword();
 
-  await page.goto("https://app.com/signup")
-  await page.fill('[name="email"]', email)
-  await page.fill('[name="password"]', password)
-  await page.click('button[type="submit"]')
+  await page.goto("https://app.com/signup");
+  await page.fill('[name="email"]', email);
+  await page.fill('[name="password"]', password);
+  await page.click('button[type="submit"]');
 
-  await wait(1000)
-  await expect(page).toHaveURL(/dashboard/)
-})
+  await wait(1000);
+  await expect(page).toHaveURL(/dashboard/);
+});
 ```
 
 ## 🤝 Contributing

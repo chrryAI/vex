@@ -71,29 +71,27 @@ describe("Auth Configuration Security", () => {
     process.env = originalEnv
   })
 
-  it("should throw error in production if NEXTAUTH_SECRET is missing", async () => {
+  it("should throw error in production if AUTH_SECRET is missing", async () => {
     process.env.NODE_ENV = "production"
-    delete process.env.NEXTAUTH_SECRET
+    delete process.env.AUTH_SECRET
 
     await expect(async () => {
       await import("./auth")
-    }).rejects.toThrow(
-      "❌ NEXTAUTH_SECRET is not set in production environment",
-    )
+    }).rejects.toThrow("❌ AUTH_SECRET is not set in production environment")
   })
 
-  it("should NOT throw error in production if NEXTAUTH_SECRET is present", async () => {
+  it("should NOT throw error in production if AUTH_SECRET is present", async () => {
     process.env.NODE_ENV = "production"
-    process.env.NEXTAUTH_SECRET = "secure-secret-key"
+    process.env.AUTH_SECRET = "secure-secret-key"
 
     await expect(async () => {
       await import("./auth")
     }).not.toThrow()
   })
 
-  it("should NOT throw error in development if NEXTAUTH_SECRET is missing", async () => {
+  it("should NOT throw error in development if AUTH_SECRET is missing", async () => {
     process.env.NODE_ENV = "development"
-    delete process.env.NEXTAUTH_SECRET
+    delete process.env.AUTH_SECRET
 
     await expect(async () => {
       await import("./auth")

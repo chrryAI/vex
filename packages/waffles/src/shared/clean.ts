@@ -10,9 +10,17 @@ export async function maximize({ page }: { page: Page }) {
 }
 
 export async function prepare({ page }: { page: Page }) {
+  await wait(500)
   const newChatButton = page.getByTestId("new-chat-button")
-  const isVisible = await newChatButton.isVisible()
+  const isVisible = await newChatButton.isVisible({
+    timeout: 20000,
+  })
+  isVisible && (await wait(500))
+
   isVisible && (await newChatButton.click())
+
+  isVisible && (await wait(750))
+
   await maximize({ page })
 }
 

@@ -50,11 +50,7 @@ Filter out React Native-specific props before spreading into HTML elements.
 // ✅ Maps onChange/onChangeText between platforms
 // ✅ Supports type, placeholder, value, etc.
 
-<Input
-  type="email"
-  placeholder="Enter email"
-  onChangeText={(text) => console.log(text)}
-/>
+<Input type="email" placeholder="Enter email" onChangeText={(text) => console.log(text)} />
 ```
 
 ### **4. ScrollView Component**
@@ -76,15 +72,19 @@ Filter out React Native-specific props before spreading into HTML elements.
 ### **Platform Detection**
 
 ```tsx
-const { isWeb } = usePlatform()
+const { isWeb } = usePlatform();
 
 if (isWeb) {
   // Render HTML element
-  return <button type="button"  {...webProps}>{children}</button>
+  return (
+    <button type="button" {...webProps}>
+      {children}
+    </button>
+  );
 }
 
 // Render React Native component
-return <Pressable {...props}>{children}</Pressable>
+return <Pressable {...props}>{children}</Pressable>;
 ```
 
 ### **Prop Filtering**
@@ -110,7 +110,7 @@ const {
 const renderedChildren =
   typeof children === "function"
     ? children({ pressed }) // Call with state
-    : children // Use as-is
+    : children; // Use as-is
 ```
 
 ---
@@ -120,43 +120,40 @@ const renderedChildren =
 ### **Basic Usage**
 
 ```tsx
-import { Box, Text, Button, Input } from "chrry/platform"
+import { Box, Text, Button, Input } from "chrry/platform";
 
 function MyComponent() {
   return (
     <Box style={{ padding: 16 }}>
       <Text>Hello World!</Text>
       <Button onPress={() => alert("Clicked!")}>Click me</Button>
-      <Input
-        placeholder="Type here..."
-        onChangeText={(text) => console.log(text)}
-      />
+      <Input placeholder="Type here..." onChangeText={(text) => console.log(text)} />
     </Box>
-  )
+  );
 }
 ```
 
 ### **With Platform Detection**
 
 ```tsx
-import { usePlatform, Box, Text } from "chrry/platform"
+import { usePlatform, Box, Text } from "chrry/platform";
 
 function MyComponent() {
-  const { isWeb, isNative } = usePlatform()
+  const { isWeb, isNative } = usePlatform();
 
   return (
     <Box>
       <Text>Running on: {isWeb ? "Web" : "Native"}</Text>
     </Box>
-  )
+  );
 }
 ```
 
 ### **With Adaptive Styles**
 
 ```tsx
-import { useAdaptiveStyles, Box } from "chrry/platform"
-import { MyStyles } from "./My.styles"
+import { useAdaptiveStyles, Box } from "chrry/platform";
+import { MyStyles } from "./My.styles";
 
 function MyComponent() {
   const styles = useAdaptiveStyles(MyStyles, {
@@ -164,9 +161,9 @@ function MyComponent() {
       web: { cursor: "pointer" },
       native: { elevation: 2 },
     },
-  })
+  });
 
-  return <Box style={styles.container}>...</Box>
+  return <Box style={styles.container}>...</Box>;
 }
 ```
 
@@ -272,7 +269,7 @@ cd apps/native && npm run dev
 ```tsx
 // ONE component, ALL platforms!
 export function Weather() {
-  const { isWeb, select } = usePlatform()
+  const { isWeb, select } = usePlatform();
 
   return (
     <Box>
@@ -280,7 +277,7 @@ export function Weather() {
         {isWeb ? "🌐 Web" : "📱 Native"}
       </Text>
     </Box>
-  )
+  );
 }
 ```
 

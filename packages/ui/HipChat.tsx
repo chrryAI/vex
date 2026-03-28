@@ -132,27 +132,7 @@ const HipChat = ({
   const refetchRef = useRef<typeof refetch | null>(refetch)
   refetchRef.current = refetch
 
-  const scrollToBottom = hipchat
-    ? (timeout = 500, force = false, element?: HTMLElement | null) => {
-        setTimeout(() => {
-          // Use requestAnimationFrame for more stable scrolling in Tauri
-          requestAnimationFrame(() => {
-            // In Tauri, use instant scroll instead of smooth to prevent hopping
-            const behavior = "smooth"
-            const target = element || window
-            const top = element
-              ? element.scrollHeight
-              : document.body.scrollHeight
-
-            target.scrollTo({
-              top,
-              behavior: behavior as ScrollBehavior,
-            })
-            refetchRef.current = null
-          })
-        }, timeout)
-      }
-    : chat.scrollToBottom
+  const scrollToBottom = chat.scrollToBottom
 
   const otherHipRef = useRef(isHippoOpen)
   otherHipRef.current = ""
@@ -211,9 +191,6 @@ const HipChat = ({
   // ⚡ Bolt: Stable callbacks for Messages component to prevent re-renders
   const isChatFloatingRef = useRef(isChatFloating)
   isChatFloatingRef.current = isChatFloating
-
-  const scrollToBottomRef = useRef(scrollToBottom)
-  scrollToBottomRef.current = scrollToBottom
 
   const setMessagesRef = useRef(setMessages)
   setMessagesRef.current = setMessages
@@ -295,7 +272,7 @@ const HipChat = ({
   const getTop = () => {
     return (
       (thread || hipchat) && (
-        <Div style={styles.chatTop.style}>
+        <Div style={{ ...styles.chatTop.style }}>
           {(isRetro || user?.role === "admin") && !isDevelopment && isEmpty ? (
             <>
               <Button onClick={() => setIsRetro(false)} className="link">
@@ -423,9 +400,11 @@ const HipChat = ({
               onChangeVisibility={(visibility) =>
                 setThread({ ...thread, visibility })
               }
-              size={16}
+              size={20}
               thread={thread}
-            />
+            >
+              {t("Share")}
+            </Share>
           )}
 
           <Span
@@ -562,7 +541,7 @@ const HipChat = ({
       hipchat?: boolean
     }) => {
       if (!canStream) return
-      scrollToBottom(undefined, undefined, messagesRef.current)
+      scrollToBottom(undefined, undefined)
 
       if (isE2E && content.length > 500) {
         const wordCount = content.split(/\s+/).length
@@ -653,6 +632,7 @@ const HipChat = ({
               selectedAgentId: aiAgent?.id || null,
               debateAgentId: null,
               pauseDebate: false,
+              jobId: null,
             },
             aiAgent: aiAgent,
             thread: thread,
@@ -682,7 +662,7 @@ const HipChat = ({
             {thread?.placeHolder && (
               <Input data-testid="thread-placeholder" type="hidden" />
             )}
-            <Div>
+            <Div style={{ marginTop: "auto" }}>
               {hipchat && (
                 <Div
                   style={{
@@ -765,7 +745,7 @@ const HipChat = ({
             // }
             if (msg.isUser && msg.message) {
               console.log("✅ Adding user message to state")
-              scrollToBottom(500, true, messagesRef.current)
+              scrollToBottom(500, true)
               resetScrollState()
               shouldStopAutoScrollRef.current = false // Reset auto-scroll for new response
 
@@ -847,6 +827,7 @@ const HipChat = ({
                     readOn: msg?.message?.message?.createdOn!,
                     userId: user?.id || null,
                     guestId: guest?.id || null,
+                    app: msg?.message?.message?.app,
                     searchContext: msg?.message?.message?.searchContext!,
                     webSearchResult: msg?.message?.message?.webSearchResult!,
                     metadata: msg?.message?.message?.metadata!,
@@ -868,6 +849,7 @@ const HipChat = ({
                     selectedAgentId: msg.message?.message?.selectedAgentId!,
                     debateAgentId: msg.message?.message?.debateAgentId!,
                     pauseDebate: msg.message?.message?.pauseDebate!,
+                    jobId: msg?.message?.message?.jobId ?? null,
                   },
                   aiAgent: msg?.message?.aiAgent! || selectedAgent,
                   thread: thread,
@@ -981,7 +963,7 @@ const HipChat = ({
         style={{
           display: "flex",
           flexDirection: "column",
-          height: hipchat ? "80dvh" : "auto",
+          flex: 1,
           ...style,
         }}
       >
@@ -991,10 +973,10 @@ const HipChat = ({
             style={{
               ...styles.headers.style,
               position: "relative",
-              bottom: hipchat ? "0.6rem" : undefined,
+              marginBottom: "1.5rem",
             }}
           >
-            <Div style={styles.header.style}>
+            <Div style={{ ...styles.header.style, gap: ".75rem" }}>
               {thread.isMainThread ? (
                 <Span
                   title={t("DNA thread")}
@@ -1043,9 +1025,11 @@ const HipChat = ({
                 onChangeVisibility={(visibility) =>
                   setThread({ ...thread, visibility })
                 }
-                size={15}
+                size={22}
                 thread={thread}
-              />
+              >
+                {t("Share")}
+              </Share>
             </Div>
           </Div>
         )}
@@ -1096,10 +1080,11 @@ const HipChat = ({
         ) : (
           <Div
             style={{
-              flex: hipchat ? 1 : undefined,
+              flex: 1,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
+              height: "100%",
             }}
           >
             {!showMessages ? null : (
@@ -1117,7 +1102,7 @@ const HipChat = ({
                 }
                 style={{
                   ...messagesStyle,
-                  flex: hipchat ? 1 : undefined,
+                  flex: 1,
                   overflowY: hipchat ? "auto" : undefined,
                   paddingRight: hipchat ? 12 : undefined,
                   paddingBottom: hipchat ? 10 : undefined,

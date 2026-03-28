@@ -70,13 +70,13 @@ apps/
 ```typescript
 // Extension authentication flow
 const authenticateExtension = async () => {
-  const token = await chrome.storage.local.get("authToken")
+  const token = await chrome.storage.local.get("authToken");
   if (!token) {
     // Redirect to web auth flow
-    chrome.tabs.create({ url: "https://vex.chrry.ai/auth?extension=true" })
+    chrome.tabs.create({ url: "https://vex.chrry.ai/auth?extension=true" });
   }
-  return token
-}
+  return token;
+};
 ```
 
 #### Cross-Platform Session Management
@@ -86,16 +86,16 @@ const authenticateExtension = async () => {
 class SessionManager {
   async getToken(): Promise<string | null> {
     if (isExtension()) {
-      return chrome.storage.local.get("token")
+      return chrome.storage.local.get("token");
     }
-    return localStorage.getItem("token")
+    return localStorage.getItem("token");
   }
 
   async setToken(token: string): Promise<void> {
     if (isExtension()) {
-      await chrome.storage.local.set({ token })
+      await chrome.storage.local.set({ token });
     } else {
-      localStorage.setItem("token", token)
+      localStorage.setItem("token", token);
     }
   }
 }

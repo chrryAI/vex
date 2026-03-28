@@ -11,16 +11,12 @@ The `EmptyStateTips` component is used to display AI-generated suggestions and p
 ## 🚀 Usage
 
 ```tsx
-import { EmptyStateTips } from "@chrryai/chrry"
+import { EmptyStateTips } from "@chrryai/chrry";
 
 function App() {
-  const tips = [
-    "Ask me about the weather.",
-    "Tell me a joke.",
-    "What's the meaning of life?",
-  ]
+  const tips = ["Ask me about the weather.", "Tell me a joke.", "What's the meaning of life?"];
 
-  return <EmptyStateTips tips={tips} />
+  return <EmptyStateTips tips={tips} />;
 }
 ```
 

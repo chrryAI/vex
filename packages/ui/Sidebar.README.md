@@ -12,7 +12,7 @@ The `Sidebar` component is the main navigation component for the Vex application
 ## 🚀 Usage
 
 ```tsx
-import { Sidebar } from "@chrryai/chrry"
+import { Sidebar } from "@chrryai/chrry";
 
 function App() {
   const navLinks = [
@@ -28,9 +28,9 @@ function App() {
       href: "/settings",
       label: "Settings",
     },
-  ]
+  ];
 
-  return <Sidebar navLinks={navLinks} />
+  return <Sidebar navLinks={navLinks} />;
 }
 ```
 

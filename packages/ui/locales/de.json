@@ -157,6 +157,14 @@
   "privacy.chat.title": "3. Chat-Daten",
   "privacy.cookies.title": "4. Cookies",
   "privacy.cookies.content": "Wir verwenden essentielle Cookies, um Ihre Sitzung und Präferenzen zu erhalten. Analyse-Cookies werden wie im obigen Abschnitt zur Analytik beschrieben verwendet.",
+  "privacy.google.accessed.content": "Wir greifen über OAuth mit den Bereichen openid, email und profile auf die folgenden Google-Benutzerdaten zu: E-Mail-Adresse - Ihre primäre Google-Konto-E-Mail; Name - Ihr Anzeigename aus Ihrem Google-Profil; Profilbild - Die Bild-URL Ihres Google-Konto-Avatars.",
+  "privacy.google.accessed.title": "Aufgerufene Daten",
+  "privacy.google.content": "Wenn Sie sich mit Google anmelden, greifen wir auf bestimmte Informationen aus Ihrem Google-Konto zu, um Ihr Konto zu erstellen und zu authentifizieren. Dieser Abschnitt beschreibt, auf welche Daten wir zugreifen und wie wir sie in Übereinstimmung mit der Google API Services User Data Policy verwenden.",
+  "privacy.google.handling.content": "Wir verkaufen, vermieten oder teilen Ihre Google-Benutzerdaten nicht mit Dritten. Ihre Daten werden sicher gespeichert und nur zur Erbringung unserer Dienstleistungen für Sie verwendet. Sie können Ihr Konto und die zugehörigen Daten jederzeit löschen, indem Sie uns unter iliyan@chrry.ai kontaktieren.",
+  "privacy.google.handling.title": "Datenverarbeitung",
+  "privacy.google.title": "Google-Benutzerdaten",
+  "privacy.google.usage.content": "Die Google-Benutzerdaten, auf die wir zugreifen, werden ausschließlich für folgende Zwecke verwendet: Kontoerstellung - Um Ihr Benutzerkonto in unserem System zu erstellen; Authentifizierung - Um Ihre Identität zu überprüfen und Sie sicher anzumelden; Profilanzeige - Um Ihren Namen und Avatar innerhalb der App anzuzeigen; Kommunikation - Um wichtige kontobezogene Benachrichtigungen an Ihre E-Mail zu senden.",
+  "privacy.google.usage.title": "Datennutzung",
   "privacy.security.title": "5. Datensicherheit",
   "privacy.security.content": "Wir implementieren geeignete Sicherheitsmaßnahmen zum Schutz Ihrer Informationen. Allerdings ist keine Internetübertragung zu 100% sicher und wir können keine absolute Sicherheit garantieren.",
   "privacy.thirdparty.title": "6. Dienste Dritter",
@@ -2527,5 +2535,6 @@
   "Next Step": "Nächster Schritt",
   "Edit your agent": "Bearbeiten Sie Ihren Agenten",
   "Go to agent": "Zum Agenten gehen",
-  "Deleting": "Löschen"
+  "Deleting": "Löschen",
+  "Our use and transfer to any other app of information received Google APIs will adhere to the Google API Services User Data Policy, including the Limited Use requirements.": "Unsere Nutzung und Übertragung von über Google APIs erhaltenen Informationen an jede andere App wird sich an die Google API Services Nutzerdatenrichtlinie halten, einschließlich der Anforderungen für die eingeschränkte Nutzung."
 }

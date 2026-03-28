@@ -234,6 +234,9 @@ export const getThreads = async ({
   onError,
   slug,
   appId,
+  hasPearApp,
+  isDNA,
+  isTribe,
   API_URL = utils.API_URL,
 }: {
   pageSize?: number
@@ -242,6 +245,9 @@ export const getThreads = async ({
   search?: string
   threadId?: string
   userName?: string
+  hasPearApp?: boolean
+  isDNA?: boolean
+  isTribe?: boolean
   collaborationStatus?: "pending" | "active" | null
   myPendingCollaborations?: boolean
   onError?: (status: number) => void
@@ -257,10 +263,15 @@ export const getThreads = async ({
     : collaborationStatus &&
       url.searchParams.set("collaborationStatus", collaborationStatus)
 
-  appId && url.searchParams.set("appId", appId)
+  if (appId) url.searchParams.set("appId", appId)
   if (search) url.searchParams.set("search", search)
+  if (isDNA !== undefined) url.searchParams.set("isDNA", String(isDNA))
+  if (isTribe !== undefined) url.searchParams.set("isTribe", String(isTribe))
+
   if (sort) url.searchParams.set("sort", sort)
   if (threadId) url.searchParams.set("threadId", threadId)
+  if (hasPearApp !== undefined)
+    url.searchParams.set("hasPearApp", String(hasPearApp))
   if (userName) url.searchParams.set("userName", userName)
   if (myPendingCollaborations)
     url.searchParams.set("myPendingCollaborations", "true")
@@ -1197,6 +1208,7 @@ export const getApp = async ({
   skipCache,
   pathname,
   storeSlug,
+  threadId,
   appSlug,
   accountApp,
   postId,
@@ -1211,6 +1223,7 @@ export const getApp = async ({
   accountApp?: boolean
   appSlug?: string
   postId?: string
+  threadId?: string
 }) => {
   // Build query params for intelligent resolution
   const params = new URLSearchParams()
@@ -1221,6 +1234,7 @@ export const getApp = async ({
   if (accountApp) params.append("accountApp", "true")
   if (appSlug) params.append("appSlug", appSlug)
   if (postId) params.append("postId", postId)
+  if (threadId) params.append("threadId", threadId)
   // if (storeSlug) params.append("storeSlug", storeSlug)
 
   // Use /apps for intelligent resolution (no ID in path)
@@ -1465,9 +1479,12 @@ export const getActions = ({
       search?: string
       threadId?: string
       userName?: string
+      hasPearApp?: boolean
+      isTribe?: boolean
       collaborationStatus?: "pending" | "active" | null
       myPendingCollaborations?: boolean
       onError?: (status: number) => void
+      isDNA?: boolean
       slug?: "Atlas" | "Peach" | "Vault" | "Bloom" | string | null
     }) => getThreads({ token, ...params, API_URL }),
     getTranslations: (params?: { locale?: string }) =>

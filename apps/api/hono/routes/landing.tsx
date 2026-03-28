@@ -1181,17 +1181,8 @@ export function renderPage(
 }
 
 landing.get("/", (c) => {
-  try {
-    const html = renderToString(React.createElement(ChrryDotDev))
-    return c.html(renderPage(html))
-  } catch (error) {
-    console.error("SSR Error:", error)
-    console.error(
-      "Error details:",
-      JSON.stringify(error, Object.getOwnPropertyNames(error), 2),
-    )
-    throw error
-  }
+  const html = renderToString(<ChrryDotDev />)
+  return c.html(renderPage(html, "Chrry - AI-Powered Development Platform"))
 })
 
 // Allowed hostnames for white-label apps (add new ones here)
@@ -1212,13 +1203,11 @@ function trustedHostname(c: any): string {
 }
 
 landing.get("/privacy", (c) => {
-  const hostname = trustedHostname(c)
-  const html = renderToString(React.createElement(Privacy, { hostname }))
-  return c.html(renderPage(html, "Privacy Policy"))
+  const html = renderToString(<Privacy />)
+  return c.html(renderPage(html, "Privacy Policy - Chrry"))
 })
 
 landing.get("/terms", (c) => {
-  const hostname = trustedHostname(c)
-  const html = renderToString(React.createElement(Terms, { hostname }))
-  return c.html(renderPage(html, "Terms of Use"))
+  const html = renderToString(<Terms />)
+  return c.html(renderPage(html, "Terms of Service - Chrry"))
 })

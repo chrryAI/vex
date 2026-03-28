@@ -47,19 +47,19 @@ Already created: `/packages/db/src/google-ads.ts`
 
 ```typescript
 // app/api/auth/signup/route.ts
-import { createUser } from "@repo/db"
-import { trackSignup } from "@repo/db/google-ads"
+import { createUser } from "@repo/db";
+import { trackSignup } from "@repo/db/google-ads";
 
 export async function POST(request: Request) {
-  const { email, password } = await request.json()
+  const { email, password } = await request.json();
 
   // Create user
-  const user = await createUser({ email, password })
+  const user = await createUser({ email, password });
 
   // Track conversion (server-side only)
-  await trackSignup(user.id)
+  await trackSignup(user.id);
 
-  return Response.json({ success: true })
+  return Response.json({ success: true });
 }
 ```
 
@@ -91,18 +91,18 @@ export async function POST(request: Request) {
 
 ```typescript
 // app/api/trial/start/route.ts
-import { trackTrialStart } from "@repo/db/google-ads"
+import { trackTrialStart } from "@repo/db/google-ads";
 
 export async function POST(request: Request) {
-  const { userId } = await request.json()
+  const { userId } = await request.json();
 
   // Start trial logic
-  await startTrial(userId)
+  await startTrial(userId);
 
   // Track conversion
-  await trackTrialStart(userId)
+  await trackTrialStart(userId);
 
-  return Response.json({ success: true })
+  return Response.json({ success: true });
 }
 ```
 
@@ -193,10 +193,10 @@ User Action → Your Server → Google Ads API → Track Conversion Only
 
 ```typescript
 // Test conversion tracking
-import { trackSignup } from "@repo/db/google-ads"
+import { trackSignup } from "@repo/db/google-ads";
 
-const result = await trackSignup("test_user_123")
-console.log("Conversion tracked:", result)
+const result = await trackSignup("test_user_123");
+console.log("Conversion tracked:", result);
 ```
 
 ### 2. Verify in Google Ads
@@ -269,18 +269,14 @@ Optimization: Data-driven
 
 ```typescript
 // Adjust values based on your business
-export async function trackPurchase(
-  userId: string,
-  amount: number,
-  orderId: string,
-) {
+export async function trackPurchase(userId: string, amount: number, orderId: string) {
   return trackGoogleAdsConversion({
     conversionId: process.env.GOOGLE_ADS_CONVERSION_ID!,
     conversionLabel: process.env.GOOGLE_ADS_PURCHASE_LABEL!,
     value: amount,
     currency: "EUR", // Change if needed
     transactionId: orderId,
-  })
+  });
 }
 ```
 
@@ -288,7 +284,7 @@ export async function trackPurchase(
 
 ```typescript
 // Add logging for debugging
-console.log(`[Google Ads] Tracked conversion: ${transactionId}`)
+console.log(`[Google Ads] Tracked conversion: ${transactionId}`);
 ```
 
 ---

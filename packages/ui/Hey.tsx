@@ -14,11 +14,13 @@ import { useApp } from "./context/providers"
 import { useAuth } from "./context/providers/AuthProvider"
 import { useNavigationContext } from "./context/providers/NavigationProvider"
 import { useTribe } from "./context/providers/TribeProvider"
+import { useStyles } from "./context/StylesContext"
 import { ErrorBoundary } from "./ErrorBoundary"
 import Home from "./Home"
 import Img from "./Image"
 import Loading from "./Loading"
-import { Div, useLocalStorage, usePlatform, VexToast } from "./platform"
+import Modal from "./Modal"
+import { Button, Div, useLocalStorage, usePlatform, VexToast } from "./platform"
 import { useSidebarStyles } from "./Sidebar.styles"
 import Thread from "./Thread"
 import { getAppAndStoreSlugs } from "./utils/url"
@@ -95,7 +97,11 @@ export const Hey = memo(
       FRONTEND_URL,
       showWatermelonInitial,
       hasHydrated: isHydrated,
+      donut,
+      isDonutOpen,
     } = useAuth()
+
+    const { utilities } = useStyles()
 
     const { tribeSlug, isLoadingTribes } = useTribe()
 
@@ -242,11 +248,32 @@ export const Hey = memo(
       app,
     ])
 
+    const Wrapper = ({ children }: { children: React.ReactNode }) =>
+      donut ? (
+        <Div>
+          <Modal isModalOpen={isDonutOpen} title="donut">
+            {children}
+          </Modal>
+          <Button className="link" style={{ ...utilities.link.style }}>
+            <Img logo="donut" />
+          </Button>
+        </Div>
+      ) : (
+        <Div
+          style={{
+            width: donut ? undefined : "100dvw",
+            height: donut ? undefined : "100dvh",
+          }}
+        >
+          {children}
+        </Div>
+      )
+
     return (
       <Div
         style={{
-          width: "100dvw",
-          height: "100dvh",
+          width: donut ? undefined : "100dvw",
+          height: donut ? undefined : "100dvh",
         }}
       >
         <ErrorBoundary>

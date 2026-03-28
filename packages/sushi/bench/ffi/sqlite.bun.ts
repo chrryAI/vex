@@ -1,22 +1,22 @@
-import { dlopen } from "bun:ffi"
+import { dlopen } from "bun:ffi";
 
 // based on https://github.com/littledivy/blazing-fast-ffi-talk/blob/main/sqlite_shared.mjs
-const SQLITE3_OK = 0
-const SQLITE3_ROW = 100
+const SQLITE3_OK = 0;
+const SQLITE3_ROW = 100;
 
-const SQLITE3_OPEN_READWRITE = 0x00000002
-const SQLITE3_OPEN_CREATE = 0x00000004
-const SQLITE3_OPEN_MEMORY = 0x00000080
-const SQLITE3_OPEN_PRIVATECACHE = 0x00040000
+const SQLITE3_OPEN_READWRITE = 0x00000002;
+const SQLITE3_OPEN_CREATE = 0x00000004;
+const SQLITE3_OPEN_MEMORY = 0x00000080;
+const SQLITE3_OPEN_PRIVATECACHE = 0x00040000;
 
 const unwrap = (code: i32) => {
-  if (code === SQLITE3_OK) return
-  throw new Error(`SQLite error: ${code}`)
-}
+  if (code === SQLITE3_OK) return;
+  throw new Error(`SQLite error: ${code}`);
+};
 
-const encoder = new TextEncoder()
+const encoder = new TextEncoder();
 function toCString(str) {
-  return encoder.encode(`${str}\0`)
+  return encoder.encode(`${str}\0`);
 }
 
 // based on https://github.com/littledivy/blazing-fast-ffi-talk/blob/main/sqlite.deno.ts
@@ -83,7 +83,7 @@ const { symbols } = dlopen("libsqlite3.so.0", {
     ],
     returns: "i32",
   },
-})
+});
 
 const {
   sqlite3_initialize,
@@ -93,64 +93,61 @@ const {
   sqlite3_reset,
   sqlite3_step,
   sqlite3_column_int,
-} = symbols
+} = symbols;
 
-sqlite3_initialize()
+sqlite3_initialize();
 
-const pHandle = new Uint32Array(2)
+const pHandle = new Uint32Array(2);
 unwrap(
   sqlite3_open_v2(
     toCString(":memory:"),
     pHandle,
-    SQLITE3_OPEN_READWRITE |
-      SQLITE3_OPEN_PRIVATECACHE |
-      SQLITE3_OPEN_CREATE |
-      SQLITE3_OPEN_MEMORY,
+    SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_PRIVATECACHE | SQLITE3_OPEN_CREATE | SQLITE3_OPEN_MEMORY,
     null,
   ),
-)
+);
 
-const db = pHandle[0] + 2 ** 32 * pHandle[1]
+const db = pHandle[0] + 2 ** 32 * pHandle[1];
 
 function exec(sql: string) {
-  const _pErr = new Uint32Array(2)
-  unwrap(sqlite3_exec(db, toCString(sql), null, null, _pErr))
+  const _pErr = new Uint32Array(2);
+  unwrap(sqlite3_exec(db, toCString(sql), null, null, _pErr));
 }
 
-exec("PRAGMA auto_vacuum = none")
-exec("PRAGMA temp_store = memory")
-exec("PRAGMA locking_mode = exclusive")
-exec("PRAGMA user_version = 100")
+exec("PRAGMA auto_vacuum = none");
+exec("PRAGMA temp_store = memory");
+exec("PRAGMA locking_mode = exclusive");
+exec("PRAGMA user_version = 100");
 
 const sql = `WITH RECURSIVE c(x) AS (
   VALUES(1)
   UNION ALL
   SELECT x+1 FROM c WHERE x<50
 )
-SELECT x, x as a FROM c`
+SELECT x, x as a FROM c`;
 
 function prepareStatement() {
-  const pHandle = new Uint32Array(2)
-  unwrap(sqlite3_prepare_v2(db, toCString(sql), sql.length, pHandle, null))
-  return pHandle[0] + 2 ** 32 * pHandle[1]
+  const pHandle = new Uint32Array(2);
+  unwrap(sqlite3_prepare_v2(db, toCString(sql), sql.length, pHandle, null));
+  return pHandle[0] + 2 ** 32 * pHandle[1];
 }
 
-const prepared = prepareStatement()
+const prepared = prepareStatement();
 function run(): number[] {
-  const result: number[] = new Array(50)
+  const result: number[] = new Array(50);
 
-  let status = SQLITE3_ROW
+  let status = SQLITE3_ROW;
   while (status === SQLITE3_ROW) {
-    status = sqlite3_step(prepared)
-    const int = sqlite3_column_int(prepared, 0)
-    result[int] = int
+    status = sqlite3_step(prepared);
+    const int = sqlite3_column_int(prepared, 0);
+    result[int] = int;
   }
-  sqlite3_reset(prepared)
-  return result
+  sqlite3_reset(prepared);
+  return result;
 }
 
-const runs = 10_000
-const start = performance.now()
-for (let i = 0; i < runs; i++) run()
+const runs = 10_000;
+const start = performance.now();
+for (let i = 0; i < runs; i++) run();
 
-console.log((performance.now() - start).toFixed(10))
+console.log((performance.now() - start).toFixed(10));

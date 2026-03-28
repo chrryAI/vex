@@ -20,7 +20,7 @@ const BREAKPOINTS = {
   mobile: 600, // Tablet portrait
   tablet: 800, // Tablet landscape
   desktop: 960, // Desktop
-}
+};
 ```
 
 ## Usage
@@ -46,38 +46,37 @@ export const MyComponentStyleDefs = {
     maxWidth: { base: "100%", tablet: 800, desktop: 1200 },
     margin: "0 auto",
   },
-} as const
+} as const;
 
-import { createUnifiedStyles } from "./styles/createUnifiedStyles"
-import { createStyleHook } from "./styles/createStyleHook"
+import { createUnifiedStyles } from "./styles/createUnifiedStyles";
+import { createStyleHook } from "./styles/createStyleHook";
 
-export const MyComponentStyles = createUnifiedStyles(MyComponentStyleDefs)
+export const MyComponentStyles = createUnifiedStyles(MyComponentStyleDefs);
 
 type MyComponentStylesHook = {
   [K in keyof typeof MyComponentStyleDefs]: {
-    className?: string
-    style?: Record<string, any>
-  }
-}
+    className?: string;
+    style?: Record<string, any>;
+  };
+};
 
-export const useMyComponentStyles =
-  createStyleHook<MyComponentStylesHook>(MyComponentStyles)
+export const useMyComponentStyles = createStyleHook<MyComponentStylesHook>(MyComponentStyles);
 ```
 
 ### 2. Use in Components
 
 ```tsx
-import { useMyComponentStyles } from "./MyComponent.styles"
-import { Div, H1 } from "./platform"
+import { useMyComponentStyles } from "./MyComponent.styles";
+import { Div, H1 } from "./platform";
 
 export default function MyComponent() {
-  const styles = useMyComponentStyles()
+  const styles = useMyComponentStyles();
 
   return (
     <Div style={styles.container.style}>
       <H1 style={styles.title.style}>Responsive Title</H1>
     </Div>
-  )
+  );
 }
 ```
 
@@ -127,14 +126,14 @@ title: {
 type ResponsiveValue<T> =
   | T
   | {
-      base?: T // Default value (required if using breakpoints)
-      mobileSmallMax?: T // 320px+
-      mobileSmall?: T // 430px+
-      mobileMax?: T // 599px+
-      mobile?: T // 600px+
-      tablet?: T // 800px+
-      desktop?: T // 960px+
-    }
+      base?: T; // Default value (required if using breakpoints)
+      mobileSmallMax?: T; // 320px+
+      mobileSmall?: T; // 430px+
+      mobileMax?: T; // 599px+
+      mobile?: T; // 600px+
+      tablet?: T; // 800px+
+      desktop?: T; // 960px+
+    };
 ```
 
 ## Examples
@@ -194,12 +193,12 @@ display: { base: "none", tablet: "flex" }
 Full type inference and autocomplete:
 
 ```typescript
-const styles = useMyComponentStyles()
+const styles = useMyComponentStyles();
 
 // ✅ Autocomplete for all style keys
-styles.title.style
-styles.container.style
+styles.title.style;
+styles.container.style;
 
 // ✅ Type-safe style objects
-const titleStyle: Record<string, any> = styles.title.style
+const titleStyle: Record<string, any> = styles.title.style;
 ```

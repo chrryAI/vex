@@ -66,6 +66,7 @@ export interface AppProvidersProps {
     toString: () => string
   } // URL search params with URLSearchParams-compatible API
   locale?: locale
+  deviceId?: string
   apiKey?: string
   children: ReactNode
   session?: session
@@ -137,6 +138,7 @@ export default function AppProviders({
   accountApp,
   testConfig,
   isBot,
+  deviceId,
 }: AppProvidersProps) {
   const [error, setError] = useState("")
 
@@ -193,29 +195,30 @@ export default function AppProviders({
         session={session}
       >
         <ErrorProvider>
-          <ThemeProvider theme={theme} session={session}>
-            <AuthProvider
-              translations={translations}
-              thread={thread}
-              locale={locale}
-              error={error}
-              isBot={isBot}
-              apiKey={apiKey}
-              app={app}
-              donut={donut}
-              pathname={pathname}
-              threads={threads}
-              showTribe={showTribe}
-              onSetLanguage={onSetLanguage}
-              session={session}
-              siteConfig={siteConfig}
-              searchParams={searchParams}
-              tribes={tribes}
-              tribePosts={tribePosts}
-              tribePost={tribePost}
-              accountApp={accountApp}
-              testConfig={testConfig}
-            >
+          <AuthProvider
+            deviceId={deviceId}
+            translations={translations}
+            thread={thread}
+            locale={locale}
+            error={error}
+            isBot={isBot}
+            apiKey={apiKey}
+            app={app}
+            donut={donut}
+            pathname={pathname}
+            threads={threads}
+            showTribe={showTribe}
+            onSetLanguage={onSetLanguage}
+            session={session}
+            siteConfig={siteConfig}
+            searchParams={searchParams}
+            tribes={tribes}
+            tribePosts={tribePosts}
+            tribePost={tribePost}
+            accountApp={accountApp}
+            testConfig={testConfig}
+          >
+            <ThemeProvider theme={theme} session={session}>
               <AppProvider>
                 <ChatProvider>
                   <TimerContextProvider>
@@ -236,8 +239,8 @@ export default function AppProviders({
                   </TimerContextProvider>
                 </ChatProvider>
               </AppProvider>
-            </AuthProvider>
-          </ThemeProvider>
+            </ThemeProvider>
+          </AuthProvider>
         </ErrorProvider>
       </PlatformProvider>
     </SWRConfig>

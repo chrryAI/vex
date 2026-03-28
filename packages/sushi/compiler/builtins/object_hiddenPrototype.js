@@ -20,7 +20,7 @@ export const __Porffor_object_getHiddenPrototype = (trueType: i32): any => {
       trueType == Porffor.TYPES.boolean,
       trueType == Porffor.TYPES.booleanobject
     )) return __Boolean_prototype;
-  }`
+  }`;
 
   for (const x in TYPES) {
     if (
@@ -36,19 +36,19 @@ export const __Porffor_object_getHiddenPrototype = (trueType: i32): any => {
         "booleanobject",
       ].includes(x)
     )
-      continue
+      continue;
 
-    const name = TYPE_NAMES[TYPES[x]]
+    const name = TYPE_NAMES[TYPES[x]];
     out += `
   if (Porffor.comptime.flag\`hasFunc.#get___${name}_prototype\`) {
     if (trueType == Porffor.TYPES.${x}) return __${name}_prototype;
-  }`
+  }`;
   }
 
   // if (trueType == Porffor.TYPES.function) return __Function_prototype;
   out += `
   return __Object_prototype;
-};`
+};`;
 
-  return out
-}
+  return out;
+};

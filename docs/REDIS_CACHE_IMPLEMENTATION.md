@@ -158,8 +158,8 @@ export const updateGuest = async (guest: guest) => {
 ### Cache TTL
 
 ```typescript
-const CACHE_TTL_USER = 60 * 2 // 2 minutes
-const CACHE_TTL_GUEST = 60 * 2 // 2 minutes
+const CACHE_TTL_USER = 60 * 2; // 2 minutes
+const CACHE_TTL_GUEST = 60 * 2; // 2 minutes
 ```
 
 **Why 2 minutes?**
@@ -172,12 +172,12 @@ const CACHE_TTL_GUEST = 60 * 2 // 2 minutes
 
 ```typescript
 // User cache keys
-cacheKeys.user(id) // "user:{id}"
-cacheKeys.userByEmail(email) // "user:email:{email}"
+cacheKeys.user(id); // "user:{id}"
+cacheKeys.userByEmail(email); // "user:email:{email}"
 
 // Guest cache keys
-cacheKeys.guest(id) // "guest:{id}"
-cacheKeys.guestByFingerprint(fingerprint) // "guest:fp:{fingerprint}"
+cacheKeys.guest(id); // "guest:{id}"
+cacheKeys.guestByFingerprint(fingerprint); // "guest:fp:{fingerprint}"
 ```
 
 ## Performance Impact
@@ -232,20 +232,20 @@ Every request = 1 Redis check (fast)
 
 ```typescript
 // Type-safe cache get
-const cached = await getCache<CachedUserData>(cacheKey)
+const cached = await getCache<CachedUserData>(cacheKey);
 
 // Type-safe cache set
-await setCache(cacheKey, userData, CACHE_TTL_USER)
+await setCache(cacheKey, userData, CACHE_TTL_USER);
 ```
 
 ### Inferred Return Types
 
 ```typescript
 // Automatically infers the return type of getUser()
-type CachedUserData = Awaited<ReturnType<typeof getUser>>
+type CachedUserData = Awaited<ReturnType<typeof getUser>>;
 
 // Automatically infers the return type of getGuest()
-type CachedGuestData = Awaited<ReturnType<typeof getGuest>>
+type CachedGuestData = Awaited<ReturnType<typeof getGuest>>;
 ```
 
 **Benefits:**
@@ -266,7 +266,7 @@ export const redis = new Redis({
   port: Number.parseInt(process.env.REDIS_PORT || "6379"),
   password: process.env.REDIS_PASSWORD,
   // ... self-hosted Redis config
-})
+});
 ```
 
 ### Cache Helpers
@@ -275,16 +275,12 @@ export const redis = new Redis({
 // /packages/db/src/cache.ts
 
 // Generic get/set
-export async function getCache<T>(key: string): Promise<T | null>
-export async function setCache<T>(
-  key: string,
-  value: T,
-  ttl: number,
-): Promise<void>
+export async function getCache<T>(key: string): Promise<T | null>;
+export async function setCache<T>(key: string, value: T, ttl: number): Promise<void>;
 
 // Invalidation
-export async function invalidateUser(id: string, email?: string)
-export async function invalidateGuest(id: string, fingerprint?: string)
+export async function invalidateUser(id: string, email?: string);
+export async function invalidateGuest(id: string, fingerprint?: string);
 
 // Cache keys
 export const cacheKeys = {
@@ -293,7 +289,7 @@ export const cacheKeys = {
   guest: (id: string) => `guest:${id}`,
   guestByFingerprint: (fp: string) => `guest:fp:${fp}`,
   // ... more keys
-}
+};
 ```
 
 ## Testing
@@ -322,7 +318,7 @@ Check Redis logs to see cache hits/misses:
 
 ```typescript
 // Update user
-await updateUser({ id: userId, name: "New Name" })
+await updateUser({ id: userId, name: "New Name" });
 // ✅ Cache automatically invalidated
 
 // Next getUser() call will:
@@ -382,9 +378,9 @@ export async function GET() {
       guests: await redis.keys("guest:*").then((k) => k.length),
       total: await redis.dbsize(),
     },
-  }
+  };
 
-  return Response.json(stats)
+  return Response.json(stats);
 }
 ```
 
@@ -444,15 +440,14 @@ Everything falls back to direct DB queries immediately.
 
 ```typescript
 // If stale data is an issue
-const CACHE_TTL_USER = 60 * 1 // 1 minute instead of 2
+const CACHE_TTL_USER = 60 * 1; // 1 minute instead of 2
 ```
 
 ### Option 3: Selective Caching
 
 ```typescript
 // Only cache in production
-const isSimpleLookup =
-  (email || id) && !password && process.env.NODE_ENV === "production"
+const isSimpleLookup = (email || id) && !password && process.env.NODE_ENV === "production";
 ```
 
 ## Summary

@@ -14,7 +14,7 @@ import { useThreadPresence } from "./hooks/useThreadPresence"
 import { useUserScroll } from "./hooks/useUserScroll"
 import { useWebSocket } from "./hooks/useWebSocket"
 import Img from "./Image"
-import { CircleX, Loader, Sparkles } from "./icons"
+import { CircleX, Loader } from "./icons"
 import Loading from "./Loading"
 import Message from "./Message"
 import { useMessagesStyles } from "./Messages.styles"
@@ -245,8 +245,11 @@ export default forwardRef<
   return (
     <Div
       style={{
-        ...styles.messagesContainer,
-
+        display: "flex",
+        flexDirection: "column",
+        marginTop: 20,
+        justifyContent: "flex-end",
+        // overflowY: "auto",
         ...style,
       }}
       id={id}
@@ -272,7 +275,7 @@ export default forwardRef<
           {emptyMessage || t("Nothing here yet")}
         </Div>
       )}
-      <Div style={{ ...styles.messages.style }}>
+      <Div style={{ ...styles.messages.style, flex: 1 }}>
         {sortedMessages?.map((message) => {
           const isTyping = !!(
             (message.user?.id && typingUserIds.has(message.user.id)) ||
@@ -298,119 +301,88 @@ export default forwardRef<
           )
         })}
       </Div>
-      {appStatus?.part || suggestSaveApp ? (
-        <Div
-          style={{
-            ...styles.enableCharacterProfilesContainer.style,
-            display:
-              messages?.filter((message) => message.message.agentId).length ===
-              0
-                ? "none"
-                : "flex",
-          }}
-        >
-          <Button
-            disabled={isUpdating}
-            className="inverted"
-            onClick={async () => {
-              addHapticFeedback()
+      <Div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexDirection: "column",
+          marginTop: "25px",
+          marginBottom: "10px",
+          gap: 20,
+        }}
+      >
+        {Top ? <Div>{Top}</Div> : null}
+        {!burn && (
+          <>
+            <Div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              {!characterProfilesEnabled &&
+              !isStreaming &&
+              messages?.some((message) => !!message.message.agentId) ? (
+                <Button
+                  data-testid={"enable-character-profiles-from-messages"}
+                  disabled={isUpdating}
+                  onClick={async () => {
+                    setShowCharacterProfiles(true)
+                  }}
+                  className="inverted"
+                  style={{ ...utilities.inverted.style }}
+                >
+                  {isUpdating ? (
+                    <CircleX size={16} color="var(--accent-6)" />
+                  ) : (
+                    <Img app={app} size={18} />
+                  )}
+                  {t("Earn a Badge")}
+                </Button>
+              ) : null}
+            </Div>
 
-              router.push("/?step=add&part=title")
-            }}
-            style={{ ...utilities.inverted.style }}
-          >
-            <Sparkles
-              color="var(--accent-1)"
-              fill="var(--accent-1)"
-              size={16}
-            />
-            {t("Back to Agent Builder")}{" "}
-          </Button>
-        </Div>
-      ) : (
-        <Div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            marginTop: "25px",
-            marginBottom: "10px",
-            gap: 20,
-          }}
-        >
-          {Top ? <Div>{Top}</Div> : null}
-          {!burn && (
-            <>
+            {showLoadingCharacterProfile ? (
               <Div
+                data-testid={"generating-cp"}
                 style={{
-                  display: "flex",
-                  justifyContent: "center",
+                  ...styles.characterProfileContainer.style,
+                  flexDirection: "row",
                 }}
               >
-                {!characterProfilesEnabled &&
-                !isStreaming &&
-                messages?.some((message) => !!message.message.agentId) ? (
-                  <Button
-                    data-testid={"enable-character-profiles-from-messages"}
-                    disabled={isUpdating}
-                    onClick={async () => {
-                      setShowCharacterProfiles(true)
-                    }}
-                    className="inverted"
-                    style={{ ...utilities.inverted.style }}
-                  >
-                    {isUpdating ? (
-                      <CircleX size={16} color="var(--accent-6)" />
-                    ) : (
-                      <Img app={app} size={18} />
-                    )}
-                    {t("Earn a Badge")}
-                  </Button>
-                ) : null}
+                <Video
+                  style={{ ...styles.video.style }}
+                  src={`${FRONTEND_URL}/video/blob.mp4`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                />
+                {t("Generating character tags...")}
               </Div>
-
-              {showLoadingCharacterProfile ? (
-                <Div
-                  data-testid={"generating-cp"}
-                  style={{
-                    ...styles.characterProfileContainer.style,
-                    flexDirection: "row",
+            ) : characterProfile &&
+              characterProfilesEnabled &&
+              (isOwner(characterProfile, {
+                userId: user?.id,
+                guestId: guest?.id,
+              }) ||
+                characterProfile.visibility === "public") ? (
+              <Div style={{ ...styles.characterProfileContainer.style }}>
+                <Div style={{ ...styles.tags.style }}>
+                  {characterProfile.tags?.join(", ")}
+                </Div>
+                <CharacterProfile
+                  onCharacterProfileUpdate={() => {
+                    onCharacterProfileUpdate?.()
                   }}
-                >
-                  <Video
-                    style={{ ...styles.video.style }}
-                    src={`${FRONTEND_URL}/video/blob.mp4`}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                  />
-                  {t("Generating character tags...")}
-                </Div>
-              ) : characterProfile &&
-                characterProfilesEnabled &&
-                (isOwner(characterProfile, {
-                  userId: user?.id,
-                  guestId: guest?.id,
-                }) ||
-                  characterProfile.visibility === "public") ? (
-                <Div style={{ ...styles.characterProfileContainer.style }}>
-                  <Div style={{ ...styles.tags.style }}>
-                    {characterProfile.tags?.join(", ")}
-                  </Div>
-                  <CharacterProfile
-                    onCharacterProfileUpdate={() => {
-                      onCharacterProfileUpdate?.()
-                    }}
-                    characterProfile={characterProfile}
-                    showActions={true}
-                  />
-                </Div>
-              ) : null}
-            </>
-          )}
-        </Div>
-      )}
+                  characterProfile={characterProfile}
+                  showActions={true}
+                />
+              </Div>
+            ) : null}
+          </>
+        )}
+      </Div>
     </Div>
   )
 })

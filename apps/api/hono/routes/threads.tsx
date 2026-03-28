@@ -7,7 +7,7 @@ import {
   type collaboration,
   createCollaboration,
   deleteThread as deleteThreadDb,
-  getApp,
+  getSimpleApp as getApp,
   getCharacterProfile,
   getInvitation,
   getMessages,
@@ -70,7 +70,24 @@ threads.get("/", async (c) => {
   }
 
   const threadId = c.req.query("threadId")
-  const _slug = c.req.query("slug")
+  const hasPearApp =
+    c.req.query("hasPearApp") === "true"
+      ? true
+      : c.req.query("hasPearApp") !== "false"
+        ? false
+        : undefined
+  const isTribe =
+    c.req.query("isTribe") === "true"
+      ? true
+      : c.req.query("isTribe") !== "false"
+        ? false
+        : undefined
+  const isDNA =
+    c.req.query("isDNA") === "true"
+      ? true
+      : c.req.query("isDNA") !== "false"
+        ? false
+        : undefined
   const appId = c.req.query("appId")
   const starred = request.url.includes("starred")
   const sort = c.req.query("sort") as "bookmark" | "date" | undefined
@@ -132,11 +149,13 @@ threads.get("/", async (c) => {
     }
   }
 
-  const _app = await getApp({
-    id: appId,
-    userId: member?.id,
-    guestId: guest?.id,
-  })
+  const app = appId
+    ? await getApp({
+        id: appId,
+        userId: member?.id,
+        guestId: guest?.id,
+      })
+    : undefined
 
   const pageSize = Number(c.req.query("pageSize") || "100")
   const search = c.req.query("search")
@@ -209,7 +228,7 @@ threads.get("/", async (c) => {
   // Fetch threads based on context
   const threadsResult = await getThreads({
     ...payload,
-    appId: collaborationStatusFinal ? undefined : _app?.id,
+    appId: collaborationStatusFinal ? undefined : app?.id,
     collaborationStatus: collaborationStatusFinal,
     ...(!sanitizedUserName
       ? {
@@ -222,6 +241,9 @@ threads.get("/", async (c) => {
         }),
     visibility: getVisibilityFilter(),
     userName: sanitizedUserName,
+    hasPearApp,
+    isDNA,
+    isTribe,
     myPendingCollaborations: myPendingCollaborations ? true : undefined,
   })
 

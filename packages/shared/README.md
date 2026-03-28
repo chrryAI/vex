@@ -26,10 +26,10 @@ src/
 
 ```typescript
 // apps/two/platform/adapter.ts (Mobile with MMKV)
-import { MMKV } from "react-native-mmkv"
-import type { PlatformAdapter } from "@repo/shared/platform/types"
+import { MMKV } from "react-native-mmkv";
+import type { PlatformAdapter } from "@repo/shared/platform/types";
 
-const storage = new MMKV()
+const storage = new MMKV();
 
 export const mobilePlatform: PlatformAdapter = {
   storage: {
@@ -38,7 +38,7 @@ export const mobilePlatform: PlatformAdapter = {
     // ... etc
   },
   // ... rest of adapter
-}
+};
 ```
 
 ### 2. Implement Context Providers

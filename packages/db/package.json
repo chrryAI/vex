@@ -1,17 +1,17 @@
 {
   "name": "@repo/db",
-  "version": "2.2.41",
+  "version": "2.2.92",
   "description": "",
   "keywords": [],
   "license": "ISC",
   "author": "",
   "type": "module",
+  "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
     "./src/schema": "./src/schema.ts",
     "./src/better-auth-schema": "./src/better-auth-schema.ts"
   },
-  "main": "./index.ts",
   "scripts": {
     "check-types": "tsc --noEmit",
     "clear": "CLEAR=true pnpm exec tsx seed.ts",
@@ -24,7 +24,7 @@
     "s": "MODE=dev pnpm exec tsx seed.ts",
     "se": "MODE=e2e pnpm exec tsx seed.ts",
     "seed": "pnpm exec tsx seed.ts",
-    "sp": "MODE=prod pnpm exec tsx seed.ts",
+    "sp": "MODE=prod pnpm exec tsx prod.ts",
     "studio": "pnpm exec drizzle-kit studio",
     "test": "vp test run",
     "test:coverage": "vp test run --coverage"

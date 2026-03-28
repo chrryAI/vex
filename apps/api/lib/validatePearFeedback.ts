@@ -356,6 +356,7 @@ async function storeFeedbackInDatabase(
       specificityScore: metrics.specificityScore,
       actionabilityScore: metrics.actionabilityScore,
       status: "reviewed", // Auto-mark as reviewed since AI validated it
+      source: "human",
     })
 
     console.log("🍐 Feedback stored in database for analytics:", {

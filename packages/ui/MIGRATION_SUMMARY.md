@@ -50,7 +50,7 @@ packages/ui/
 
 ```typescript
 // Still works after migration!
-import { Button, Modal, Chat } from "chrry"
+import { Button, Modal, Chat } from "chrry";
 ```
 
 ## 🎯 Benefits

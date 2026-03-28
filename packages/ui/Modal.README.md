@@ -11,20 +11,22 @@ The `Modal` component is a foundational component for displaying modal dialogs.
 ## 🚀 Usage
 
 ```tsx
-import { Modal } from "@chrryai/chrry"
+import { Modal } from "@chrryai/chrry";
 
 function App() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div>
-      <button type="button"  onClick={() => setIsOpen(true)}>Open Modal</button>
+      <button type="button" onClick={() => setIsOpen(true)}>
+        Open Modal
+      </button>
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <h2>Modal Title</h2>
         <p>This is the content of the modal.</p>
       </Modal>
     </div>
-  )
+  );
 }
 ```
 

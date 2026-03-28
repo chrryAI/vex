@@ -37,24 +37,24 @@ A computer-implemented system comprising:
 
 ```typescript
 interface SpatialCoordinate {
-  appId: string // Unique spatial anchor
-  kanbanBoardId: string // Left plane state
-  timerId: string // Right plane state
-  threadId: string // Conversation context
-  sushiPath: string // Z-axis (depth) - .sushi directory
+  appId: string; // Unique spatial anchor
+  kanbanBoardId: string; // Left plane state
+  timerId: string; // Right plane state
+  threadId: string; // Conversation context
+  sushiPath: string; // Z-axis (depth) - .sushi directory
 }
 
 function navigateToCoordinate(target: SpatialCoordinate) {
   // Preserve current state
-  saveCurrentContext(currentCoordinate)
+  saveCurrentContext(currentCoordinate);
 
   // Load target workspace
-  loadKanbanBoard(target.kanbanBoardId) // Left plane
-  loadFocusTimer(target.timerId) // Right plane
-  loadProjectDNA(target.sushiPath) // Z-axis
+  loadKanbanBoard(target.kanbanBoardId); // Left plane
+  loadFocusTimer(target.timerId); // Right plane
+  loadProjectDNA(target.sushiPath); // Z-axis
 
   // Update spatial anchor
-  currentCoordinate = target
+  currentCoordinate = target;
 }
 ```
 
@@ -80,11 +80,11 @@ Deep Link:      vex.chrry.ai/.sushi/mutations/2026-01-08.json
 function getVisibleApps(currentApp: App, allApps: App[]): App[] {
   return allApps.filter((app) => {
     // Hide current app (spatial self-awareness)
-    if (app.id === currentApp.id) return false
+    if (app.id === currentApp.id) return false;
 
     // Show all other apps in navigation bar
-    return true
-  })
+    return true;
+  });
 }
 ```
 
@@ -108,14 +108,14 @@ AI agents operating within spatial coordinates:
 
 ```typescript
 interface AgentSpatialMemory {
-  appId: string
-  visitedPaths: string[] // Files reviewed
+  appId: string;
+  visitedPaths: string[]; // Files reviewed
   mutationHotspots: {
-    path: string
-    severity: number
-    lastMutated: Date
-  }[]
-  xpByCoordinate: Map<string, number> // XP per file/component
+    path: string;
+    severity: number;
+    lastMutated: Date;
+  }[];
+  xpByCoordinate: Map<string, number>; // XP per file/component
 }
 ```
 
@@ -128,24 +128,24 @@ async function validateMutation(mutation: Mutation) {
   // Record baseline at spatial coordinate
   const baseline = await page.screenshot({
     clip: mutation.uiCoordinate, // {x, y, width, height}
-  })
+  });
 
   // Apply mutation
-  await applyMutation(mutation)
+  await applyMutation(mutation);
 
   // Record mutated state at same coordinate
   const mutated = await page.screenshot({
     clip: mutation.uiCoordinate,
-  })
+  });
 
   // Compare spatial regions
-  const diff = await compareImages(baseline, mutated)
+  const diff = await compareImages(baseline, mutated);
 
   return {
     killed: diff.pixelDifference > threshold,
     coordinate: mutation.uiCoordinate,
     visualProof: diff.diffImage,
-  }
+  };
 }
 ```
 
@@ -196,8 +196,8 @@ Zero context switching via shadow DOM:
 ```typescript
 // Inject Kanban board as spatial overlay
 function createSpatialOverlay(githubProjectUrl: string) {
-  const overlay = document.createElement("div")
-  overlay.id = "sato-spatial-overlay"
+  const overlay = document.createElement("div");
+  overlay.id = "sato-spatial-overlay";
   overlay.style.cssText = `
     position: fixed;
     left: 0;
@@ -205,19 +205,19 @@ function createSpatialOverlay(githubProjectUrl: string) {
     width: 50%;
     height: 100vh;
     z-index: 9999;
-  `
+  `;
 
   // Shadow DOM for isolation
-  const shadow = overlay.attachShadow({ mode: "open" })
+  const shadow = overlay.attachShadow({ mode: "open" });
   shadow.innerHTML = `
     <iframe src="${githubProjectUrl}" 
             sandbox="allow-scripts allow-same-origin"
             style="width: 100%; height: 100%; border: none;">
     </iframe>
-  `
+  `;
 
-  document.body.appendChild(overlay)
-  return overlay
+  document.body.appendChild(overlay);
+  return overlay;
 }
 ```
 
@@ -352,12 +352,12 @@ const AUTHORIZED_DOMAINS = [
   "vault.chrry.ai",
   "focus.chrry.ai",
   // ... other authorized domains
-]
+];
 
 function validateDomain() {
-  const currentDomain = window.location.hostname
+  const currentDomain = window.location.hostname;
   if (!AUTHORIZED_DOMAINS.some((d) => currentDomain.endsWith(d))) {
-    throw new Error("Unauthorized domain - Navigation engine disabled")
+    throw new Error("Unauthorized domain - Navigation engine disabled");
   }
 }
 ```
@@ -366,7 +366,7 @@ function validateDomain() {
 
 ```typescript
 // Production build obfuscates spatial algorithms
-const spatialRouter = /* obfuscated */ __WEBPACK_SPATIAL_ROUTER__
+const spatialRouter = /* obfuscated */ __WEBPACK_SPATIAL_ROUTER__;
 ```
 
 ### Kill-Switch Protocol
@@ -375,17 +375,16 @@ const spatialRouter = /* obfuscated */ __WEBPACK_SPATIAL_ROUTER__
 async function validateLicense() {
   const response = await fetch("https://chrry.ai/api/license/validate", {
     headers: { "X-License-Key": LICENSE_KEY },
-  })
+  });
 
   if (!response.ok) {
-    disableSpatialNavigation()
-    throw new Error("License revoked - Contact support")
+    disableSpatialNavigation();
+    throw new Error("License revoked - Contact support");
   }
 }
 ```
 
 ---
-
 
 ## INVENTOR DECLARATION
 

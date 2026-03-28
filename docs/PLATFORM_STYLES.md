@@ -15,7 +15,7 @@ Your platform primitives now automatically convert `className` to React Native s
 ### 1. Import your styles
 
 ```tsx
-import { AppStyles } from "./App.styles"
+import { AppStyles } from "./App.styles";
 ```
 
 ### 2. Register styles in PlatformProvider
@@ -27,16 +27,16 @@ import { AppStyles } from "./App.styles"
 ### 3. Use className as normal
 
 ```tsx
-import { Div } from "chrry/platform"
-import { AppStyles } from "./App.styles"
-import clsx from "clsx"
+import { Div } from "chrry/platform";
+import { AppStyles } from "./App.styles";
+import clsx from "clsx";
 
 function MyComponent() {
   return (
     <Div className={clsx(styles.app, "flex items-center")}>
       {/* Works on both web AND native! */}
     </Div>
-  )
+  );
 }
 ```
 
@@ -74,15 +74,15 @@ Supported utilities:
 
 ```tsx
 // App.tsx
-import { Div, Text } from "chrry/platform"
-import { AppStyles } from "./App.styles"
+import { Div, Text } from "chrry/platform";
+import { AppStyles } from "./App.styles";
 
 export function App() {
   return (
     <Div className="app flex-col items-center p-4">
       <Text className="title font-bold text-center">Hello World</Text>
     </Div>
-  )
+  );
 }
 
 // On web: Uses className as-is
@@ -106,10 +106,10 @@ export function App() {
 ## Registering Multiple Style Modules
 
 ```tsx
-import { AppStyles } from "./App.styles"
-import { ChatStyles } from "./Chat.styles"
-import { ButtonStyles } from "./Button.styles"
-;<PlatformProvider
+import { AppStyles } from "./App.styles";
+import { ChatStyles } from "./Chat.styles";
+import { ButtonStyles } from "./Button.styles";
+<PlatformProvider
   styleModules={{
     AppStyles,
     ChatStyles,
@@ -117,7 +117,7 @@ import { ButtonStyles } from "./Button.styles"
   }}
 >
   {children}
-</PlatformProvider>
+</PlatformProvider>;
 ```
 
 All classes from all modules will be available via `className`!

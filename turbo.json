@@ -6,7 +6,7 @@
   "envMode": "loose",
   "globalEnv": [
     "SENTRY_AUTH_TOKEN",
-    "NEXTAUTH_SECRET",
+    "AUTH_SECRET",
     "NEW_RELIC_APP_NAME",
     "NEW_RELIC_LICENSE_KEY",
     "VITE_SENTRY",

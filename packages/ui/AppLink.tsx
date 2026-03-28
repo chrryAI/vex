@@ -21,9 +21,12 @@ export default function AppLink({
   icon,
   event = ANALYTICS_EVENTS.APP_LINK_CLICK,
   openInNewTab = false,
+  dataTestId,
+  appId,
   ...props
 }: {
   title?: string
+  appId?: string
   style?: CSSProperties
   app: appWithStore
   children?: React.ReactNode
@@ -37,8 +40,10 @@ export default function AppLink({
   isPear?: boolean
   icon?: React.ReactNode
   openInNewTab?: boolean
+  dataTestId?: string
   href?: string
   setIsNewAppChat?: (item: appWithStore) => void
+  onClick?: (e: React.MouseEvent) => void
 }) {
   const { setIsNewChat } = useChat()
   const {
@@ -50,9 +55,13 @@ export default function AppLink({
     plausible,
   } = useAuth()
 
-  const [isLoading, setIsLoading] = React.useState(
+  const [isLoading, setIsLoadingInternal] = React.useState(
     loadingApp && loadingApp?.id === app?.id,
   )
+
+  const setIsLoading = (value: boolean) => {
+    setIsLoadingInternal(value)
+  }
 
   const { push } = useNavigationContext()
 
@@ -63,7 +72,7 @@ export default function AppLink({
   }, [loadingApp])
 
   const currentApp = storeApps.find(
-    (a) => a.id === app?.id && a.store?.apps?.length,
+    (a) => app.id && a.id === app?.id && a.store?.apps?.length,
   )
 
   React.useEffect(() => {
@@ -100,6 +109,7 @@ export default function AppLink({
   if (as === "a") {
     return (
       <A
+        dataTestId={dataTestId}
         openInNewTab={openInNewTab}
         title={title}
         aria-label={title}
@@ -113,12 +123,15 @@ export default function AppLink({
             return
           }
 
+          props.onClick?.(e)
+
           setIsLoading(true)
           e.preventDefault()
 
           if (!currentApp) {
             setLoadingAppId(app.id)
             onLoading?.()
+
             setIsLoading(true)
             return
           }
@@ -153,6 +166,7 @@ export default function AppLink({
 
   return (
     <Button
+      data-testid={dataTestId}
       aria-label={title}
       style={{
         ...style,

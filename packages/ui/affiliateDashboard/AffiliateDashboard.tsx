@@ -133,7 +133,9 @@ export default function AffiliateDashboard() {
             <P style={styles.linkHelp.style}>
               {t(
                 "Share this link to earn {{commission}} commission on all subscriptions!",
-                { commission: "20%" },
+                {
+                  commission: "20%",
+                },
               )}
             </P>
           </Div>

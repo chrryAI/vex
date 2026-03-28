@@ -38,21 +38,21 @@ AXIOM_DATASET=chrry-api  # or chrry-flash for Flash
 ### Option 1: Direct Logger
 
 ```typescript
-import logger from "./lib/logger"
+import logger from "./lib/logger";
 
-logger.info("User signed in", { userId: "123" })
-logger.error("API error", { error: err.message })
-logger.debug("Debug info", { data })
+logger.info("User signed in", { userId: "123" });
+logger.error("API error", { error: err.message });
+logger.debug("Debug info", { data });
 ```
 
 ### Option 2: Console Polyfill (Easy Migration!)
 
 ```typescript
-import { console } from "./lib/logger"
+import { console } from "./lib/logger";
 
-console.log("This goes to Axiom!")
-console.error("Errors too!")
-console.warn("Warnings!")
+console.log("This goes to Axiom!");
+console.error("Errors too!");
+console.warn("Warnings!");
 ```
 
 ### Option 3: Global Polyfill
@@ -60,11 +60,11 @@ console.warn("Warnings!")
 In your entry file (e.g., `apps/api/hono/index.ts`):
 
 ```typescript
-import { console as pinoConsole } from "./lib/logger"
-globalThis.console = pinoConsole as any
+import { console as pinoConsole } from "./lib/logger";
+globalThis.console = pinoConsole as any;
 
 // Now all console.log() calls go to Axiom!
-console.log("Automatic logging!")
+console.log("Automatic logging!");
 ```
 
 ## 🎯 Benefits

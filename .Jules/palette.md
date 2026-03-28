@@ -22,6 +22,7 @@
 
 **Learning:** The custom `Checkbox` implementation visually hid the native input but did not replicate the focus state on the custom UI elements (track/thumb). This made keyboard navigation invisible, failing WCAG 2.4.7.
 **Action:** When hiding native inputs for custom styling, always add a `:focus-visible` rule that targets the custom sibling element (e.g., `input:focus-visible + .track { outline: ... }`) to ensure keyboard users can see where they are.
+
 ## 2026-03-03 - Focus Styles on Custom Checkboxes
 
 **Learning:** Custom checkbox components that hide the native input often lose keyboard focus indicators. The `Checkbox` component had a hidden input but no visual feedback on the custom track when focused via keyboard.
@@ -31,6 +32,7 @@
 
 **Learning:** The `Loading` component relied purely on a visual spinner (Lucide icon) without any semantic meaning for screen readers. This makes loading states invisible to non-visual users, causing confusion about whether content is ready.
 **Action:** Always add `role="status"` and `aria-label="Loading"` (or a context-specific label) to loading indicators. For full-screen loaders, apply these to the wrapper; for inline icons, apply directly to the SVG component.
+
 ## 2026-05-23 - Accessibility of Date/Time Displays
 
 **Learning:** Blog post dates were rendered as simple text (e.g., "2 days ago") or just text strings, making them less useful for assistive technologies and users wanting exact timestamps.
@@ -50,6 +52,7 @@
 
 **Learning:** The `FocusButton` task list used buttons that toggled selection state visually (check vs circle) but lacked `aria-pressed` or `role="checkbox"`. This made the selection state invisible to screen readers.
 **Action:** For custom multi-select lists implemented with buttons, always add `aria-pressed={isSelected}` to indicate the toggle state.
+
 ## 2026-02-26 - Cross-Platform Keyboard Shortcuts
 
 **Learning:** Hardcoded keyboard shortcuts (like `⌘K`) exclude Windows/Linux users, causing confusion and potential accessibility issues. `PlatformProvider` offers robust OS detection.

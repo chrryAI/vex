@@ -1030,14 +1030,14 @@ export default function Agent({
                       ...styles.bordered.style,
                     }}
                   >
-                    {!chrry?.store?.apps.length ? (
+                    {!chrry?.store?.apps?.length ? (
                       <Loading size={22} />
                     ) : (
                       <Blocks size={18} color="var(--accent-6)" />
                     )}
                     {t("Extend")}
                   </Span>
-                  {chrry?.store?.apps.length ? (
+                  {chrry?.store?.apps?.length ? (
                     <Div
                       style={{ ...styles.field.style, ...utilities.row.style }}
                     >
@@ -1464,7 +1464,8 @@ export default function Agent({
                           >
                             <P style={{ margin: "0.5rem 0" }}>
                               <strong>Revenue Source:</strong> When users
-                              subscribe to Plus (€{PLUS_PRICE}/mo) or Pro (€
+                              subscribe to Plus (€
+                              {PLUS_PRICE}/mo) or Pro (€
                               {PRO_PRICE}/mo) plans AND bring their own API keys
                               (OpenAI, Anthropic, Replicate, etc.), 70% of their
                               subscription fee is distributed to app creators

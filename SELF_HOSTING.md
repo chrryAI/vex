@@ -28,6 +28,7 @@ bash scripts/start-local-stack.sh
 ```
 
 This will:
+
 - ✅ Create `.env.local` from template
 - ✅ Start 5 Docker containers
 - ✅ Initialize PostgreSQL with pgvector extension
@@ -70,14 +71,14 @@ pnpm run dev:all
 
 Once running, access these services:
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| PostgreSQL | `localhost:5432` | user: `vex`, pass: `vex_local_dev` |
-| Redis | `localhost:6379` | pass: `vex_redis_local` |
-| MinIO API | http://localhost:9000 | user: `vex`, pass: `vex_minio_local_password` |
-| MinIO Console | http://localhost:9001 | Same as above |
-| FalkorDB | `localhost:6380` | No auth |
-| Mailhog UI | http://localhost:8025 | No auth |
+| Service       | URL                   | Credentials                                   |
+| ------------- | --------------------- | --------------------------------------------- |
+| PostgreSQL    | `localhost:5432`      | user: `vex`, pass: `vex_local_dev`            |
+| Redis         | `localhost:6379`      | pass: `vex_redis_local`                       |
+| MinIO API     | http://localhost:9000 | user: `vex`, pass: `vex_minio_local_password` |
+| MinIO Console | http://localhost:9001 | Same as above                                 |
+| FalkorDB      | `localhost:6380`      | No auth                                       |
+| Mailhog UI    | http://localhost:8025 | No auth                                       |
 
 ## Architecture
 
@@ -92,6 +93,7 @@ vex-mailhog     → Mailhog (Email testing)
 ```
 
 All data is stored in Docker volumes:
+
 - `postgres_data`
 - `redis_data`
 - `minio_data`
@@ -100,6 +102,7 @@ All data is stored in Docker volumes:
 ### Data Location
 
 Docker volumes are typically stored at:
+
 - **Mac (Docker Desktop)**: `~/Library/Containers/com.docker.docker/Data/vms/0/data/docker/volumes/`
 - **Mac (Orbstack)**: `~/.orbstack/docker/volumes/`
 - **Linux**: `/var/lib/docker/volumes/`
@@ -111,6 +114,7 @@ Docker volumes are typically stored at:
 The `.env.local` file contains all configuration. Key sections:
 
 #### Local Infrastructure
+
 ```bash
 DATABASE_URL=postgresql://vex:vex_local_dev@localhost:5432/vex
 REDIS_URL=redis://:vex_redis_local@localhost:6379
@@ -119,6 +123,7 @@ FALKORDB_URL=redis://localhost:6380
 ```
 
 #### User API Keys (BYOK)
+
 ```bash
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
@@ -128,6 +133,7 @@ PERPLEXITY_API_KEY=
 ```
 
 #### Optional Cloud Sync
+
 ```bash
 CLOUD_SYNC_ENABLED=false  # Set to true for premium features
 ```
@@ -254,6 +260,7 @@ Error: connect ECONNREFUSED 127.0.0.1:5432
 ```
 
 **Solution**:
+
 1. Check PostgreSQL is running: `docker ps | grep vex-postgres`
 2. Check logs: `docker logs vex-postgres`
 3. Verify `.env.local` has correct `DATABASE_URL`
@@ -271,6 +278,7 @@ You can run locally but sync to cloud for premium features:
 3. Restart API server
 
 This enables:
+
 - ✅ Stripe payments
 - ✅ Cross-device sync
 - ✅ Cloud backup
@@ -281,6 +289,7 @@ This enables:
 ### Hot Reload
 
 All services support hot reload:
+
 - **API**: Bun watches `apps/api/**/*.ts`
 - **Web**: Vite HMR
 - **Database**: Drizzle migrations auto-apply

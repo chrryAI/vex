@@ -109,12 +109,12 @@ $ node runtime/index.js test_closure_basic.js
 ```javascript
 function makeAdder(x) {
   return function (y) {
-    return x + y
-  }
+    return x + y;
+  };
 }
-const add5 = makeAdder(5)
-const result = add5(10)
-console.log(result) // Expected: 15, Actual: 0
+const add5 = makeAdder(5);
+const result = add5(10);
+console.log(result); // Expected: 15, Actual: 0
 ```
 
 **Status:** ❌ FAILING (returns 0 instead of 15)

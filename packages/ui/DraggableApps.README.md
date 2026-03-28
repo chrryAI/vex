@@ -39,35 +39,35 @@ Individual draggable item component.
 ## Usage Example
 
 ```tsx
-import { useState, useCallback } from "react"
-import { DraggableAppList } from "./DraggableAppList"
-import { DraggableAppItem } from "./DraggableAppItem"
+import { useState, useCallback } from "react";
+import { DraggableAppList } from "./DraggableAppList";
+import { DraggableAppItem } from "./DraggableAppItem";
 
 function MyApps() {
   const [apps, setApps] = useState([
     { id: "1", name: "Atlas" },
     { id: "2", name: "Peach" },
     { id: "3", name: "Bloom" },
-  ])
+  ]);
 
   // Update state during drag for smooth reordering
   const moveApp = useCallback((dragIndex: number, hoverIndex: number) => {
     setApps((prevApps) => {
-      const newApps = [...prevApps]
-      const [draggedApp] = newApps.splice(dragIndex, 1)
-      newApps.splice(hoverIndex, 0, draggedApp)
-      return newApps
-    })
-  }, [])
+      const newApps = [...prevApps];
+      const [draggedApp] = newApps.splice(dragIndex, 1);
+      newApps.splice(hoverIndex, 0, draggedApp);
+      return newApps;
+    });
+  }, []);
 
   // Save to database when drop completes
   const handleDrop = useCallback(
     async (dragIndex: number, hoverIndex: number) => {
-      console.log(`Moved from ${dragIndex} to ${hoverIndex}`)
+      console.log(`Moved from ${dragIndex} to ${hoverIndex}`);
       // await saveAppOrder(apps)
     },
     [apps],
-  )
+  );
 
   return (
     <DraggableAppList className="apps-grid">
@@ -83,7 +83,7 @@ function MyApps() {
         </DraggableAppItem>
       ))}
     </DraggableAppList>
-  )
+  );
 }
 ```
 

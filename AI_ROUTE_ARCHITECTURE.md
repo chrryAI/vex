@@ -25,21 +25,21 @@ Apps inherit capabilities from parents (max 5 levels):
 
 ```typescript
 const buildAppKnowledgeBase = async (currentApp, depth = 0) => {
-  if (!currentApp || depth >= 5) return emptyKnowledge
+  if (!currentApp || depth >= 5) return emptyKnowledge;
 
   // Get current app knowledge
-  const thread = await getThread({ appId: currentApp.id })
-  const messages = await getMessages({ threadId: thread.id })
+  const thread = await getThread({ appId: currentApp.id });
+  const messages = await getMessages({ threadId: thread.id });
 
   // Recursively get parent knowledge
   for (const parentId of currentApp.extend) {
-    const parentApp = await getPureApp({ id: parentId })
-    const parentData = await buildAppKnowledgeBase(parentApp, depth + 1)
+    const parentApp = await getPureApp({ id: parentId });
+    const parentData = await buildAppKnowledgeBase(parentApp, depth + 1);
     // Merge knowledge
   }
 
-  return combinedKnowledge
-}
+  return combinedKnowledge;
+};
 ```
 
 ### 2. Multi-Modal Processing
@@ -60,7 +60,7 @@ const memories = await getMemories({
   appId,
   scatterAcrossThreads: true,
   excludeThreadId: currentThread,
-})
+});
 ```
 
 ### 4. Real-Time Streaming
@@ -75,11 +75,11 @@ const stream = new ReadableStream({
       messages,
       tools,
       onChunk: ({ chunk }) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`))
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
       },
-    })
+    });
   },
-})
+});
 ```
 
 ### 5. Web Search Integration
@@ -87,7 +87,7 @@ const stream = new ReadableStream({
 Perplexity with citations:
 
 ```typescript
-const searchResults = await performWebSearch(query)
+const searchResults = await performWebSearch(query);
 // Add to context with citations [1], [2], [3]
 ```
 
@@ -100,7 +100,7 @@ const tools = {
   createTask: z.object({ title: z.string() }),
   startTimer: z.object({ duration: z.number() }),
   generateImage: z.object({ prompt: z.string() }),
-}
+};
 ```
 
 ### 7. Rate Limiting
@@ -133,7 +133,7 @@ const bloomContext = {
   activeTasks: 12,
   focusTime: 450,
   timerStatus: "running",
-}
+};
 ```
 
 ### Atlas (Travel)
@@ -143,7 +143,7 @@ const atlasContext = {
   location: "Tokyo, Japan 🇯🇵",
   weather: "15°C ☀️",
   timeOfDay: "morning",
-}
+};
 ```
 
 ## Security

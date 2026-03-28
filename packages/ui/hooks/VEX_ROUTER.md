@@ -38,12 +38,16 @@ npm install @vex/router
 ```
 
 ```tsx
-import { useNavigation } from "@vex/router"
+import { useNavigation } from "@vex/router";
 
 function App() {
-  const { router } = useNavigation()
+  const { router } = useNavigation();
 
-  return <button type="button"  onClick={() => router.push("/calendar")}>Navigate</button>
+  return (
+    <button type="button" onClick={() => router.push("/calendar")}>
+      Navigate
+    </button>
+  );
 }
 ```
 
@@ -57,10 +61,10 @@ function App() {
 
 ```tsx
 // Next.js App Router
-router.push("/calendar") // 100-300ms wait ❌
+router.push("/calendar"); // 100-300ms wait ❌
 
 // @vex/router
-router.push("/calendar") // 0ms instant ✅
+router.push("/calendar"); // 0ms instant ✅
 ```
 
 ### 🎨 Native View Transitions
@@ -73,7 +77,7 @@ Automatic smooth transitions using the browser's View Transitions API:
 
 ```tsx
 // Automatic - no configuration needed!
-router.push("/calendar") // ✨ Smooth transition
+router.push("/calendar"); // ✨ Smooth transition
 ```
 
 ### 🚀 SSR + Client Hybrid
@@ -121,30 +125,30 @@ Respects user preferences:
 ### `useNavigation()`
 
 ```tsx
-const { router, pathname, isHome } = useNavigation()
+const { router, pathname, isHome } = useNavigation();
 
 // Navigation
-router.push("/calendar") // Navigate with history
-router.replace("/calendar") // Replace current entry
-router.back() // Go back
-router.forward() // Go forward
-router.refresh() // Refresh current page
+router.push("/calendar"); // Navigate with history
+router.replace("/calendar"); // Replace current entry
+router.back(); // Go back
+router.forward(); // Go forward
+router.refresh(); // Refresh current page
 
 // State
-pathname // Current pathname
-isHome // Is current route home?
+pathname; // Current pathname
+isHome; // Is current route home?
 ```
 
 ### `usePathname()`
 
 ```tsx
-const pathname = usePathname() // Subscribe to pathname changes
+const pathname = usePathname(); // Subscribe to pathname changes
 ```
 
 ### `useSearchParams()`
 
 ```tsx
-const searchParams = useSearchParams() // Current URL search params
+const searchParams = useSearchParams(); // Current URL search params
 ```
 
 ---
@@ -157,22 +161,22 @@ const searchParams = useSearchParams() // Current URL search params
 
 ```tsx
 class ClientRouter {
-  private listeners: Set<() => void>
-  private state: RouterState
+  private listeners: Set<() => void>;
+  private state: RouterState;
 
   push(href: string) {
     // Use View Transitions API if available
     if (document.startViewTransition) {
       document.startViewTransition(() => {
-        window.history.pushState({}, "", href)
-        this.notifyListeners()
-      })
+        window.history.pushState({}, "", href);
+        this.notifyListeners();
+      });
     }
   }
 
   subscribe(listener: () => void) {
-    this.listeners.add(listener)
-    return () => this.listeners.delete(listener)
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
   }
 }
 ```
@@ -246,23 +250,23 @@ const ROUTES = {
   calendar: () => import("./Calendar"),
   threads: () => import("./Threads"),
   settings: () => import("./Settings"),
-}
+};
 
 // Lazy load on-demand
-const RouteComponent = lazy(ROUTES[segment])
+const RouteComponent = lazy(ROUTES[segment]);
 ```
 
 ### Hybrid SSR Detection
 
 ```tsx
-const isClientRoute = RouteComponent || threadId || pathname === "/"
+const isClientRoute = RouteComponent || threadId || pathname === "/";
 
 {
   isClientRoute ? (
     <RouteComponent key={pathname} /> // Client-side
   ) : (
     children // SSR
-  )
+  );
 }
 ```
 
@@ -270,7 +274,7 @@ const isClientRoute = RouteComponent || threadId || pathname === "/"
 
 ```tsx
 // Disable transitions for specific navigation
-router.push("/calendar", { shallow: true })
+router.push("/calendar", { shallow: true });
 ```
 
 ---
@@ -292,28 +296,28 @@ router.push("/calendar", { shallow: true })
 
 ```tsx
 // Before
-import { useRouter } from "next/navigation"
-const router = useRouter()
-router.push("/calendar")
+import { useRouter } from "next/navigation";
+const router = useRouter();
+router.push("/calendar");
 
 // After
-import { useNavigation } from "@vex/router"
-const { router } = useNavigation()
-router.push("/calendar")
+import { useNavigation } from "@vex/router";
+const { router } = useNavigation();
+router.push("/calendar");
 ```
 
 ### From React Router
 
 ```tsx
 // Before
-import { useNavigate } from "react-router-dom"
-const navigate = useNavigate()
-navigate("/calendar")
+import { useNavigate } from "react-router-dom";
+const navigate = useNavigate();
+navigate("/calendar");
 
 // After
-import { useNavigation } from "@vex/router"
-const { router } = useNavigation()
-router.push("/calendar")
+import { useNavigation } from "@vex/router";
+const { router } = useNavigation();
+router.push("/calendar");
 ```
 
 ---

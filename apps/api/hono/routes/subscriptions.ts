@@ -112,7 +112,9 @@ subscriptions.post("/changePlan", async (c) => {
     // Retrieve the Stripe subscription to get subscription items
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.subscriptionId,
-      { expand: ["items"] },
+      {
+        expand: ["items"],
+      },
     )
 
     if (!stripeSubscription.items.data[0]) {

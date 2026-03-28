@@ -55,7 +55,7 @@ export default function Account({
 
   const styles = useAccountStyles()
 
-  const { isMobileDevice } = useTheme()
+  const { enableSound, setEnableSound, isMobileDevice } = useTheme()
   const { utilities } = useStyles()
 
   const { isTauri } = usePlatform()
@@ -78,6 +78,8 @@ export default function Account({
     setEnv,
     env,
     actions,
+    enableNotifications,
+    setEnableNotifications,
   } = useAuth()
 
   const { isAccountVisible: isModalOpen, setIsAccountVisible: setIsModalOpen } =
@@ -663,7 +665,27 @@ export default function Account({
               </>
             ) : null}
           </Div>
-
+          <Div
+            style={{
+              ...utilities.row.style,
+              marginTop: ".3rem",
+            }}
+          >
+            <Checkbox
+              checked={enableNotifications}
+              onChange={(e) => setEnableNotifications(e)}
+            >
+              {t("Notifications")}
+            </Checkbox>
+            <Checkbox checked={enableSound} onChange={(e) => setEnableSound(e)}>
+              {t("Sound")}
+            </Checkbox>
+            {/* <GitHubConnectButton
+                        variant="small"
+                        size={14}
+                        buttonText="Connect GitHub"
+                      /> */}
+          </Div>
           <Div style={styles.actions.style}>
             {user?.role === "admin" && (
               <Checkbox
@@ -679,6 +701,7 @@ export default function Account({
                 {t("Prod")}
               </Checkbox>
             )}
+
             <Button
               className="link"
               data-testid="account-logout-button"
