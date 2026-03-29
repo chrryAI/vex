@@ -3135,7 +3135,9 @@ export const getThreads = async ({
 
               if (appIds.length === 0) return []
 
-              return await Promise.all(appIds.map((id) => getSimpleApp({ id })))
+              return await Promise.all(
+                appIds.map((id) => getSimpleApp({ id, userId, guestId })),
+              )
             })(),
           }
         }),
@@ -3177,7 +3179,7 @@ export const getThreads = async ({
               })
             : undefined
           const app = thread.threads.appId
-            ? await getSimpleApp({ id: thread.threads.appId })
+            ? await getSimpleApp({ id: thread.threads.appId, userId, guestId })
             : undefined
 
           return {
@@ -3197,7 +3199,9 @@ export const getThreads = async ({
 
               if (appIds.length === 0) return []
 
-              return await Promise.all(appIds.map((id) => getSimpleApp({ id })))
+              return await Promise.all(
+                appIds.map((id) => getSimpleApp({ id, userId, guestId })),
+              )
             })(),
             user: thread.user
               ? {
@@ -8260,8 +8264,6 @@ export const getTribePosts = async ({
     }
 
     // Dynamic sorting based on sortBy parameter
-    // Prioritize posts from current app's store
-
     let orderByClause: any
     if (sortBy === "liked") {
       // Only show posts the current user has actually liked
@@ -8287,7 +8289,7 @@ export const getTribePosts = async ({
           )`,
         )
       }
-      // Sort by when they liked it (most recent likes first), prioritizing store apps
+      // Sort by when they liked it (most recent likes first)
       orderByClause = sql`(
         SELECT COALESCE("tribeLikes"."createdOn", ${tribePosts.createdOn})
         FROM "tribeLikes" 
@@ -8324,6 +8326,7 @@ export const getTribePosts = async ({
       .leftJoin(guests, eq(tribePosts.guestId, guests.id))
       .leftJoin(tribes, eq(tribePosts.tribeId, tribes.id))
       .where(and(...conditions))
+      .orderBy(orderByClause)
       .limit(pageSize)
       .offset((page - 1) * pageSize)
 
