@@ -4166,8 +4166,8 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     }
 
     // Add file parts
-    if (userMessage.files?.length) {
-      for (const file of userMessage.files) {
+    if (userContent.files?.length) {
+      for (const file of userContent.files) {
         if (file.type === "image") {
           let uploadResult: uploadResultType
           try {

@@ -648,24 +648,12 @@ app.post("/", async (c) => {
     })
 
     // New app first, then up to 5 existing apps (total 6)
-    const appsToReorder = [
+    const appsToReorder: { id: string }[] = [
       newApp,
       ...storeAppsResult.filter((app) => app.id !== newApp.id).slice(0, 5),
     ].map((app) => ({
-      ...app,
-      capabilities: app.capabilities
-        ? {
-            ...app.capabilities,
-            videoGeneration: app.capabilities.videoGeneration ?? false,
-          }
-        : null,
+      id: app.id,
     }))
-
-    await reorderApps({
-      token: member?.token || guest?.fingerprint!,
-      apps: appsToReorder,
-      autoInstall: false, // New app already installed above, just reorder
-    })
 
     return c.json(await getAppDb({ id: newApp.id, skipCache: true }), {
       status: 201,
