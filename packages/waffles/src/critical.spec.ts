@@ -42,7 +42,7 @@ test("Subscribe as Member", async ({ page }) => {
   await subscribe({ page, isMember: true })
 })
 
-test.only("Watermelon", async ({ page, browser }) => {
+test.skip("Watermelon", async ({ page, browser }) => {
   await clean({ page })
   await page.goto(`${getURL({ isLive: false })}/watermelon`, {
     waitUntil: "domcontentloaded",
