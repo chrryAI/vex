@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 
-import { reorderApps } from "@chrryai/chrry/lib"
 import { appSchema } from "@chrryai/chrry/schemas/appSchema"
 import { ADDITIONAL_CREDITS, isOwner } from "@chrryai/chrry/utils"
 import {

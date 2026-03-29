@@ -92,7 +92,6 @@ import {
   extractPDFText,
   getHourlyLimit,
   isCollaborator,
-  REPLICATE_API_KEY,
   wait,
 } from "../../lib"
 import {
@@ -1465,6 +1464,7 @@ ai.post("/", async (c) => {
 
     const payload = {
       ...x,
+      notifySender: jobId ? true : x.notifySender,
       payload: {
         ...x.payload,
         data: {
@@ -1497,7 +1497,7 @@ ai.post("/", async (c) => {
         shouldStream ? type : type !== "ws",
       ) as notifyOwnerAndCollaborationsPayload["types"],
     })
-    !shouldStream && (canPostToMolt || canPostToTribe) && broadcast(payload)
+    ;(canPostToMolt || canPostToTribe) && broadcast(payload)
   }
 
   async function enhancedStreamChunk({
@@ -2391,15 +2391,14 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
   })()
 
-  canPostToTribe &&
-    notifyOwnerAndCollaborations({
-      payload: {
-        type: "new_post_start",
-        data: {
-          app: requestApp,
-        },
+  notifyOwnerAndCollaborations({
+    payload: {
+      type: "new_post_start",
+      data: {
+        app: requestApp,
       },
-    })
+    },
+  })
 
   const tribes = await getTribes({
     page: 15,
@@ -3079,7 +3078,7 @@ If the user asks for statistics, data, or concrete numbers regarding specific gr
               status: "ACTIVE_IN_THIS_THREAD",
             },
             workHistory: taskMessages.slice(0, 10).map((msg) => ({
-              contentPreview: msg.message.content.slice(0, 60) + "...",
+              contentPreview: `${msg.message.content.slice(0, 60)}...`,
               mood: msg.mood?.type,
               timestamp: msg.message.createdOn,
             })),
@@ -6975,16 +6974,15 @@ Respond in JSON format:
 
               // Send stream_complete notification
               if (thread && m) {
-                canPostToTribe &&
-                  notifyOwnerAndCollaborations({
-                    payload: {
-                      type: "new_post_end",
-                      data: {
-                        app: requestApp,
-                        tribePostId,
-                      },
+                notifyOwnerAndCollaborations({
+                  payload: {
+                    type: "new_post_end",
+                    data: {
+                      app: requestApp,
+                      tribePostId,
                     },
-                  })
+                  },
+                })
                 // console.log("📡 Sending stream_complete notification...")
                 notifyOwnerAndCollaborations({
                   notifySender: true,

@@ -1,6 +1,31 @@
 import console from "../../utils/log"
 import * as utils from ".."
 
+// Utility to convert VAPID key - MUST be defined before use
+const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+  if (!base64String) {
+    throw new Error("base64String is undefined or empty")
+  }
+
+  // Ensure the base64 string is properly padded
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")
+
+  // Check if base64 is valid before decoding
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
+    throw new Error("Invalid base64 string")
+  }
+
+  // Decode base64 to binary string
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  // Ensure the buffer is explicitly typed as ArrayBuffer, not ArrayBufferLike
+  return new Uint8Array(outputArray.buffer as ArrayBuffer)
+}
+
 const registerServiceWorker = async (
   FRONTEND_URL = utils.FRONTEND_URL,
 ): Promise<ServiceWorkerRegistration | null> => {
@@ -92,62 +117,33 @@ export const subscribeToPushNotifications = async (
         return existingSubscription
       }
 
-      try {
-        const applicationServerKey = urlBase64ToUint8Array(publicVapidKey)
+      const applicationServerKey = urlBase64ToUint8Array(publicVapidKey)
 
-        // Add timeout to detect hanging subscribe (some browsers/networks may hang)
-        const subscribePromise = registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
-        })
+      // Add timeout to detect hanging subscribe (some browsers/networks may hang)
+      const subscribePromise = registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
+      })
 
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(
-            () =>
-              reject(new Error("Push subscription timeout after 10 seconds")),
-            10000,
-          )
-        })
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(
+          () => reject(new Error("Push subscription timeout after 10 seconds")),
+          10000,
+        )
+      })
 
-        const subscription = await Promise.race([
-          subscribePromise,
-          timeoutPromise,
-        ])
-        return subscription
-      } catch (subscribeError) {
-        throw subscribeError
-      }
+      const subscription = await Promise.race([
+        subscribePromise,
+        timeoutPromise,
+      ])
+      return subscription
     } else {
       return null
     }
   } catch (error) {
+    console.error("Push subscription failed:", error)
     throw error
   }
-}
-
-// Utility to convert VAPID key
-const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
-  if (!base64String) {
-    throw new Error("base64String is undefined or empty")
-  }
-
-  // Ensure the base64 string is properly padded
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")
-
-  // Check if base64 is valid before decoding
-  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64)) {
-    throw new Error("Invalid base64 string")
-  }
-
-  // Decode base64 to binary string
-  const rawData = window.atob(base64)
-  const outputArray = new Uint8Array(rawData.length)
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i)
-  }
-  // Ensure the buffer is explicitly typed as ArrayBuffer, not ArrayBufferLike
-  return new Uint8Array(outputArray.buffer as ArrayBuffer)
 }
 
 export default registerServiceWorker

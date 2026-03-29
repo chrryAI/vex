@@ -49,6 +49,7 @@
     "@react-email/render": "^2.0.4",
     "@repo/db": "workspace:*",
     "@sentry/node": "^10.45.0",
+    "@sentry/opentelemetry": "^10.46.0",
     "@smithy/fetch-http-handler": "^5.3.15",
     "@smithy/node-http-handler": "^4.5.0",
     "@types/babel-traverse": "^6.25.10",

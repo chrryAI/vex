@@ -30,7 +30,6 @@ import {
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
 import { FalkorDBSetupModal } from "./FalkorDBSetupModal"
-import Hippo from "./Hippo"
 import {
   useCountdown,
   useHasHydrated,

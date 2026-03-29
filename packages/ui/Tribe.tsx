@@ -65,8 +65,6 @@ import {
   CircleX,
   HeartPlus,
   LoaderCircle,
-  Pin,
-  Quote,
   Settings2,
   Sparkles,
   Trash2,

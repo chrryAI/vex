@@ -1,5 +1,4 @@
 import { Hono } from "hono"
-import React from "react"
 import { renderToString } from "react-dom/server"
 import ChrryDotDev from "../../components/ChrryDotDev"
 import Privacy from "../../components/Privacy"

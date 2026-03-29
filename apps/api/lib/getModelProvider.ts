@@ -18,7 +18,6 @@ import {
   type userWithRelations,
 } from "@repo/db"
 import type { LanguageModel } from "ai"
-import { isDevelopment } from "."
 
 const plusTiers = ["plus", "pro"]
 

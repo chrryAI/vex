@@ -1,6 +1,5 @@
 import { test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
-import { collaboration } from "./shared/collaboration"
 import { signIn } from "./shared/signIn"
 import { subscribe } from "./shared/subscribe"
 import { watermelon } from "./shared/watermelon"

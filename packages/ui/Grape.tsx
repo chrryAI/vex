@@ -1,26 +1,9 @@
 import { useEffect, useState } from "react"
 import { Trans } from "react-i18next"
-import { BiLogoPostgresql } from "react-icons/bi"
-import { FaAws } from "react-icons/fa"
-import { LuOrbit } from "react-icons/lu"
-import {
-  SiBiome,
-  SiBun,
-  SiBuymeacoffee,
-  SiGithub,
-  SiHetzner,
-  SiHono,
-  SiMacos,
-  SiMinio,
-  SiReact,
-  SiRedis,
-  SiTauri,
-  SiVite,
-} from "react-icons/si"
+import { SiBuymeacoffee, SiMacos } from "react-icons/si"
 import AppLink from "./AppLink"
 import A from "./a/A"
 import ColorScheme from "./ColorScheme"
-import ConfirmButton from "./ConfirmButton"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useNavigationContext } from "./context/providers"
 import { COLORS } from "./context/providers/AppProvider"
@@ -28,43 +11,16 @@ import { useStyles } from "./context/StylesContext"
 import { useTheme } from "./context/ThemeContext"
 import Hippo from "./Hippo"
 import Img from "./Image"
-import {
-  ArrowRight,
-  CircleCheck,
-  CirclePause,
-  CirclePlay,
-  CircleX,
-  Claude,
-  DeepSeek,
-  Flux,
-  Gemini,
-  Grok,
-  OpenAI,
-  OpenRouter,
-  Perplexity,
-  Replicate,
-  WannathisIcon,
-} from "./icons"
+import { CirclePause, CirclePlay } from "./icons"
 import LanguageSwitcher from "./LanguageSwitcher"
 import Loading from "./Loading"
 import LocalSetupScreen from "./LocalSetupScreen"
-import {
-  Button,
-  Div,
-  Form,
-  H1,
-  Input,
-  P,
-  Span,
-  toast,
-  usePlatform,
-} from "./platform"
+import { Button, Div, H1, Span, toast, usePlatform } from "./platform"
 import SignIn from "./SignIn"
 import Subscribe from "./Subscribe"
-import TextType from "./TextType"
 import ThemeSwitcher from "./ThemeSwitcher"
 import Ticker from "./Ticker"
-import { VERSION, validateApiKey } from "./utils"
+import { VERSION } from "./utils"
 import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
 import Weather from "./Weather"
 

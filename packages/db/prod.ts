@@ -1,4 +1,3 @@
-import crypto from "node:crypto"
 import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
 import {
   createUser,
@@ -20,15 +19,14 @@ import { seedScheduledTribeJobs } from "./src/seed/seedScheduledTribeJobs"
 const VEX_TEST_NAME = process.env.VEX_TEST_NAME!
 const VEX_TEST_PASSWORD = process.env.VEX_TEST_PASSWORD!
 
-// Create 150+ realistic users
-export async function clearGuests() {
+async function clearGuests(ago = 5) {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
 
   // 5 gün önceki tarih
   const fiveDaysAgo = new Date()
-  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 2)
+  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - ago)
 
   while (hasMore) {
     // Find inactive guests (no subscription, no messages, no tasks)

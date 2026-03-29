@@ -18,7 +18,7 @@ import Img from "./Image"
 import { BellRing } from "./icons"
 import { Button, Div, Span, usePlatform } from "./platform"
 import type { customPushSubscription } from "./types"
-import { apiFetch, getEnv, isDevelopment } from "./utils"
+import { apiFetch, getEnv } from "./utils"
 import registerServiceWorker, {
   subscribeToPushNotifications,
 } from "./utils/registerServiceWorker"
