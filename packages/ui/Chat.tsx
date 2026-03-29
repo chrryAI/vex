@@ -30,7 +30,6 @@ import {
 import { useStyles } from "./context/StylesContext"
 import DeleteThread from "./DeleteThread"
 import { FalkorDBSetupModal } from "./FalkorDBSetupModal"
-import Hippo from "./Hippo"
 import {
   useCountdown,
   useHasHydrated,
@@ -5037,44 +5036,37 @@ export default function Chat({
                       <Link size={15} />
                       {t("Privacy")}
                     </A>
-                  ) : !isSelectingMood &&
-                    (isDevelopment ? user : user?.role === "admin") &&
-                    !hipchat ? (
-                    <Hippo
-                      thread={thread}
-                      key={dataTestId}
-                      dataTestId={`${dataTestId}-hippo`}
-                      size={24}
-                    />
                   ) : (
-                    <Button
-                      data-testid="attach-button"
-                      title={t("Attach")}
-                      onClick={() => {
-                        addHapticFeedback()
+                    !isSelectingMood && (
+                      <Button
+                        data-testid="attach-button"
+                        title={t("Attach")}
+                        onClick={() => {
+                          addHapticFeedback()
 
-                        // Auto-switch to Sushi for file attachments
-                        const sushiAgent = aiAgents.find(
-                          (agent) => agent.name === "sushi",
-                        )
-                        if (sushiAgent && !selectedAgent?.capabilities?.pdf) {
-                          setSelectedAgent(sushiAgent)
-                        }
+                          // Auto-switch to Sushi for file attachments
+                          const sushiAgent = aiAgents.find(
+                            (agent) => agent.name === "sushi",
+                          )
+                          if (sushiAgent && !selectedAgent?.capabilities?.pdf) {
+                            setSelectedAgent(sushiAgent)
+                          }
 
-                        // Open system file picker directly with all supported types
-                        triggerFileInput(
-                          "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
-                        )
-                      }}
-                      className="link"
-                      style={{
-                        ...utilities.link.style,
-                        ...styles.attachButton.style,
-                      }}
-                      type="submit"
-                    >
-                      <Img slug="hippo" size={24} key="attach-button" />
-                    </Button>
+                          // Open system file picker directly with all supported types
+                          triggerFileInput(
+                            "image/*,video/*,audio/*,.pdf,.txt,.md,.json,.csv,.xml,.html,.css,.js,.ts,.tsx,.jsx,.py,.java,.c,.cpp,.h,.hpp,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala,.sh,.yaml,.yml,.toml,.ini,.conf,.log",
+                          )
+                        }}
+                        className="link"
+                        style={{
+                          ...utilities.link.style,
+                          ...styles.attachButton.style,
+                        }}
+                        type="submit"
+                      >
+                        <Img slug="hippo" size={24} key="attach-button" />
+                      </Button>
+                    )
                   )}
                   {/* Quota info button */}
                   {!isSelectingMood && !needsReview && (

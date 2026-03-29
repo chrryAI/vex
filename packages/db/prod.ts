@@ -1,4 +1,3 @@
-import crypto from "node:crypto"
 import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm"
 import {
   createUser,
@@ -20,15 +19,14 @@ import { seedScheduledTribeJobs } from "./src/seed/seedScheduledTribeJobs"
 const VEX_TEST_NAME = process.env.VEX_TEST_NAME!
 const VEX_TEST_PASSWORD = process.env.VEX_TEST_PASSWORD!
 
-// Create 150+ realistic users
-export async function clearGuests() {
+async function clearGuests(ago = 5) {
   const batchSize = 500
   let totalDeleted = 0
   let hasMore = true
 
   // 5 gün önceki tarih
   const fiveDaysAgo = new Date()
-  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+  fiveDaysAgo.setDate(fiveDaysAgo.getDate() - ago)
 
   while (hasMore) {
     // Find inactive guests (no subscription, no messages, no tasks)
@@ -236,7 +234,7 @@ export const updateStoreUrls = async ({ user }: { user: user }) => {
 const prod = async () => {
   // Check if admin user already exists
   // await _clearMemories()
-  // await clearGuests()
+  await clearGuests()
   const admin = await getUser({
     email: isProd || isVex ? "ibsukru@gmail.com" : "test@gmail.com",
   })
@@ -266,11 +264,11 @@ const prod = async () => {
 const seed = async (): Promise<void> => {
   // await syncAllGoals()
   // process.exit(0)
-
+  await clearMemories()
   if (isProd) {
     // eslint-disable-next-line no-console
     console.warn(
-      "\n⚠️  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
+      "\n🧐  WARNING: You are about to run the seed script on a NON-LOCAL database!\n" +
         `DB_URL: ${DB_URL}\n` +
         "Press Enter to continue, or Ctrl+C to abort.",
     )

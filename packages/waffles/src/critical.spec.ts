@@ -1,8 +1,8 @@
 import { test } from "@playwright/test"
 import { getURL, TEST_MEMBER_FINGERPRINTS } from "."
-import { collaboration } from "./shared/collaboration"
 import { signIn } from "./shared/signIn"
 import { subscribe } from "./shared/subscribe"
+import { watermelon } from "./shared/watermelon"
 
 const isLive = false
 
@@ -42,6 +42,13 @@ test("Subscribe as Member", async ({ page }) => {
   await subscribe({ page, isMember: true })
 })
 
-test.skip("Collaboration", async ({ page, browser }) => {
-  await collaboration({ page, browser, isMember: false })
+test.skip("Watermelon", async ({ page, browser }) => {
+  await clean({ page })
+  await page.goto(`${getURL({ isLive: false })}/watermelon`, {
+    waitUntil: "domcontentloaded",
+    timeout: 100000,
+  })
+
+  // await signIn({ page })
+  await watermelon({ page })
 })

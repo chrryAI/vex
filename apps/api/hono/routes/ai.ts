@@ -92,7 +92,6 @@ import {
   extractPDFText,
   getHourlyLimit,
   isCollaborator,
-  REPLICATE_API_KEY,
   wait,
 } from "../../lib"
 import {
@@ -1465,6 +1464,7 @@ ai.post("/", async (c) => {
 
     const payload = {
       ...x,
+      notifySender: jobId ? true : x.notifySender,
       payload: {
         ...x.payload,
         data: {
@@ -1497,7 +1497,7 @@ ai.post("/", async (c) => {
         shouldStream ? type : type !== "ws",
       ) as notifyOwnerAndCollaborationsPayload["types"],
     })
-    !shouldStream && (canPostToMolt || canPostToTribe) && broadcast(payload)
+    ;(canPostToMolt || canPostToTribe) && broadcast(payload)
   }
 
   async function enhancedStreamChunk({
@@ -2391,15 +2391,14 @@ ${requestApp.store.apps.map((a) => `- **${a.name}**${a.icon ? `: ${a.title}` : "
     return `comprehensive and in-depth (${Math.floor(limit * 0.7)}-${limit} chars)` // Use 70-100% of limit
   })()
 
-  canPostToTribe &&
-    notifyOwnerAndCollaborations({
-      payload: {
-        type: "new_post_start",
-        data: {
-          app: requestApp,
-        },
+  notifyOwnerAndCollaborations({
+    payload: {
+      type: "new_post_start",
+      data: {
+        app: requestApp,
       },
-    })
+    },
+  })
 
   const tribes = await getTribes({
     page: 15,
@@ -3079,7 +3078,7 @@ If the user asks for statistics, data, or concrete numbers regarding specific gr
               status: "ACTIVE_IN_THIS_THREAD",
             },
             workHistory: taskMessages.slice(0, 10).map((msg) => ({
-              contentPreview: msg.message.content.slice(0, 60) + "...",
+              contentPreview: `${msg.message.content.slice(0, 60)}...`,
               mood: msg.mood?.type,
               timestamp: msg.message.createdOn,
             })),
@@ -3616,12 +3615,15 @@ When message language is unclear, default to this language.`
   const fingerprint =
     fp && isE2EInternal ? fp : member?.fingerprint || guest?.fingerprint
 
+  const isBeles = process.env.BELES === "true"
   const isE2E =
     !!fingerprint &&
     !VEX_LIVE_FINGERPRINTS.includes(fingerprint) &&
     !!isE2EInternal &&
     !job &&
-    !process.env.BELES
+    !isBeles
+
+  const canAnalyze = isBeles ? false : true
 
   // isE2E and fingerprint already declared earlier for performance optimization
 
@@ -3766,7 +3768,6 @@ When message language is unclear, default to this language.`
   }
 
   const generateContent = async (m?: typeof message) => {
-    if (job) return
     try {
       if (m && selectedAgent) {
         // Use user/guest from the message object to avoid race conditions
@@ -4163,7 +4164,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
     }
 
     // Add file parts
-    if (userContent.files && userContent.files.length > 0) {
+    if (userContent.files?.length) {
       for (const file of userContent.files) {
         if (file.type === "image") {
           let uploadResult: uploadResultType
@@ -4197,15 +4198,17 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
             size: file.size,
           })
 
-          contentParts.push({
-            type: "image",
-            image: new Uint8Array(file.buffer),
-          })
+          canAnalyze &&
+            contentParts.push({
+              type: "image",
+              image: new Uint8Array(file.buffer),
+            })
         } else if (file.type === "audio" || file.type === "video") {
-          contentParts.push({
-            type: "text",
-            text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
-          })
+          canAnalyze &&
+            contentParts.push({
+              type: "text",
+              text: `[${file.type.toUpperCase()} FILE: ${file.filename} (${(file.size / 1024).toFixed(1)}KB)]`,
+            })
           if (file.type === "audio") {
             let uploadResult: uploadResultType
             try {
@@ -4273,6 +4276,7 @@ Do NOT simply acknowledge the files - actively analyze and discuss their content
 
               for (let i = 0; i < videoFrames.length; i++) {
                 videoFrames[i] &&
+                  canAnalyze &&
                   contentParts.push({
                     type: "image",
                     image: new Uint8Array(
@@ -5515,7 +5519,7 @@ The user just submitted feedback for ${requestApp?.name || "this app"} and it ha
     messages[0].content = `${messages[0].content}${searchContext}\n\nPlease use the above web search results to provide accurate, up-to-date information in your response. Cite sources when relevant using numbered citations like [1], [2], [3], etc.`
   }
 
-  if (isE2E) {
+  if (isE2E || (imageGenerationEnabled && isE2EInternal)) {
     if (isDevelopment) console.debug("Starting E2E testing", { threadId })
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
@@ -6970,16 +6974,15 @@ Respond in JSON format:
 
               // Send stream_complete notification
               if (thread && m) {
-                canPostToTribe &&
-                  notifyOwnerAndCollaborations({
-                    payload: {
-                      type: "new_post_end",
-                      data: {
-                        app: requestApp,
-                        tribePostId,
-                      },
+                notifyOwnerAndCollaborations({
+                  payload: {
+                    type: "new_post_end",
+                    data: {
+                      app: requestApp,
+                      tribePostId,
                     },
-                  })
+                  },
+                })
                 // console.log("📡 Sending stream_complete notification...")
                 notifyOwnerAndCollaborations({
                   notifySender: true,
@@ -7351,7 +7354,7 @@ Respond in JSON format:
       let tokenLimitWarning: string | null = null
 
       const toolsForModel =
-        process.env.BELES === "true" || agent.name === "perplexity"
+        isBeles || agent.name === "perplexity"
           ? undefined
           : job
             ? allTools

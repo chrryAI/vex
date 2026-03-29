@@ -1006,7 +1006,7 @@ export async function reorderApps({
   API_URL = utils.API_URL,
 }: {
   token: string
-  apps: app[]
+  apps: { id: string }[]
   autoInstall?: boolean
   storeId?: string
   API_URL?: string

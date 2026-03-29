@@ -1,4 +1,3 @@
-import type { appWithStore } from "@chrryai/chrry/types"
 import {
   and,
   count,

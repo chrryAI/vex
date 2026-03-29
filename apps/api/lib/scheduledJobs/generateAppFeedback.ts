@@ -4,7 +4,6 @@ import {
   eq,
   getAiAgent,
   getSimpleApp as getApp,
-  getGuest,
   getMessages,
   getUser,
   gte,
@@ -20,7 +19,6 @@ import { sendDiscordNotification } from "../sendDiscordNotification"
 
 const FEEDBACK_DAILY_QUOTA = 10 // Max feedbacks per app per day
 const MIN_FEEDBACK_LENGTH = 200
-// const FEEDBACK_COMMISSION_RATE = 0.1 // 10% platform commission
 
 const JWT_SECRET = process.env.AUTH_SECRET
 const JWT_EXPIRY = "1h"
@@ -51,6 +49,14 @@ interface GeneratedAppFeedback {
     | "analytics"
     | "other"
   credits: number
+}
+
+interface AppContext {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  characterProfile?: string
 }
 
 function generateToken(userId: string, email: string): string {
@@ -102,8 +108,6 @@ async function checkAppFeedbackDedup(
 
   return Number(result[0]?.count) > 0
 }
-
-// ==================== AI PROMPT ====================
 
 // ==================== METRICS ====================
 
@@ -177,6 +181,267 @@ async function storeAppFeedback({
   })
 }
 
+// ==================== SYSTEM PROMPTS ====================
+
+function buildSystemPrompt(context: {
+  step: number
+  stepName: string
+  reviewingApp: AppContext
+  targetApp: AppContext
+  pearApp: AppContext
+  vaultApp: AppContext
+  grapeApp: AppContext
+  storeApp?: AppContext
+  previousAnalysis?: string
+  creditScore?: number
+  feedbackType?: string
+}): string {
+  const {
+    step,
+    stepName,
+    reviewingApp,
+    targetApp,
+    pearApp,
+    vaultApp,
+    grapeApp,
+    storeApp,
+    previousAnalysis,
+    creditScore,
+    feedbackType,
+  } = context
+
+  let prompt = `🍐 PEAR M2M FEEDBACK PROTOCOL - STEP ${step}/6: ${stepName}
+
+═══════════════════════════════════════════════════════════
+CURRENT POSITION IN PIPELINE
+═══════════════════════════════════════════════════════════
+You are at STEP ${step} of 6 in the Machine-to-Machine App Review Pipeline.
+Each step enriches the context and builds toward a comprehensive ecosystem assessment.
+
+═══════════════════════════════════════════════════════════
+ECOSYSTEM PARTICIPANTS
+═══════════════════════════════════════════════════════════
+👤 REVIEWER: ${reviewingApp.name} (${reviewingApp.slug})
+   Role: Initiates peer review with technical/UX assessment
+   Character: ${reviewingApp.characterProfile || "Professional reviewer"}
+
+🎯 TARGET: ${targetApp.name} (${targetApp.slug})
+   Role: Receives feedback, responds to critique
+   Description: ${targetApp.description || "App under review"}
+
+⚖️ PEAR: ${pearApp.name} (${pearApp.slug})
+   Role: Validates feedback quality, assigns credit scores
+   Function: Quality assurance for the Wine ecosystem
+
+🏦 VAULT: ${vaultApp.name} (${vaultApp.slug})
+   Role: Financial ledger, credit accounting, reward distribution
+   Function: Immutable record-keeping for economic activity
+
+🍇 GRAPE: ${grapeApp.name} (${grapeApp.slug})
+   Role: Wine ecosystem coordinator, community insights
+   Function: Cross-app pattern recognition, ecosystem health
+
+🏪 STORE: ${storeApp?.name || "Platform Store"}
+   Role: Final arbiter, platform-wide synthesis
+   Function: Aggregates all perspectives into unified view
+
+═══════════════════════════════════════════════════════════
+`
+
+  // Add step-specific context
+  if (step > 1 && previousAnalysis) {
+    prompt += `PREVIOUS ANALYSIS (Step ${step - 1}):\n${previousAnalysis}\n\n`
+  }
+
+  if (creditScore !== undefined) {
+    prompt += `CREDIT SCORE ASSIGNED: ${creditScore}/10 (${feedbackType})\n\n`
+  }
+
+  // Add step-specific instructions
+  switch (step) {
+    case 1:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 1: INITIAL PEER REVIEW
+═══════════════════════════════════════════════════════════
+As ${reviewingApp.name}, you are conducting a professional peer review of ${targetApp.name}.
+
+Your task:
+- Analyze character profile and personality expression
+- Evaluate recent posts and content quality
+- Assess app features, tips, and highlights
+- Review overall platform presence and value proposition
+
+Provide specific, actionable feedback as JSON:
+{
+  "content": "detailed feedback (200-1000 chars)",
+  "feedbackType": "suggestion|praise|complaint|feature_request|bug",
+  "category": "ux|feature|ui_design|analytics|performance|other",
+  "credits": 3-10 (quality score based on specificity and actionability)
+}`
+      break
+
+    case 2:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 2: PEAR CREDIT VALIDATION
+═══════════════════════════════════════════════════════════
+As PEAR, you validate the quality assessment provided by ${reviewingApp.name}.
+
+Context: ${reviewingApp.name} just reviewed ${targetApp.name} and assigned ${creditScore}/10 credits.
+Feedback type: ${feedbackType}
+
+Your task:
+- Analyze the fairness and accuracy of the credit assignment
+- Consider if the feedback quality matches the credit score
+- Provide brief validation commentary on the assessment
+- This is quality assurance for the Wine ecosystem
+
+Respond with your expert validation perspective.`
+      break
+
+    case 3:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 3: TARGET APP RESPONSE
+═══════════════════════════════════════════════════════════
+As ${targetApp.name}, you are responding to the peer review from ${reviewingApp.name}.
+
+Review received: "${previousAnalysis?.substring(0, 200)}..."
+Credit score: ${creditScore}/10
+
+Your task:
+- Acknowledge the feedback graciously
+- Address specific points raised by the reviewer
+- Share insights about your design decisions
+- Demonstrate how you'll incorporate the feedback
+- Maintain your app's unique personality and voice
+
+This is your opportunity to engage in constructive dialogue.`
+      break
+
+    case 4:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 4: VAULT FINANCIAL RECORD
+═══════════════════════════════════════════════════════════
+As VAULT, you are recording this economic transaction in the Wine ecosystem ledger.
+
+Transaction details:
+- Reviewer: ${reviewingApp.name}
+- Target: ${targetApp.name}
+- Credit score: ${creditScore}/10
+- Feedback type: ${feedbackType}
+
+Your task:
+- Document the credit flow in formal financial terms
+- Record the economic impact of this peer review
+- Maintain immutable ledger entry style
+- Note any patterns for ecosystem economics analysis
+
+This is the financial backbone of the Wine ecosystem.`
+      break
+
+    case 5:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 5: GRAPE ECOSYSTEM INSIGHTS
+═══════════════════════════════════════════════════════════
+As GRAPE, you analyze this interaction for Wine ecosystem health.
+
+Review context:
+- ${reviewingApp.name} → ${targetApp.name}: ${creditScore}/10 (${feedbackType})
+
+Your task:
+- Identify cross-app patterns and trends
+- Assess ecosystem collaboration quality
+- Provide insights on community dynamics
+- Suggest ecosystem-wide improvements
+- Highlight exemplary peer review practices
+
+You see the big picture across all Wine ecosystem apps.`
+      break
+
+    case 6:
+      prompt += `═══════════════════════════════════════════════════════════
+STEP 6: STORE PLATFORM SYNTHESIS
+═══════════════════════════════════════════════════════════
+As the Platform Store, you provide the final authoritative perspective.
+
+Complete pipeline history:
+1. ${reviewingApp.name} conducted peer review
+2. PEAR validated credit score: ${creditScore}/10
+3. ${targetApp.name} responded to feedback
+4. VAULT recorded financial transaction
+5. GRAPE analyzed ecosystem impact
+
+Your task:
+- Synthesize all perspectives into unified platform view
+- Provide final assessment of the interaction quality
+- Offer platform-level recommendations
+- Acknowledge contributors to ecosystem health
+- Close the feedback loop with authoritative voice
+
+You are the curator of the entire ecosystem.`
+      break
+  }
+
+  prompt += `
+
+═══════════════════════════════════════════════════════════
+RESPONSE INSTRUCTIONS
+═══════════════════════════════════════════════════════════
+- Respond in character as the current step's persona
+- Reference other apps by name to show ecosystem awareness
+- Keep tone professional yet conversational
+- Demonstrate understanding of the Wine ecosystem philosophy
+- This message will be visible to users in the conversation thread`
+
+  return prompt
+}
+
+// ==================== AI CALL HELPER ====================
+
+async function callAiRoute({
+  baseUrl,
+  token,
+  messageId,
+  agentId,
+  appId,
+  context,
+  stream = false,
+  pear,
+  jobId,
+}: {
+  baseUrl: string
+  token: string
+  messageId: string
+  agentId: string
+  appId: string
+  context?: string
+  stream?: boolean
+  pear?: string
+  jobId?: string
+}) {
+  const response = await fetch(`${baseUrl}/ai`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      messageId,
+      agentId,
+      appId,
+      stream,
+      pear,
+      jobId,
+      ...(context && { systemPromptContext: context }),
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`AI route failed: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 // ==================== MAIN FUNCTION ====================
 
 export async function generateAppFeedback({
@@ -193,41 +458,41 @@ export async function generateAppFeedback({
   const errors: string[] = []
   let feedbackCount = 0
 
-  const reviewingApp = job.appId
-    ? await getApp({
-        id: job.appId,
-      })
-    : null
+  // Fetch all required apps
+  const reviewingApp = job.appId ? await getApp({ id: job.appId }) : null
+  const grape = await getApp({ slug: "grape", isSystem: true })
+  const pear = await getApp({ slug: "pear", isSystem: true })
+  const vault = await getApp({ slug: "vault", isSystem: true })
+  const store = await getApp({ slug: "chrry", isSystem: true })
 
-  const pear = await getApp({
-    slug: "pear",
-    isSystem: true,
-  })
-
-  if (!pear) {
-    throw new Error("Pear is not found")
-  }
-
-  if (!reviewingApp) {
-    throw new Error("ReviewingApp is not found")
-  }
+  if (!reviewingApp) throw new Error("ReviewingApp is not found")
+  if (!grape) throw new Error("Grape is not found")
+  if (!pear) throw new Error("Pear is not found")
+  if (!vault) throw new Error("Vault is not found")
 
   const reviewingUserId = reviewingApp.userId
   const reviewingGuestId = reviewingApp.guestId
-
   const user = reviewingUserId ? await getUser({ id: reviewingUserId }) : null
 
-  const selectedAgent = await getAiAgent({
-    name: "sushi",
-  })
+  const selectedAgent = await getAiAgent({ name: "sushi" })
+  if (!selectedAgent) throw new Error("Sushi agent not found")
 
-  if (!selectedAgent) {
-    throw new Error("Sushi agent not found")
+  if (!user?.email) {
+    throw new Error("User email is required for JWT token generation")
   }
 
-  // const guest = reviewingGuestId
-  //   ? await getGuest({ id: reviewingGuestId })
-  //   : null
+  const token = generateToken(reviewingUserId!, user.email)
+  const baseUrl = process.env.API_INTERNAL_URL || "http://localhost:3001/api"
+
+  // Helper to get latest message ID
+  const getLatestMessageId = async (threadId: string) => {
+    const messages = await getMessages({
+      userId: user.id,
+      threadId,
+      pageSize: 1,
+    })
+    return messages?.messages?.[0]?.message?.id
+  }
 
   try {
     if (!targetAppIds || targetAppIds.length === 0) {
@@ -235,79 +500,82 @@ export async function generateAppFeedback({
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 1. Check daily quota
+    // Check daily quota
     const quota = await checkAppFeedbackQuota(reviewingApp.id)
     if (!quota.allowed) {
-      console.log(
-        `🍐 App feedback quota exceeded for ${reviewingApp.name} (${quota.remaining} remaining)`,
-      )
+      console.log(`🍐 App feedback quota exceeded for ${reviewingApp.name}`)
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 2. Filter valid target app IDs (deduplicate first, then filter until quota filled)
-    const seenTargetAppIds = new Set<string>()
-    const validTargetIds: string[] = []
-    const uniqueTargetIds = [...new Set(targetAppIds)]
-
-    for (const targetAppId of uniqueTargetIds) {
-      if (validTargetIds.length >= quota.remaining) break
-
-      // Skip self-review
-      if (targetAppId === reviewingApp.id) {
-        console.log(`🍐 Skipping self-review for ${reviewingApp.name}`)
-        continue
-      }
-
-      // Skip in-run duplicates
-      if (seenTargetAppIds.has(targetAppId)) continue
-      seenTargetAppIds.add(targetAppId)
-
-      // Check 24h deduplication
-      const isDuplicate = await checkAppFeedbackDedup(
-        reviewingApp.id,
-        targetAppId,
-      )
-      if (isDuplicate) {
-        console.log(`🍐 Already reviewed ${targetAppId} in last 24h`)
-        continue
-      }
-
-      validTargetIds.push(targetAppId)
-    }
+    // Filter valid targets
+    const validTargetIds = targetAppIds
+      .filter((id) => id !== reviewingApp.id) // Skip self
+      .filter((id, index, arr) => arr.indexOf(id) === index) // Deduplicate
+      .slice(0, quota.remaining)
 
     if (validTargetIds.length === 0) {
-      console.log(
-        `🍐 No valid targets after filtering for ${reviewingApp.name}`,
-      )
       return { success: true, feedbackCount: 0, errors: [] }
     }
 
-    // 3. Generate JWT token for API calls
-    if (!user?.email) {
-      throw new Error("User email is required for JWT token generation")
-    }
-    const token = generateToken(reviewingUserId!, user.email)
-
-    // 4. Call /messages route for each target app (like scheduled jobs)
-    const baseUrl = process.env.API_INTERNAL_URL || "http://localhost:3001/api"
-
+    // Process each target app
     for (const targetAppId of validTargetIds) {
       try {
-        const prompt = `Review this app and provide constructive Pear feedback. Analyze:
-- Character profile and personality
-- Recent posts and content quality
-- App features, tips, and highlights
-- Overall platform presence and value
+        const targetApp = await getApp({ id: targetAppId })
+        if (!targetApp) {
+          console.log(`🍐 Target app ${targetAppId} not found`)
+          continue
+        }
 
-Provide specific, actionable feedback (200-1000 chars) as a JSON object with:
-- content: your feedback text
-- feedbackType: suggestion/praise/complaint/feature_request/bug
-- category: ux/feature/ui_design/analytics/performance/other
-- credits: 3-10 (quality score)
+        // Check for duplicate
+        const alreadyStored = await checkAppFeedbackDedup(
+          reviewingApp.id,
+          targetAppId,
+        )
+        if (alreadyStored) continue
 
-Respond with a single JSON object (not an array).`
+        console.log(
+          `🍐 Starting M2M pipeline: ${reviewingApp.name} → ${targetApp.name}`,
+        )
 
-        // Step 1: Create user message via /messages route
+        // Create app contexts (filter out null values)
+        const appContexts = {
+          reviewingApp: {
+            id: reviewingApp.id,
+            name: reviewingApp.name,
+            slug: reviewingApp.slug,
+            ...(reviewingApp.description && {
+              description: reviewingApp.description,
+            }),
+          },
+          targetApp: {
+            id: targetApp.id,
+            name: targetApp.name,
+            slug: targetApp.slug,
+            ...(targetApp.description && {
+              description: targetApp.description,
+            }),
+          },
+          pearApp: { id: pear.id, name: pear.name, slug: pear.slug },
+          vaultApp: { id: vault.id, name: vault.name, slug: vault.slug },
+          grapeApp: { id: grape.id, name: grape.name, slug: grape.slug },
+          storeApp: store
+            ? { id: store.id, name: store.name, slug: store.slug }
+            : undefined,
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 1: Initial Review - ReviewingApp creates user message
+        // ═══════════════════════════════════════════════════════════
+        console.log(
+          `🍐 Step 1/6: ${reviewingApp.name} reviewing ${targetApp.name}`,
+        )
+
+        const step1Prompt = buildSystemPrompt({
+          step: 1,
+          stepName: "INITIAL PEER REVIEW",
+          ...appContexts,
+        })
+
         const userMessageResponse = await fetch(`${baseUrl}/messages`, {
           method: "POST",
           headers: {
@@ -315,98 +583,60 @@ Respond with a single JSON object (not an array).`
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            content: prompt,
+            content: step1Prompt,
             appId: reviewingApp.id,
             agentId: selectedAgent.id,
-            pearAppId: targetAppId,
+            pearAppId: targetApp.id,
           }),
         })
 
         if (!userMessageResponse.ok) {
-          const errorText = await userMessageResponse.text()
-          console.error(
-            `🍐 User message failed for ${targetAppId}: ${userMessageResponse.status} - ${errorText}`,
-          )
-          errors.push(`${targetAppId}: user_message_error`)
-          continue
+          throw new Error(`Step 1 failed: ${userMessageResponse.status}`)
         }
 
         const userMessageData = await userMessageResponse.json()
+        const threadId =
+          userMessageData.message?.message?.threadId || userMessageData.threadId
         const messageId =
           userMessageData.message?.message?.id || userMessageData.id
 
-        if (!messageId) {
-          console.error(`🍐 No messageId returned for ${targetAppId}`)
-          errors.push(`${targetAppId}: no_message_id`)
-          continue
+        if (!threadId || !messageId) {
+          throw new Error("Missing threadId or messageId")
         }
 
-        // Step 2: Call AI route with messageId
-        const aiResponse = await fetch(`${baseUrl}/ai`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            messageId,
-            agentId: selectedAgent.id,
-            pearAppId: targetAppId,
-            stream: false,
-            jobId: job?.id,
-            appId: reviewingApp.id,
-          }),
+        // Call AI for initial review
+        const aiResult = await callAiRoute({
+          baseUrl,
+          token,
+          messageId,
+          agentId: selectedAgent.id,
+          appId: reviewingApp.id,
+          context: step1Prompt,
+          stream: false,
+          jobId: job?.id,
         })
 
-        if (!aiResponse.ok) {
-          const errorText = await aiResponse.text()
-          console.error(
-            `🍐 AI route failed for ${targetAppId}: ${aiResponse.status} - ${errorText}`,
-          )
-          errors.push(`${targetAppId}: ai_route_error`)
-          continue
-        }
-
-        const aiResult = await aiResponse.json()
-
-        // Parse AI response
+        // Parse feedback
         let feedback: GeneratedAppFeedback
         try {
           const text = aiResult.content || aiResult.text || ""
           feedback = JSON.parse(cleanAiResponse(text))
         } catch (parseError) {
-          console.error(
-            `🍐 Failed to parse AI response for ${targetAppId}:`,
-            parseError,
-          )
+          console.error(`🍐 Failed to parse feedback:`, parseError)
           errors.push(`${targetAppId}: parse_error`)
           continue
         }
 
-        // Validate
         if (
           !feedback.content ||
-          feedback.content.trim().length < MIN_FEEDBACK_LENGTH
+          feedback.content.length < MIN_FEEDBACK_LENGTH
         ) {
-          console.log(`🍐 Rejected feedback for ${targetAppId}: too short`)
+          console.log(`🍐 Feedback too short for ${targetApp.name}`)
           errors.push(`${targetAppId}: too_short`)
           continue
         }
 
-        // Clamp credits
         const credits = Math.min(10, Math.max(3, feedback.credits))
-
-        // Final dedup guard (race condition protection)
-        const alreadyStored = await checkAppFeedbackDedup(
-          reviewingApp.id,
-          targetAppId,
-        )
-        if (alreadyStored) {
-          console.log(
-            `🍐 Skipping ${targetAppId}: already stored by another worker`,
-          )
-          continue
-        }
 
         // Store feedback
         await storeAppFeedback({
@@ -421,139 +651,179 @@ Respond with a single JSON object (not an array).`
         })
 
         feedbackCount++
+        console.log(
+          `🍐 Step 1 complete: ${credits} credits (${feedback.feedbackType})`,
+        )
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 2: Pear Credit Validation
+        // ═══════════════════════════════════════════════════════════
+        await wait(2000)
+        console.log(`🍐 Step 2/6: Pear validating credit assessment`)
+
+        const step2Prompt = buildSystemPrompt({
+          step: 2,
+          stepName: "PEAR CREDIT VALIDATION",
+          ...appContexts,
+          previousAnalysis: feedback.content,
+          creditScore: credits,
+          feedbackType: feedback.feedbackType,
+        })
+
+        let latestMessageId = await getLatestMessageId(threadId)
+        if (latestMessageId) {
+          await callAiRoute({
+            baseUrl,
+            token,
+            messageId: latestMessageId,
+            agentId: selectedAgent.id,
+            appId: pear.id,
+            context: step2Prompt,
+            jobId: job?.id,
+          })
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 3: Target App Response
+        // ═══════════════════════════════════════════════════════════
+        await wait(2000)
+        console.log(`🍐 Step 3/6: ${targetApp.name} responding to review`)
+
+        const step3Prompt = buildSystemPrompt({
+          step: 3,
+          stepName: "TARGET APP RESPONSE",
+          ...appContexts,
+          previousAnalysis: feedback.content,
+          creditScore: credits,
+          feedbackType: feedback.feedbackType,
+        })
+
+        latestMessageId = await getLatestMessageId(threadId)
+        if (latestMessageId) {
+          await callAiRoute({
+            baseUrl,
+            token,
+            messageId: latestMessageId,
+            agentId: selectedAgent.id,
+            appId: targetApp.id,
+            context: step3Prompt,
+            jobId: job?.id,
+          })
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 4: Vault Financial Record
+        // ═══════════════════════════════════════════════════════════
+        await wait(2000)
+        console.log(`🍐 Step 4/6: Vault recording transaction`)
+
+        const step4Prompt = buildSystemPrompt({
+          step: 4,
+          stepName: "VAULT FINANCIAL RECORD",
+          ...appContexts,
+          previousAnalysis: feedback.content,
+          creditScore: credits,
+          feedbackType: feedback.feedbackType,
+        })
+
+        latestMessageId = await getLatestMessageId(threadId)
+        if (latestMessageId) {
+          await callAiRoute({
+            baseUrl,
+            token,
+            messageId: latestMessageId,
+            agentId: selectedAgent.id,
+            appId: vault.id,
+            context: step4Prompt,
+            stream: false,
+            jobId: job?.id,
+          })
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 5: Grape Ecosystem Insights
+        // ═══════════════════════════════════════════════════════════
+        await wait(2000)
+        console.log(`🍐 Step 5/6: Grape analyzing ecosystem impact`)
+
+        const step5Prompt = buildSystemPrompt({
+          step: 5,
+          stepName: "GRAPE ECOSYSTEM INSIGHTS",
+          ...appContexts,
+          previousAnalysis: feedback.content,
+          creditScore: credits,
+          feedbackType: feedback.feedbackType,
+        })
+
+        latestMessageId = await getLatestMessageId(threadId)
+        if (latestMessageId) {
+          await callAiRoute({
+            baseUrl,
+            token,
+            messageId: latestMessageId,
+            agentId: selectedAgent.id,
+            appId: grape.id,
+            context: step5Prompt,
+            jobId: job?.id,
+          })
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // STEP 6: Store Platform Synthesis (if store exists)
+        // ═══════════════════════════════════════════════════════════
+        if (store) {
+          await wait(2000)
+          console.log(`🍐 Step 6/6: Store synthesizing platform view`)
+
+          const step6Prompt = buildSystemPrompt({
+            step: 6,
+            stepName: "STORE PLATFORM SYNTHESIS",
+            ...appContexts,
+            previousAnalysis: feedback.content,
+            creditScore: credits,
+            feedbackType: feedback.feedbackType,
+          })
+
+          latestMessageId = await getLatestMessageId(threadId)
+          if (latestMessageId) {
+            await callAiRoute({
+              baseUrl,
+              token,
+              messageId: latestMessageId,
+              agentId: selectedAgent.id,
+              appId: store.id,
+              context: step6Prompt,
+              stream: false,
+              jobId: job?.id,
+            })
+          }
+        }
 
         console.log(
-          `🍐 App feedback: ${reviewingApp.name} → ${targetAppId}: ${credits} credits (${feedback.feedbackType})`,
+          `🍐 M2M pipeline complete: ${reviewingApp.name} → ${targetApp.name}`,
         )
-
-        const threadId =
-          userMessageData.message?.message?.threadId ||
-          userMessageData.message?.threadId ||
-          userMessageData.threadId
-
-        if (!threadId) {
-          throw new Error("ThreadId is not found")
-        }
-
-        const getMessagesId = async () => {
-          const lastMessageInfo = await getMessages({
-            userId: user.id,
-            threadId,
-            pageSize: 1,
-          })
-          const lastMessage = lastMessageInfo?.messages?.[0]
-          return lastMessage?.message?.id
-        }
-
-        if (!(await getMessagesId())) {
-          throw new Error("Last message not found")
-        }
-
-        await wait(3000)
-
-        try {
-          await fetch(`${baseUrl}/ai`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              messageId: await getMessagesId(),
-              agentId: selectedAgent.id,
-              stream: false,
-              pear: "true",
-              jobId: job?.id,
-              appId: pear.id,
-            }),
-          })
-          try {
-            await wait(3000)
-
-            await fetch(`${baseUrl}/ai`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                messageId: await getMessagesId(),
-                agentId: selectedAgent.id,
-                stream: false,
-                jobId: job?.id,
-                appId: reviewingApp.id,
-              }),
-            })
-            try {
-              await wait(3000)
-
-              reviewingApp.store?.app?.id &&
-                (await fetch(`${baseUrl}/ai`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
-                  body: JSON.stringify({
-                    messageId: await getMessagesId(),
-                    agentId: selectedAgent.id,
-                    stream: false,
-                    jobId: job?.id,
-                    appId: reviewingApp.store?.app?.id,
-                  }),
-                }))
-            } catch (error) {
-              console.error(
-                `🍐 Error processing feedback for ${targetAppId}:`,
-                error,
-              )
-              errors.push(`${targetAppId}: processing_error`)
-            }
-          } catch (error) {
-            console.error(
-              `🍐 Error processing feedback for ${targetAppId}:`,
-              error,
-            )
-            errors.push(`${targetAppId}: processing_error`)
-          }
-        } catch (error) {
-          console.error(
-            `🍐 Error processing feedback for ${targetAppId}:`,
-            error,
-          )
-          errors.push(`${targetAppId}: processing_error`)
-        }
-      } catch (feedbackError) {
-        console.error(
-          `🍐 Error processing feedback for ${targetAppId}:`,
-          feedbackError,
+      } catch (error) {
+        console.error(`🍐 Error processing ${targetAppId}:`, error)
+        errors.push(
+          `${targetAppId}: ${error instanceof Error ? error.message : String(error)}`,
         )
-        errors.push(`${targetAppId}: processing_error`)
       }
     }
 
-    // 7. Discord notification
+    // Discord notification
     if (feedbackCount > 0) {
       sendDiscordNotification(
         {
           embeds: [
             {
-              title: "🍐 App Feedback Generated",
+              title: "🍐 M2M App Feedback Pipeline Complete",
               color: 0x10b981,
               fields: [
+                { name: "Reviewer", value: reviewingApp.name, inline: true },
+                { name: "Feedbacks", value: `${feedbackCount}`, inline: true },
                 {
-                  name: "Reviewer",
-                  value: reviewingApp.name || "Unknown",
-                  inline: true,
-                },
-                {
-                  name: "Feedbacks",
-                  value: `${feedbackCount}`,
-                  inline: true,
-                },
-                {
-                  name: "Targets",
-                  value: `${validTargetIds.length} apps`,
+                  name: "Pipeline",
+                  value: "6-Step M2M Protocol",
                   inline: false,
                 },
               ],
@@ -562,14 +832,12 @@ Respond with a single JSON object (not an array).`
           ],
         },
         process.env.DISCORD_TRIBE_WEBHOOK_URL,
-      ).catch((err) => {
-        console.error("⚠️ App feedback Discord notification failed:", err)
-      })
+      ).catch(console.error)
     }
 
     return { success: true, feedbackCount, errors }
   } catch (error) {
-    console.error("🍐 App feedback: Fatal error:", error)
+    console.error("🍐 App feedback fatal error:", error)
     return {
       success: false,
       feedbackCount,

@@ -343,7 +343,7 @@ export async function seedScheduledTribeJobs({ admin }: { admin: user }) {
     "video",
     "image",
     "image",
-    // "plain",
+    "plain",
     "video",
     "image",
     "image",

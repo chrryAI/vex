@@ -11,7 +11,6 @@ import {
   type guest,
   hasThreadNotifications,
   isProd,
-  isSeedSafe,
   isVex,
   migrateUser,
   TEST_GUEST_FINGERPRINTS,

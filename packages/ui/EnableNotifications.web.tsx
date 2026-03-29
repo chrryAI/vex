@@ -18,7 +18,7 @@ import Img from "./Image"
 import { BellRing } from "./icons"
 import { Button, Div, Span, usePlatform } from "./platform"
 import type { customPushSubscription } from "./types"
-import { apiFetch, getEnv, isDevelopment } from "./utils"
+import { apiFetch, getEnv } from "./utils"
 import registerServiceWorker, {
   subscribeToPushNotifications,
 } from "./utils/registerServiceWorker"
@@ -294,7 +294,7 @@ export default function EnableNotifications({
   if (!isMounted || isManagingApp) return null
 
   // Show notification button for extensions if permission not granted, for web if service worker ready
-  const shouldShow = !isExtension && isSubscribed === false && !!swRegistration
+  const shouldShow = !isExtension && !isSubscribed && !!swRegistration
 
   return (
     <Div style={styles.enableNotificationsContainer.style}>

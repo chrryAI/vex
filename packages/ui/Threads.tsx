@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import useSWR from "swr"
 import type { collaboration, thread, user } from "../ui/types"
+import AppLink from "./AppLink"
 import Bookmark from "./Bookmark"
 import { useAppContext } from "./context/AppContext"
 import { useAuth, useChat, useNavigationContext } from "./context/providers"
@@ -128,9 +129,9 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
     setCollaborationStatusInitial(status)
 
     if (status) {
-      setIsDNA(false)
-      setIsTribe(false)
-      setHasPearApp(false)
+      setIsDNA(undefined)
+      setIsTribe(undefined)
+      setHasPearApp(undefined)
     }
 
     // if (currentSearchStatus === status) {
@@ -222,26 +223,26 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
   const [showAllProfiles, setShowAllProfiles] = useState<boolean>(false)
   const [isTribe, setIsTribeFinal] = useState<boolean | undefined>(false)
 
-  const setIsTribeInternal = (v: boolean | undefined) => {
+  const setIsTribeInternal = (v?: boolean) => {
     setIsTribeFinal(v)
     chat.setIsTribe(v)
   }
 
-  const setHasPearApp = (v: boolean) => {
+  const setHasPearApp = (v?: boolean) => {
     setHasPearAppInternal(v)
     chat.setHasPearApp(v)
     v && setCollaborationStatusInternal(null)
     isDNA && v && setIsDNAInternal(undefined)
     isTribe && v && setIsTribeInternal(undefined)
   }
-  const setIsDNA = (v: boolean) => {
+  const setIsDNA = (v?: boolean) => {
     setIsDNAInternal(v)
     v && setCollaborationStatusInternal(null)
     hasPearApp && v && setHasPearAppInternal(undefined)
     isTribe && v && setIsTribeInternal(undefined)
   }
 
-  const setIsTribe = (v: boolean) => {
+  const setIsTribe = (v?: boolean) => {
     setIsTribeInternal(v)
 
     v && setCollaborationStatusInternal(null)
@@ -606,12 +607,25 @@ const Threads = ({ className }: { className?: string; userName?: string }) => {
                     }}
                     className={"threadsItem"}
                   >
-                    <Div style={{ ...styles.threadItemTitle.style, gap: 12 }}>
-                      <Img size={20} slug={thread.app?.slug} />
-                      {thread.pearAppId && <Img size={20} slug={"pear"} />}
-                      {thread.pearApp && (
-                        <Img size={20} slug={thread.pearApp.slug} />
+                    <Div style={{ ...styles.threadItemTitle.style, gap: 10 }}>
+                      {thread.app && (
+                        <AppLink
+                          icon={<Img size={26} slug={thread.app?.slug} />}
+                          loading={<Loading size={24} />}
+                          app={thread.app}
+                        ></AppLink>
                       )}
+                      {thread?.apps
+                        ?.filter((a) => a.id !== thread.appId)
+                        .map((app) => (
+                          <AppLink
+                            key={app.id}
+                            icon={<Img size={20} slug={app.slug} />}
+                            loading={<Loading size={20} />}
+                            app={app}
+                          ></AppLink>
+                        ))}
+
                       {loadingThreadId === thread.id ? (
                         <Loading
                           style={{

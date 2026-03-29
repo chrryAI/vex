@@ -1,548 +1,523 @@
-import type React from "react"
 import { useEffect, useState } from "react"
+import { Trans } from "react-i18next"
+import { SiBuymeacoffee, SiMacos } from "react-icons/si"
+import AppLink from "./AppLink"
+import A from "./a/A"
+import ColorScheme from "./ColorScheme"
 import { useAppContext } from "./context/AppContext"
-import { useAuth } from "./context/providers"
-import { COLORS } from "./context/ThemeContext"
-import { useGrapeStyles } from "./Grape.styles"
+import { useAuth, useNavigationContext } from "./context/providers"
+import { COLORS } from "./context/providers/AppProvider"
+import { useStyles } from "./context/StylesContext"
+import { useTheme } from "./context/ThemeContext"
+import Hippo from "./Hippo"
 import Img from "./Image"
-import { Coins } from "./icons"
-import Modal from "./Modal"
-import { Button, Span, useLocalStorage, useNavigation } from "./platform"
+import { CirclePause, CirclePlay } from "./icons"
+import LanguageSwitcher from "./LanguageSwitcher"
+import Loading from "./Loading"
+import LocalSetupScreen from "./LocalSetupScreen"
+import { Button, Div, H1, Span, toast, usePlatform } from "./platform"
+import SignIn from "./SignIn"
+import Subscribe from "./Subscribe"
+import ThemeSwitcher from "./ThemeSwitcher"
+import Ticker from "./Ticker"
+import { VERSION } from "./utils"
+import { ANALYTICS_EVENTS } from "./utils/analyticsEvents"
+import Weather from "./Weather"
 
-type GrapeView =
-  | "onboarding"
-  | "consumer-home"
-  | "consumer-stats"
-  | "consumer-earnings"
-  | "advertiser-home"
-  | "advertiser-campaigns"
-  | "advertiser-analytics"
-  | "settings"
+// Tauri injects this global — safe to check at runtime
 
-type UserRole = "consumer" | "advertiser" | "both"
+// Separate component so hooks aren't violated
+function LocalSetupModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          top: 46,
+          right: 16,
+          zIndex: 1000,
+          background: "#27272a",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          padding: "6px 12px",
+          cursor: "pointer",
+          fontSize: "0.8rem",
+        }}
+      >
+        ✕ Close
+      </button>
+      <LocalSetupScreen onReady={onClose} />
+    </div>
+  )
+}
 
-export default function Grape({ style }: { style?: React.CSSProperties }) {
-  const { searchParams } = useNavigation()
-  const [isModalOpen, setIsModalOpen] = useState(
-    searchParams.get("grape") === "true",
+export default function Watermelon() {
+  const [showLocalSetup, setShowLocalSetup] = useState(false)
+
+  const {
+    setSignInPart,
+    app,
+    siteConfig,
+    downloadUrl,
+    user,
+    guest,
+    setGuest,
+    setUser,
+    actions,
+    storeApps,
+    chrry,
+    plausible,
+    tickerPaused: paused,
+    setTickerPaused: setPaused,
+    isAdmin,
+    modelId,
+    setModelId,
+  } = useAuth()
+
+  const [isSavingReplicateApiKey, setIsSavingReplicateApiKey] = useState(false)
+
+  const { t, captureException } = useAppContext()
+
+  const openRouterApiKeyInitialValue =
+    user?.apiKeys?.openrouter || guest?.apiKeys?.openrouter || modelId
+
+  const replicateApiKeyInternal =
+    user?.apiKeys?.replicate || guest?.apiKeys?.replicate || ""
+
+  const [replicateApiKey, setReplicateApiKey] = useState(
+    replicateApiKeyInternal,
   )
 
-  const { t } = useAppContext()
-  const { user, guest } = useAuth()
+  const s3ApiKeyInternal = user?.apiKeys?.s3 || guest?.apiKeys?.s3 || ""
 
-  // Load role from localStorage or user/guest data
-  const [userRole, setUserRole] = useLocalStorage<UserRole>("grapeRole", "both")
+  const [s3ApiKey, setS3ApiKey] = useState(s3ApiKeyInternal)
 
-  const [option, setOption] = useState<UserRole>("consumer")
+  const [isSavingS3ApiKey, setIsSavingS3ApiKey] = useState(false)
 
-  const [currentView, setCurrentView] = useState<GrapeView>("onboarding")
+  const [isDeletingS3ApiKey, setIsDeletingS3ApiKey] = useState(false)
 
   useEffect(() => {
-    const grape = searchParams.get("grape")
-    if (grape) {
-      setIsModalOpen(true)
-    }
-  }, [searchParams])
-
-  const styles = useGrapeStyles()
+    setS3ApiKey(s3ApiKeyInternal)
+  }, [s3ApiKeyInternal])
 
   useEffect(() => {
-    // Set initial view based on role
-    if (userRole === "consumer") {
-      setCurrentView("consumer-home")
-    } else if (userRole === "advertiser") {
-      setCurrentView("advertiser-home")
-    } else if (userRole === "both") {
-      setCurrentView("consumer-home")
-    } else {
-      setCurrentView("onboarding")
-    }
-  }, [userRole])
+    setReplicateApiKey(replicateApiKeyInternal)
+  }, [replicateApiKeyInternal])
 
-  const handleRoleSelect = (role: UserRole) => {
-    setUserRole(role)
-  }
-
-  const renderOnboarding = () => (
-    <section>
-      <header>
-        {/* <p>Choose how you want to use Grape:</p> */}
-        <div style={styles.icons.style}>
-          <button
-            type="button"
-            // style={{ ...styles.icon.style, ...(option === "consumer" && styles.selected) }}
-            onClick={() => setOption("consumer")}
-          >
-            <Img icon="pacman" size={128} />
-          </button>
-          <button
-            type="button"
-            // style={{ ...styles.icon.style, ...(option === "advertiser" && styles.selected) }}
-            onClick={() => setOption("advertiser")}
-          >
-            <Img icon="spaceInvader" size={128} />
-          </button>
-        </div>
-      </header>
-
-      <article>
-        {option === "consumer" && (
-          <div
-          // style={styles.option.style}
-          // onClick={() => handleRoleSelect("consumer")}
-          >
-            <h3 style={styles.title.style}>I want to earn 💰</h3>
-            <p>
-              {t("Discover relevant apps and earn credits for your attention")}
-            </p>
-          </div>
-        )}
-
-        {option === "advertiser" && (
-          <div
-          // style={styles.option.style}
-          // onClick={() => setOption("advertiser")}
-          >
-            <h3 style={styles.title.style}>I want to advertise 📢</h3>
-            <p>Create campaigns and reach engaged audiences</p>
-          </div>
-        )}
-        <div style={styles.actions.style}>
-          {user?.adConsent ? (
-            <button type="button">Continue</button>
-          ) : (
-            <div style={styles.adConsent.style}>
-              <p>Some info and privacy link</p>
-              <button type="button">Accept</button>
-            </div>
-          )}
-          {guest ? (
-            <>
-              <button type="button">Create Account</button>
-              <button type="button">Sign In</button>
-            </>
-          ) : null}
-        </div>
-      </article>
-    </section>
+  const [openRouterApiKey, setOpenRouterApiKey] = useState(
+    openRouterApiKeyInitialValue,
   )
 
-  const renderConsumerHome = () => (
-    <section>
-      <header>
-        <h2>{t("Discover Apps")}</h2>
-        <p>{t("Discover apps and earn credits")}</p>
-      </header>
+  const handleDeleteS3 = async () => {
+    try {
+      setIsDeletingS3ApiKey(true)
+      if (user) {
+        await actions.updateUser({
+          deletedApiKeys: ["s3"],
+        })
 
-      <article>
-        <div>
-          <h3>Your Balance</h3>
-          <p>
-            <strong>$0.00</strong>
-          </p>
-          <small>0 views today</small>
-        </div>
+        setUser({
+          ...user,
+          apiKeys: {
+            ...user.apiKeys,
+            s3: undefined,
+          },
+        })
 
-        <div>
-          <h3>{t("Ready to Discover")}</h3>
-          <p>{t("No apps available right now")}</p>
-          <small>
-            {t("Check back soon or browse content to discover relevant apps")}
-          </small>
-        </div>
-      </article>
-    </section>
-  )
+        toast.success("MinIO/S3 API key deleted successfully")
+      }
 
-  const renderConsumerStats = () => (
-    <section>
-      <header>
-        <h2>Your Stats</h2>
-        <p>View history and performance</p>
-      </header>
+      if (guest) {
+        await actions.updateGuest({
+          deletedApiKeys: ["s3"],
+        })
 
-      <article>
-        <dl>
-          <dt>Total Views</dt>
-          <dd>0</dd>
+        toast.success("MinIO/S3 API key deleted successfully")
 
-          <dt>Total Earned</dt>
-          <dd>$0.00</dd>
+        setGuest({
+          ...guest,
+          apiKeys: {
+            ...guest.apiKeys,
+            s3: undefined,
+          },
+        })
+      }
 
-          <dt>Average per View</dt>
-          <dd>$0.00</dd>
-
-          <dt>This Month</dt>
-          <dd>$0.00</dd>
-        </dl>
-
-        <div>
-          <h3>Recent Activity</h3>
-          <p>No activity yet</p>
-        </div>
-      </article>
-    </section>
-  )
-
-  const renderConsumerEarnings = () => (
-    <section>
-      <header>
-        <h2>Earnings</h2>
-        <p>Manage your earnings and payouts</p>
-      </header>
-
-      <article>
-        <div>
-          <h3>Available Balance</h3>
-          <p>
-            <strong>$0.00</strong>
-          </p>
-        </div>
-
-        <div>
-          <h3>Pending</h3>
-          <p>$0.00</p>
-        </div>
-
-        <div>
-          <h3>Total Paid Out</h3>
-          <p>$0.00</p>
-        </div>
-
-        <button type="button" disabled>
-          <span>💸</span>
-          Request Payout
-        </button>
-        <small>Minimum payout: $10.00</small>
-      </article>
-    </section>
-  )
-
-  const renderAdvertiserHome = () => (
-    <section>
-      <header>
-        <h2>Campaign Overview</h2>
-        <p>Your advertising dashboard</p>
-      </header>
-
-      <article>
-        <div>
-          <h3>Active Campaigns</h3>
-          <p>
-            <strong>0</strong>
-          </p>
-        </div>
-
-        <div>
-          <h3>Total Spent</h3>
-          <p>$0.00</p>
-        </div>
-
-        <div>
-          <h3>Total Views</h3>
-          <p>0</p>
-        </div>
-
-        <div>
-          <h3>Total Clicks</h3>
-          <p>0</p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setCurrentView("advertiser-campaigns")}
-        >
-          <span>➕</span>
-          Create Campaign
-        </button>
-      </article>
-    </section>
-  )
-
-  const renderAdvertiserCampaigns = () => (
-    <section>
-      <header>
-        <h2>Campaigns</h2>
-        <p>{t("Manage your campaigns")}</p>
-      </header>
-
-      <article>
-        <button type="button">
-          <span>➕</span>
-          Create New Campaign
-        </button>
-
-        <div>
-          <h3>Your Campaigns</h3>
-          <p>No campaigns yet</p>
-          <small>Create your first campaign to get started</small>
-        </div>
-      </article>
-    </section>
-  )
-
-  const renderAdvertiserAnalytics = () => (
-    <section>
-      <header>
-        <h2>Analytics</h2>
-        <p>Campaign performance insights</p>
-      </header>
-
-      <article>
-        <div>
-          <h3>Performance Overview</h3>
-          <dl>
-            <dt>Impressions</dt>
-            <dd>0</dd>
-
-            <dt>Clicks</dt>
-            <dd>0</dd>
-
-            <dt>CTR</dt>
-            <dd>0%</dd>
-
-            <dt>Conversions</dt>
-            <dd>0</dd>
-
-            <dt>Cost per View</dt>
-            <dd>$0.00</dd>
-
-            <dt>Cost per Click</dt>
-            <dd>$0.00</dd>
-          </dl>
-        </div>
-
-        <div>
-          <h3>Top Performing Campaigns</h3>
-          <p>No data available</p>
-        </div>
-      </article>
-    </section>
-  )
-
-  const renderSettings = () => (
-    <section>
-      <header>
-        <h2>Settings</h2>
-        <p>Manage your Grape preferences</p>
-      </header>
-
-      <article>
-        <div>
-          <h3>Account</h3>
-          <dl>
-            <dt>Role</dt>
-            <dd>{userRole}</dd>
-
-            <dt>{t("Discovery Consent")}</dt>
-            <dd>
-              {(user as any)?.adConsent || (guest as any)?.adConsent
-                ? "Granted"
-                : "Not granted"}
-            </dd>
-          </dl>
-        </div>
-
-        <div>
-          <h3>Change Role</h3>
-          <button type="button" onClick={() => handleRoleSelect("consumer")}>
-            👤 Consumer
-          </button>
-          <button type="button" onClick={() => handleRoleSelect("advertiser")}>
-            📢 Advertiser
-          </button>
-          <button type="button" onClick={() => handleRoleSelect("both")}>
-            🔄 Both
-          </button>
-        </div>
-
-        <div>
-          <h3>Privacy</h3>
-          <label>
-            <input type="checkbox" />
-            {t("Enable discovery consent")}
-          </label>
-          <small>
-            {t("Allow Grape to analyze content and show relevant apps")}
-          </small>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            setUserRole("both")
-            setCurrentView("onboarding")
-          }}
-        >
-          Reset Grape
-        </button>
-      </article>
-    </section>
-  )
-
-  const renderContent = () => {
-    switch (currentView) {
-      case "onboarding":
-        return renderOnboarding()
-      case "consumer-home":
-        return renderConsumerHome()
-      case "consumer-stats":
-        return renderConsumerStats()
-      case "consumer-earnings":
-        return renderConsumerEarnings()
-      case "advertiser-home":
-        return renderAdvertiserHome()
-      case "advertiser-campaigns":
-        return renderAdvertiserCampaigns()
-      case "advertiser-analytics":
-        return renderAdvertiserAnalytics()
-      case "settings":
-        return renderSettings()
-      default:
-        return renderOnboarding()
+      setS3ApiKey("")
+    } catch (error) {
+      console.error(error)
+      toast.error("Something went wrong")
+    } finally {
+      setIsDeletingS3ApiKey(false)
     }
   }
 
-  const renderFooter = () => {
-    if (currentView === "onboarding") return null
+  // useEffect(() => {
+  //   if (!user && !guest) return
+  //   plausible({ name: ANALYTICS_EVENTS.WATERMELON })
+  // }, [user, guest])
 
-    if (userRole === "consumer") {
-      return (
-        <footer>
-          <nav>
-            <button
-              type="button"
-              onClick={() => setCurrentView("consumer-home")}
-            >
-              <span>🏠</span>
-              <small>Home</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("consumer-stats")}
-            >
-              <span>📊</span>
-              <small>Stats</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("consumer-earnings")}
-            >
-              <span>💰</span>
-              <small>Earnings</small>
-            </button>
-            <button type="button" onClick={() => setCurrentView("settings")}>
-              <span>⚙️</span>
-              <small>Settings</small>
-            </button>
-          </nav>
-        </footer>
-      )
-    }
+  const { utilities } = useStyles()
 
-    if (userRole === "advertiser") {
-      return (
-        <footer>
-          <nav>
-            <button
-              type="button"
-              onClick={() => setCurrentView("advertiser-home")}
-            >
-              <span>🏠</span>
-              <small>Home</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("advertiser-campaigns")}
-            >
-              <span>📢</span>
-              <small>Campaigns</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("advertiser-analytics")}
-            >
-              <span>📊</span>
-              <small>Analytics</small>
-            </button>
-            <button type="button" onClick={() => setCurrentView("settings")}>
-              <span>⚙️</span>
-              <small>Settings</small>
-            </button>
-          </nav>
-        </footer>
-      )
-    }
+  const { isTauri, viewPortWidth, viewPortHeight } = usePlatform()
 
-    if (userRole === "both") {
-      return (
-        <footer>
-          <nav>
-            <button
-              type="button"
-              onClick={() => setCurrentView("consumer-home")}
-            >
-              <span>🏠</span>
-              <small>Home</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("consumer-earnings")}
-            >
-              <span>💰</span>
-              <small>Earn</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("advertiser-campaigns")}
-            >
-              <span>📢</span>
-              <small>Advertise</small>
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentView("advertiser-analytics")}
-            >
-              <span>📊</span>
-              <small>Stats</small>
-            </button>
-            <button type="button" onClick={() => setCurrentView("settings")}>
-              <span>⚙️</span>
-              <small>Settings</small>
-            </button>
-          </nav>
-        </footer>
-      )
-    }
+  const [compact, setCompact] = useState(viewPortHeight < 920)
 
-    return null
-  }
+  useEffect(() => {
+    setCompact(viewPortHeight < 920)
+  }, [viewPortHeight])
 
+  const { isMobileDevice, colorScheme } = useTheme()
+
+  const { addParams } = useNavigationContext()
   return (
     <>
-      <div style={style}>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="link"
+      <Div
+        style={{
+          minHeight: "100dvh",
+          display: "flex",
+          color: "var(--shade-8)",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          padding: "0 1rem",
+        }}
+      >
+        <Div
           style={{
-            fontSize: "1.4rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            position: "absolute",
+            top: 15,
+            right: 15,
+            fontSize: "0.9rem",
           }}
         >
-          🍇
-          <Coins size={18} color={COLORS.blue} />
-        </Button>
-        <Modal
-          hasCloseButton
-          hideOnClickOutside={false}
-          icon={<Span style={{ fontSize: "1.5rem" }}>🍇</Span>}
-          isModalOpen={isModalOpen}
-          onToggle={(open) => setIsModalOpen(open)}
-          title="Grape"
-        >
-          <main>{renderContent()}</main>
-          {renderFooter()}
-        </Modal>
-      </div>
+          <SignIn showSignIn={false} />
+          <Subscribe />
+          <LanguageSwitcher />
+        </Div>
+
+        {chrry && (
+          <Div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              position: "absolute",
+              top: 15,
+              left: 15,
+              fontSize: "0.9rem",
+              marginTop: isTauri ? 20 : 0,
+            }}
+          >
+            <AppLink
+              app={chrry}
+              event={ANALYTICS_EVENTS.WM_APP_LINK_CLICK}
+              icon={<Img app={chrry} alt={chrry.name} width={16} height={16} />}
+              loading={<Loading size={13} />}
+              className="button inverted medium"
+              style={{
+                padding: "0.3rem 0.6rem",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              {chrry.name}
+            </AppLink>{" "}
+          </Div>
+        )}
+
+        {isTauri && showLocalSetup ? (
+          <LocalSetupModal onClose={() => setShowLocalSetup(false)} />
+        ) : (
+          <>
+            <Div
+              style={{
+                display: "flex",
+
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: isMobileDevice ? 7.5 : 8.5,
+              }}
+            >
+              <Div
+                style={{
+                  display: "flex",
+                  gap: 7.5,
+                  alignItems: "center",
+                  marginTop: isMobileDevice ? 60 : 20,
+                  marginBottom: isMobileDevice ? 15 : 20,
+                }}
+              >
+                <Weather showLocation />
+                <A href="/about">
+                  <Img icon="heart" size={22} />
+                </A>
+              </Div>
+              <H1
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  margin: 0,
+                  fontSize: "1.6rem",
+                  gap: 15,
+                }}
+              >
+                <Img width={50} height={50} slug="grape" />
+                {t("Grape")}&#169;
+                <Button
+                  className="link"
+                  onClick={() => {
+                    setPaused(!paused)
+                    plausible({
+                      name: ANALYTICS_EVENTS.TICKER_MOTTO_CLICK,
+                      props: {
+                        app: app?.name,
+                        store: app?.store?.name,
+                        paused: !paused,
+                      },
+                    })
+                  }}
+                  title={paused ? t("Play") : t("Pause")}
+                  style={{
+                    ...utilities.link.style,
+                  }}
+                >
+                  {paused ? (
+                    <CirclePlay color={COLORS.green} size={22} />
+                  ) : (
+                    <CirclePause color={COLORS.orange} size={22} />
+                  )}
+                </Button>
+              </H1>
+
+              <Div
+                style={{ display: "flex", flexDirection: "column", gap: 20 }}
+              ></Div>
+            </Div>
+            <Div
+              style={{
+                marginTop: "auto",
+                display: "flex",
+                gap: ".5rem",
+                flexWrap: "wrap",
+                flexDirection: "row",
+                position: "relative",
+                bottom: ".5rem",
+                marginBottom: 20,
+              }}
+            >
+              <Div
+                style={{
+                  display: "flex",
+                  gap: ".7rem",
+                  flexWrap: "wrap",
+                  fontSize: ".85rem",
+                }}
+              >
+                🍀
+                <Hippo dataTestId="hippo-wm" />
+                <A href="/about">
+                  {app?.store?.app?.icon || "🍒"} /{t("about")}
+                </A>
+                <A href="/privacy">🤫 /{t("privacy")}</A>
+                <A
+                  event={ANALYTICS_EVENTS.BUY_ME_A_COFFEE_CLICK}
+                  href="https://buymeacoffee.com/iliyan"
+                  openInNewTab
+                  title="Buy me a coffee"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    fontSize: ".9rem",
+                    color: COLORS.orange,
+                  }}
+                >
+                  <SiBuymeacoffee color={COLORS.orange} size={16} />
+                  {t("BAM")} 💥
+                </A>
+              </Div>
+            </Div>
+
+            <Div
+              style={{
+                marginTop: "auto",
+                textAlign: "center",
+                maxWidth: 500,
+                gap: 10,
+                display: "flex",
+                flexDirection: "column",
+                marginBottom: 20,
+                fontSize: ".9rem",
+              }}
+            >
+              <Div
+                style={{
+                  alignSelf: "flex-start",
+                  display: "flex",
+                  gap: 5,
+                  alignItems: "center",
+                }}
+              >
+                {app && (
+                  <AppLink
+                    app={app}
+                    icon={
+                      <Img app={app} alt={app.name} width={22} height={22} />
+                    }
+                    loading={<Loading size={13} />}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "0.25rem 0.5rem",
+                    }}
+                  >
+                    <Span>🌀</Span>
+                  </AppLink>
+                )}{" "}
+                <Ticker
+                  style={{
+                    color: "var(--shade-6)",
+                  }}
+                  maxWidth={viewPortWidth - 150}
+                  paused={paused}
+                />
+              </Div>
+              {!user && (
+                <>
+                  <A
+                    onClick={(e) => {
+                      if (e.metaKey || e.ctrlKey) {
+                        return
+                      }
+
+                      e.preventDefault()
+                      setSignInPart("login")
+                    }}
+                    href="/?signIn=login"
+                  >
+                    <Img alt="Coder" size={22} slug="coder" /> {t("Login")} (
+                    {t("Optional")})*
+                  </A>
+                  <Div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      justifyContent: "center",
+                      marginTop: 5,
+                    }}
+                  >
+                    <Img alt="Sushi" size={18} slug="sushi" />
+                    {t("Sushi will auto-migrate you when you choose to login")}
+                  </Div>
+                </>
+              )}
+              {!isTauri && viewPortHeight >= 800 && (
+                <Div>
+                  <Div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      justifyContent: "flex-end",
+                      marginBottom: 5,
+                      fontSize: ".8rem",
+                      color: "var(--shade-6)",
+                    }}
+                  >
+                    <A
+                      href={
+                        siteConfig.storeSlug !== "sushiStore"
+                          ? "https://sushi.chrry.ai/jules"
+                          : "/jules"
+                      }
+                      openInNewTab={siteConfig.slug !== "chrry"}
+                    >
+                      <Img alt="🐙 Jules" size={22} slug="jules" />
+                    </A>
+                    {t("Sneak peek")}
+                    <Button
+                      className="inverted"
+                      style={{
+                        ...utilities.small.style,
+
+                        paddingTop: "0",
+                        paddingBottom: "0",
+                      }}
+                      onClick={() => {
+                        const a = document.createElement("a")
+                        a.href = downloadUrl
+                        a.download = ""
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                      }}
+                    >
+                      <SiMacos
+                        style={{
+                          position: "relative",
+                          bottom: 1,
+                        }}
+                        size={32}
+                      />
+                      {/* {t("Install")} */}
+                    </Button>
+                  </Div>
+
+                  <Div style={{ fontSize: "0.85rem", color: "var(--shade-7)" }}>
+                    💻{" "}
+                    <Trans
+                      i18nKey="watermelon_macos_info"
+                      defaults="Coming soon: A <0>macOS Desktop App</0> with local DB support (MIT Licensed) for fully private configuration."
+                      components={[
+                        <A
+                          event={ANALYTICS_EVENTS.GH_REPO_CLICK}
+                          key="macos"
+                          openInNewTab
+                          href="https://github.com/chrryAI/vex"
+                        />,
+                      ]}
+                    />
+                  </Div>
+                </Div>
+              )}
+            </Div>
+            <Div
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                display: "flex",
+                marginBottom: 20,
+                marginTop: "auto",
+              }}
+            >
+              <ThemeSwitcher style={{ marginTop: 5 }} />
+              <ColorScheme size={22} />
+            </Div>
+            <Div
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--shade-7)",
+                display: "flex",
+                gap: 5,
+                marginBottom: isMobileDevice ? 25 : 25,
+              }}
+            >
+              <Img icon={"whale"} size={24} />{" "}
+              <Span>v{app?.version || VERSION}</Span>
+            </Div>
+          </>
+        )}
+      </Div>
     </>
   )
 }

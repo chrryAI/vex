@@ -36,6 +36,7 @@ export default function SignIn({
   registerButtonText,
   desktopAuthHandler,
   style,
+  dataTestId,
   ...props
 }: {
   className?: string
@@ -46,6 +47,7 @@ export default function SignIn({
   callbackUrl?: string
   style?: React.CSSProperties
   desktopAuthHandler?: DesktopAuthHandler
+  dataTestId?: string
 }) {
   const { isExtension, isCapacitor, isTauri } = usePlatform()
 
@@ -625,7 +627,9 @@ export default function SignIn({
           )}
           {showRegister && (
             <Button
-              data-testid="register-button"
+              data-testid={
+                dataTestId ? `${dataTestId}-register-button` : "register-button"
+              }
               onClick={() => {
                 const plan = (user || guest)?.subscription?.plan || "member"
                 if (isExtension) {
@@ -674,7 +678,7 @@ export default function SignIn({
             ></video>
           }
           title={<>{t(part === "login" ? "Login" : "Register")}</>}
-          dataTestId="sign-in-modal"
+          dataTestId={"sign-in-modal"}
           hasCloseButton
           hideOnClickOutside={false}
           params={`?signIn=${part}`}

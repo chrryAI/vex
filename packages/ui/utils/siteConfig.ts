@@ -1636,6 +1636,7 @@ export interface SiteConfig {
   url: string
   isTribe?: boolean
   isWatermelon?: boolean
+  isGrape?: boolean
   description: string
   version?: string
   email: string
@@ -3054,7 +3055,7 @@ export function detectsiteModeDomain(
   hostname?: string,
   mode?: siteMode,
 ): siteMode {
-  const devMode = "sushi"
+  const devMode = "vex"
 
   const defaultMode = (getEnv().VITE_SITE_MODE as siteMode) || mode || devMode
 

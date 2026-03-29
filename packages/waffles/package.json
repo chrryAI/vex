@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.2.92",
+  "version": "2.3.0",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "keywords": [
     "automation",
@@ -39,7 +39,8 @@
   "scripts": {
     "build": "pnpm exec tsup",
     "dev": "pnpm exec tsup --watch",
-    "e": "pnpm exec playwright install chromium && playwright test critical.spec.ts --project chromium",
+    "e": "playwright test critical.spec.ts --project chromium",
+    "e:critical": "pnpm exec playwright install chromium && playwright test critical.spec.ts --project chromium",
     "e2e": "playwright test critical.spec.ts --project chromium",
     "lint": "biome check .",
     "sync-goals": "tsx src/scripts/sync-plausible-goals.ts",

@@ -194,12 +194,18 @@ dotenv.config()
 const NODE_ENV = process.env.NODE_ENV
 export const MODE = process.env.MODE
 
+export const isE2E =
+  process.env.TESTING_ENV === "e2e" || process.env.VITE_TESTING_ENV === "e2e"
+export const isDevelopment = process.env.NODE_ENV === "development"
+
 export const DB_URL =
   MODE === "prod"
     ? process.env.DB_PROD_URL
-    : MODE === "e2e"
-      ? process.env.DB_E2E_URL
-      : process.env.DB_URL
+    : isE2E && isDevelopment
+      ? process.env.DB_LOCAL_E2E_URL
+      : MODE === "e2e"
+        ? process.env.DB_E2E_URL
+        : process.env.DB_URL
 
 export const isCI = process.env.CI
 
@@ -260,10 +266,6 @@ export const TEST_MEMBER_FINGERPRINTS =
 export const VEX_LIVE_FINGERPRINTS =
   process.env.VEX_LIVE_FINGERPRINTS?.split(",") || []
 
-export const isDevelopment = process.env.NODE_ENV === "development"
-
-export const isE2E =
-  process.env.TESTING_ENV === "e2e" || process.env.VITE_TESTING_ENV === "e2e"
 // Define locally to avoid circular dependency issues with chrry/utils
 export const OWNER_CREDITS = 999999
 
@@ -1099,12 +1101,14 @@ export const getUser = async ({
           pageSize: 1,
         }).then((res) => res.totalCount),
         creditsLeft,
-        instructions: await getInstructions({
-          appId: app?.id,
-          userId: result.user.id,
-          pageSize: 7, // 7 instructions per app
-          // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
-        }),
+        instructions: app
+          ? await getInstructions({
+              appId: app?.id,
+              userId: result.user.id,
+              pageSize: 7, // 7 instructions per app
+              // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+            })
+          : [],
         placeHolder: await getPlaceHolder({
           userId: result.user.id,
         }),
@@ -2422,11 +2426,13 @@ export const getGuest = async ({
           pageSize: 1,
         }).then((res) => res.totalCount),
         creditsLeft,
-        instructions: await getInstructions({
-          appId,
-          guestId: result.id,
-          pageSize: 7,
-        }),
+        instructions: appId
+          ? await getInstructions({
+              appId,
+              guestId: result.id,
+              pageSize: 7,
+            })
+          : [],
         apiKeys: skipMasking
           ? result.apiKeys
           : result.apiKeys
@@ -2914,6 +2920,26 @@ export const getThreads = async ({
     (collaborationStatus[0] === "pending" ||
       collaborationStatus[0] === "active")
 
+  const sortOrder =
+    sort === "bookmark"
+      ? [
+          bookmarkedThreadIds && bookmarkedThreadIds.length > 0
+            ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
+                bookmarkedThreadIds.map((id) => sql`${id}`),
+                sql`, `,
+              )}]::uuid[]) THEN 0 ELSE 1 END`
+            : undefined,
+          appId || (appIds && appIds.length > 0)
+            ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
+            : undefined,
+          sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
+          desc(
+            sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
+          ),
+          desc(threads.updatedOn),
+        ]
+      : [desc(threads.updatedOn)]
+
   const conditionsArray = [
     ownerId
       ? or(eq(apps.userId, ownerId), eq(apps.guestId, ownerId))
@@ -3009,24 +3035,7 @@ export const getThreads = async ({
     ...(hasPearApp
       ? [sql`CASE WHEN ${threads.pearAppId} IS NOT NULL THEN 0 ELSE 1 END`]
       : []),
-    ...(sort === "bookmark"
-      ? [
-          bookmarkedThreadIds && bookmarkedThreadIds.length > 0
-            ? sql`CASE WHEN ${threads.id} = ANY(ARRAY[${sql.join(
-                bookmarkedThreadIds.map((id) => sql`${id}`),
-                sql`, `,
-              )}]::uuid[]) THEN 0 ELSE 1 END`
-            : undefined,
-          appId || (appIds && appIds.length > 0)
-            ? sql`CASE WHEN ${threads.isMainThread} = true THEN 0 ELSE 1 END`
-            : undefined,
-          sql`CASE WHEN ${threads.bookmarks} IS NULL THEN 1 ELSE 0 END`,
-          desc(
-            sql`jsonb_array_length(COALESCE(${threads.bookmarks}, '[]'::jsonb))`,
-          ),
-          desc(threads.updatedOn),
-        ]
-      : [desc(threads.updatedOn)]),
+    ...sortOrder,
   ].filter(Boolean) as SQL[]
 
   if (search && search.length >= 3) {
@@ -3112,6 +3121,24 @@ export const getThreads = async ({
                 threadId: thread.threads.id,
               })
             ).messages.at(0)?.message,
+            // Get distinct apps used in this thread's messages (limit 10)
+            apps: await (async () => {
+              const messageAppIds = await db
+                .selectDistinct({ appId: messages.appId })
+                .from(messages)
+                .where(eq(messages.threadId, thread.threads.id))
+                .limit(10)
+
+              const appIds = messageAppIds
+                .map((m) => m.appId)
+                .filter((id): id is string => id !== null)
+
+              if (appIds.length === 0) return []
+
+              return await Promise.all(
+                appIds.map((id) => getSimpleApp({ id, userId, guestId })),
+              )
+            })(),
           }
         }),
       ),
@@ -3152,21 +3179,30 @@ export const getThreads = async ({
               })
             : undefined
           const app = thread.threads.appId
-            ? await db.query.apps.findFirst({
-                where: eq(apps.id, thread.threads.appId),
-                columns: {
-                  id: true,
-                  name: true,
-                  icon: true,
-                  slug: true,
-                },
-              })
+            ? await getSimpleApp({ id: thread.threads.appId, userId, guestId })
             : undefined
 
           return {
             ...thread.threads,
             app,
             pearApp,
+            apps: await (async () => {
+              const messageAppIds = await db
+                .selectDistinct({ appId: messages.appId })
+                .from(messages)
+                .where(eq(messages.threadId, thread.threads.id))
+                .limit(10)
+
+              const appIds = messageAppIds
+                .map((m) => m.appId)
+                .filter((id): id is string => id !== null)
+
+              if (appIds.length === 0) return []
+
+              return await Promise.all(
+                appIds.map((id) => getSimpleApp({ id, userId, guestId })),
+              )
+            })(),
             user: thread.user
               ? {
                   id: thread.user?.id,
@@ -5483,6 +5519,13 @@ export const getApp = async ({
     extends: await getAppExtends({
       appId: app.app.id,
     }),
+    // instructions: await getInstructions({
+    //   appId: app?.app?.id,
+    //   userId,
+    //   guestId,
+    //   pageSize: 7, // 7 instructions per app
+    //   // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+    // }),
     user: toSafeUser({ user: app.user }),
     guest: toSafeGuest({ guest: app.guest }),
     store: storeWithApps,
@@ -5527,7 +5570,7 @@ export const getSimpleApp = async ({
   role,
   name,
   depth = 0,
-  skipCache = false,
+  skipCache = true,
   includeCharacterProfiles = false,
 }: {
   id?: string
@@ -5610,7 +5653,15 @@ export const getSimpleApp = async ({
   if (!skipCache) {
     const cached = await getCache<appWithStore>(cacheKey)
     if (cached) {
-      return cached
+      return {
+        ...cached,
+        store: cached.store
+          ? {
+              ...cached.store,
+              apps: [],
+            }
+          : undefined,
+      }
     }
   }
 
@@ -5663,10 +5714,23 @@ export const getSimpleApp = async ({
     user: toSafeUser({ user: app.user }),
     guest: toSafeGuest({ guest: app.guest }),
     store: app.store,
+    instructions:
+      userId || guestId
+        ? await getInstructions({
+            appId: app?.app?.id,
+            userId,
+            guestId,
+            pageSize: 7, // 7 instructions per app
+            // perApp: true, // Get 7 per app (Atlas, Bloom, Peach, Vault, General) = 35 total
+          })
+        : [],
   } as unknown as appWithStore
 
   const r = {
     ...result,
+    tips: null,
+    highlights: null,
+    features: null,
     store: result.store
       ? {
           ...result.store,
@@ -5681,7 +5745,7 @@ export const getSimpleApp = async ({
     (guestId && app.app.guestId === guestId)
 
   // Cache the result (1 hour for public, 5 minutes for owners) - fire and forget
-  setCache(cacheKey, result, isOwner ? 60 * 5 : 60 * 60)
+  setCache(cacheKey, r, isOwner ? 60 * 5 : 60 * 60)
 
   // Cross-seed public cache if owner-specific request
   if (isOwner) {
@@ -5818,7 +5882,7 @@ const toSafeCharacterProfile = ({
     : undefined
 }
 
-export function toSafeApp({
+const toSafeApp = ({
   app,
   userId,
   guestId,
@@ -5828,7 +5892,7 @@ export function toSafeApp({
   userId?: string
   guestId?: string
   skip?: boolean
-}): Partial<app | appWithStore> | undefined {
+}): Partial<app | appWithStore> | undefined => {
   if (!app) return undefined
 
   if (!skip && "store" in app && app?.store?.apps) {
@@ -5940,6 +6004,7 @@ export function toSafeApp({
     tips: app.tips,
     tipsTitle: app.tipsTitle,
     storeId: app.storeId,
+    instructions: (app as any).instructions || [],
     extend: app.extend,
     pricing: app.pricing,
     isSystem: app.isSystem,

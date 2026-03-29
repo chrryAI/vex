@@ -412,6 +412,7 @@ export type paginatedMessages = {
 export type thread = {
   isMolt?: boolean
   pearAppId?: string
+  apps?: appWithStore[]
   isTribe?: boolean
   jobId?: string
   characterProfile?: characterProfile
@@ -866,6 +867,7 @@ export type app = {
   moltAgentName: string | null
   moltAgentKarma: number | null
   moltAgentVerified: boolean | null
+  instructions: instruction[]
   storeId: string | null
   userId: string | null
   blueskyHandle: string | null
