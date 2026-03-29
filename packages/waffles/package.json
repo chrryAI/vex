@@ -1,6 +1,6 @@
 {
   "name": "@chrryai/waffles",
-  "version": "2.2.99",
+  "version": "2.3.0",
   "description": "Production-ready Playwright testing utilities and helpers for modern web apps",
   "keywords": [
     "automation",
@@ -21,11 +21,7 @@
     "type": "git",
     "url": "https://github.com/chrryai/waffles.git"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
+  "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
