@@ -1021,7 +1021,7 @@ export default function Hippo({
                               <Loading width={18} height={18} />
                             ) : (
                               <Button
-                                data-testid={`${dataTestId}-file-preview-clear`}
+                                data-testid={`file-preview-clear`}
                                 type="button"
                                 className="link"
                                 onClick={() => handleDeleteFile(file.id)}
@@ -1084,7 +1084,7 @@ export default function Hippo({
                             </Div>
 
                             <Button
-                              data-testid={`${dataTestId}-file-preview-clear`}
+                              data-testid={`file-preview-clear`}
                               type="button"
                               onClick={() => removeFile(index)}
                               className="link"

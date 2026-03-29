@@ -1321,6 +1321,7 @@ async function generateAIContent({
     app,
     user,
     guest,
+    name: "beles",
   })
   console.log(`🤖 Using ${agentName} for background processing`)
 

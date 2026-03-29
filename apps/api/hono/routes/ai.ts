@@ -3769,7 +3769,6 @@ When message language is unclear, default to this language.`
   }
 
   const generateContent = async (m?: typeof message) => {
-    if (job) return
     try {
       if (m && selectedAgent) {
         // Use user/guest from the message object to avoid race conditions

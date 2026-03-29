@@ -224,73 +224,100 @@ export async function getModelProvider({
     lastKey?: string
   }
 
-  const toSwitch =
-    process.env.BELES === "true"
-      ? "beles"
-      : !(isBYOK || user?.role === "admin") && !byokModelId
-        ? agent.name
-        : byokModelId
-          ? "beles"
-          : !byokModelId && (isDevelopment ? !job : !!job)
-            ? "beles"
-            : agent.name
+  const isBeles = process.env.BELES === "true"
+
+  const getFallback = () => {
+    const openrouterKey = process.env.OPENROUTER_API_KEY!
+
+    const freeModels = [
+      "qwen/qwen3-coder-next",
+      // "mistralai/devstral-2-2512",
+      // "openrouter/auto",
+    ]
+
+    // LRU rotasyon (mevcut sortedPool logicini kullan)
+    const failed = agent.metadata?.failed || []
+    const active = freeModels.filter((m) => !failed.includes(m))
+    const modelId = byokModelId || "openrouter/free"
+
+    const provider = createOpenRouter({ apiKey: openrouterKey })
+
+    // Modeli metadata'ya timestamp at (load balancing)
+
+    return {
+      provider: provider(modelId),
+      modelId,
+      agentName: agent.name, // now we have to for BC
+      supportsTools: false, // Zorla kapat
+    }
+  }
+  const getBeles = (skipCheck?: boolean) => {
+    if (!isBeles && !skipCheck) {
+      return
+    }
+
+    const openrouterKey =
+      byokDecrypt(user?.apiKeys?.openrouter) ||
+      byokDecrypt(guest?.apiKeys?.openrouter) ||
+      safeDecrypt(app?.apiKeys?.openrouter) ||
+      OPENROUTER_API_KEY
+
+    if (openrouterKey) {
+      const freeModels = [
+        "qwen/qwen3-coder-next",
+        // "mistralai/devstral-2-2512",
+        // "openrouter/auto",
+      ]
+
+      // LRU rotasyon (mevcut sortedPool logicini kullan)
+      const failed = agent.metadata?.failed || []
+      const active = freeModels.filter((m) => !failed.includes(m))
+      const modelId =
+        byokModelId ||
+        // rest.modelId ||
+        active.sort((a, b) => {
+          const metadata = agent.metadata as Record<string, any> | undefined
+          const dateA = metadata?.[a] ? new Date(metadata[a]).getTime() : 0
+          const dateB = metadata?.[b] ? new Date(metadata[b]).getTime() : 0
+          return dateA - dateB
+        })[0] ||
+        "openrouter/free"
+
+      const provider = createOpenRouter({ apiKey: openrouterKey })
+
+      // Modeli metadata'ya timestamp at (load balancing)
+      updateAiAgent({
+        id: agent.id,
+        metadata: { ...agent.metadata, [modelId]: new Date() },
+      })
+
+      return {
+        provider: provider(modelId),
+        modelId,
+        agentName: agent.name, // now we have to for BC
+        supportsTools: false, // Zorla kapat
+      }
+    }
+
+    const modelId = targetModelId || "deepseek-chat"
+    console.warn(
+      `⚠️ Creating fallback DeepSeek provider with empty API key for model ${modelId} (agent: ${agent.name})`,
+    )
+    // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
+    return {
+      provider: createDeepSeek({ apiKey: "" })(modelId),
+      modelId: modelId,
+      agentName: agent.name,
+      supportsTools: false,
+    }
+  }
+
+  const toSwitch = agent.name
 
   switch (toSwitch) {
     case "beles": {
-      const openrouterKey =
-        byokDecrypt(user?.apiKeys?.openrouter) ||
-        byokDecrypt(guest?.apiKeys?.openrouter) ||
-        safeDecrypt(app?.apiKeys?.openrouter) ||
-        OPENROUTER_API_KEY
-
-      if (openrouterKey) {
-        const freeModels = [
-          "qwen/qwen3-coder-next",
-          // "mistralai/devstral-2-2512",
-          // "openrouter/auto",
-        ]
-
-        // LRU rotasyon (mevcut sortedPool logicini kullan)
-        const failed = agent.metadata?.failed || []
-        const active = freeModels.filter((m) => !failed.includes(m))
-        const modelId =
-          byokModelId ||
-          // rest.modelId ||
-          active.sort((a, b) => {
-            const metadata = agent.metadata as Record<string, any> | undefined
-            const dateA = metadata?.[a] ? new Date(metadata[a]).getTime() : 0
-            const dateB = metadata?.[b] ? new Date(metadata[b]).getTime() : 0
-            return dateA - dateB
-          })[0] ||
-          "openrouter/free"
-
-        const provider = createOpenRouter({ apiKey: openrouterKey })
-
-        // Modeli metadata'ya timestamp at (load balancing)
-        updateAiAgent({
-          id: agent.id,
-          metadata: { ...agent.metadata, [modelId]: new Date() },
-        })
-
-        return {
-          provider: provider(modelId),
-          modelId,
-          agentName: "deepSeek", // now we have to for BC
-          supportsTools: false, // Zorla kapat
-        }
-      }
-
-      const modelId = targetModelId || "deepseek-chat"
-      console.warn(
-        `⚠️ Creating fallback DeepSeek provider with empty API key for model ${modelId} (agent: ${agent.name})`,
-      )
-      // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
-      return {
-        provider: createDeepSeek({ apiKey: "" })(modelId),
-        modelId: modelId,
-        agentName: agent.name,
-        supportsTools: false,
-      }
+      return getBeles(true) || getFallback()
+      break
     }
     case "deepSeek": {
       const byokKey = user?.apiKeys?.openrouter
@@ -313,7 +340,8 @@ export async function getModelProvider({
         const effectiveModel = mapDeepSeekModel(resolvedId)
 
         result = {
-          provider: deepseekProvider(effectiveModel),
+          provider:
+            (await getBeles()?.provider) || deepseekProvider(effectiveModel),
           modelId: resolvedId,
           agentName: agent.name,
           lastKey: "deepSeek",
@@ -336,7 +364,7 @@ export async function getModelProvider({
         })
 
         result = {
-          provider: openrouterProvider(modelId),
+          provider: (await getBeles()?.provider) || openrouterProvider(modelId),
           modelId,
           agentName: agent.name,
           lastKey: "openrouter",
@@ -356,7 +384,7 @@ export async function getModelProvider({
           apiKey: chatgptKey,
         })
         result = {
-          provider: openaiProvider("gpt-4o"),
+          provider: (await getBeles()?.provider) || openaiProvider("gpt-4o"),
           modelId: "gpt-4o",
           agentName: "chatGPT",
           lastKey: "chatGPT",
@@ -400,7 +428,8 @@ export async function getModelProvider({
           const effectiveModel = mapDeepSeekModel(modelId)
 
           result = {
-            provider: sushiProvider(effectiveModel),
+            provider:
+              (await getBeles()?.provider) || sushiProvider(effectiveModel),
             modelId: modelId, // Use the pretty name for capabilities check
             agentName: agent.name,
             lastKey: "deepSeek",
@@ -510,7 +539,7 @@ export async function getModelProvider({
         })
 
         result = {
-          provider: provider(modelId),
+          provider: (await getBeles()?.provider) || provider(modelId),
           modelId,
           agentName: agent.name,
           lastKey: "openrouter",
@@ -523,7 +552,9 @@ export async function getModelProvider({
       )
       // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
-        provider: createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
+        provider:
+          (await getBeles()?.provider) ||
+          createDeepSeek({ apiKey: "" })("deepseek-reasoner"),
         modelId: "deepseek-reasoner",
         agentName: agent.name,
       }
@@ -555,7 +586,7 @@ export async function getModelProvider({
           apiKey: openrouterKeyForOpenAI,
         })
         result = {
-          provider: openrouterProvider(modelId),
+          provider: (await getBeles()?.provider) || openrouterProvider(modelId),
           modelId,
           agentName: agent.name,
           lastKey: "openrouter",
@@ -574,7 +605,7 @@ export async function getModelProvider({
         if (openaiKey && !failedKeys?.includes(safeModel)) {
           const openaiProvider = createOpenAI({ apiKey: openaiKey })
           result = {
-            provider: openaiProvider(safeModel),
+            provider: (await getBeles()?.provider) || openaiProvider(safeModel),
             modelId: safeModel, // ← Gerçek model
             agentName: agent.name,
             lastKey: "chatGPT",
@@ -589,7 +620,9 @@ export async function getModelProvider({
       )
       // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
-        provider: createOpenAI({ apiKey: "" })(fallbackModel),
+        provider:
+          (await getBeles()?.provider) ||
+          createOpenAI({ apiKey: "" })(fallbackModel),
         modelId: fallbackModel,
         agentName: agent.name,
       }
@@ -618,7 +651,9 @@ export async function getModelProvider({
       ) {
         const claudeProvider = createAnthropic({ apiKey: claudeKey })
         result = {
-          provider: claudeProvider(modelId.replace(/^anthropic\//, "")),
+          provider:
+            (await getBeles()?.provider) ||
+            claudeProvider(modelId.replace(/^anthropic\//, "")),
           modelId: modelId,
           agentName: agent.name,
           lastKey: "claude",
@@ -647,7 +682,9 @@ export async function getModelProvider({
             apiKey: openrouterKeyForClaude,
           })
           result = {
-            provider: openrouterProvider(scheduledModelId),
+            provider:
+              (await getBeles()?.provider) ||
+              openrouterProvider(scheduledModelId),
             modelId: scheduledModelId,
             agentName: agent.name,
             lastKey: "openrouter",
@@ -676,9 +713,11 @@ export async function getModelProvider({
       )
       // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
-        provider: createAnthropic({ apiKey: "" })(
-          fallbackModel.replace(/^anthropic\//, ""),
-        ),
+        provider:
+          (await getBeles()?.provider) ||
+          createAnthropic({ apiKey: "" })(
+            fallbackModel.replace(/^anthropic\//, ""),
+          ),
         modelId: fallbackModel,
         agentName: agent.name,
       }
@@ -705,7 +744,9 @@ export async function getModelProvider({
         if (geminiKey && !failedKeys?.includes(modelId)) {
           const geminiProvider = createGoogleGenerativeAI({ apiKey: geminiKey })
           result = {
-            provider: geminiProvider(modelId.replace(/^google\//, "")),
+            provider:
+              (await getBeles()?.provider) ||
+              geminiProvider(modelId.replace(/^google\//, "")),
             modelId: modelId,
             lastKey: "gemini",
             agentName: agent.name,
@@ -729,7 +770,7 @@ export async function getModelProvider({
           apiKey: openrouterKeyForGemini,
         })
         result = {
-          provider: openrouterProvider(modelId),
+          provider: (await getBeles()?.provider) || openrouterProvider(modelId),
           modelId,
           agentName: agent.name,
           lastKey: "openrouter",
@@ -743,9 +784,11 @@ export async function getModelProvider({
       )
       // Deliberate non-authenticated stub for graceful failure (warnings are logged above)
       result = {
-        provider: createGoogleGenerativeAI({ apiKey: "" })(
-          fallbackModel.replace(/^google\//, ""),
-        ),
+        provider:
+          (await getBeles()?.provider) ||
+          createGoogleGenerativeAI({ apiKey: "" })(
+            fallbackModel.replace(/^google\//, ""),
+          ),
         modelId: fallbackModel,
         agentName: agent.name,
       }
@@ -781,7 +824,7 @@ export async function getModelProvider({
 
           const modelIdToUse = defaultGrokModel.replace(/^x-ai\//, "")
           result = {
-            provider: xaiProvider(modelIdToUse),
+            provider: (await getBeles()?.provider) || xaiProvider(modelIdToUse),
             modelId: defaultGrokModel,
             agentName: agent.name,
             lastKey: "xai",
@@ -807,7 +850,9 @@ export async function getModelProvider({
           })
 
           result = {
-            provider: openrouterProvider(targetModelId || modelId),
+            provider:
+              (await getBeles()?.provider) ||
+              openrouterProvider(targetModelId || modelId),
             modelId: targetModelId || modelId,
             agentName: agent.name,
             lastKey: "openrouter",
@@ -848,7 +893,9 @@ export async function getModelProvider({
           apiKey: perplexityKey,
         })
         result = {
-          provider: perplexityProvider(modelId.replace(/^perplexity\//, "")),
+          provider:
+            (await getBeles()?.provider) ||
+            perplexityProvider(modelId.replace(/^perplexity\//, "")),
           modelId: modelId,
           agentName: agent.name,
           lastKey: "perplexity",
@@ -869,7 +916,7 @@ export async function getModelProvider({
           apiKey: openrouterKeyForPerplexity,
         })
         result = {
-          provider: openrouterProvider(modelId),
+          provider: (await getBeles()?.provider) || openrouterProvider(modelId),
           modelId,
           agentName: agent.name,
           lastKey: "openrouter",
@@ -909,7 +956,8 @@ export async function getModelProvider({
       const fallbackModel = "deepseek-v3.2"
       const effectiveModel = mapDeepSeekModel(fallbackModel)
       result = {
-        provider: fallbackProvider(effectiveModel),
+        provider:
+          (await getBeles()?.provider) || fallbackProvider(effectiveModel),
         modelId: fallbackModel,
         agentName: "deepSeek",
       }

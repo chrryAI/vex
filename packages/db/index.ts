@@ -202,7 +202,7 @@ export const DB_URL =
   MODE === "prod"
     ? process.env.DB_PROD_URL
     : isE2E && isDevelopment
-      ? process.env.DB_URL
+      ? process.env.DB_LOCAL_E2E_URL
       : MODE === "e2e"
         ? process.env.DB_E2E_URL
         : process.env.DB_URL

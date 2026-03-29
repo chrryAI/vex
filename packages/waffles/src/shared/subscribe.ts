@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test"
-import { log, type modelName, wait } from "../index"
+import { getModelCredits, log, type modelName, wait } from "../index"
 import { chat } from "./chat"
 import { prepare } from "./clean"
 import { signIn } from "./signIn"
@@ -57,7 +57,7 @@ export const subscribe = async ({
     },
   ]
 
-  if (newChat || (!inviteOrGift && isMember)) {
+  if (!inviteOrGift) {
     await chat({
       artifacts: {
         paste: 1,
@@ -215,7 +215,13 @@ export const subscribe = async ({
   }
 
   if (newChat && threadUrl) {
-    expect(await getCreditsLeft(page)).toBe(2000 - prompts.length * 2)
+    const expectedCredits =
+      2000 -
+      prompts.reduce(
+        (total, prompt) => total + getModelCredits(prompt.model),
+        0,
+      )
+    expect(await getCreditsLeft(page)).toBe(expectedCredits)
 
     await signIn({
       page,

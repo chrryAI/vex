@@ -299,7 +299,7 @@ export const Hey = memo(
             <Div style={{ display: isProgramme ? "none" : "block" }}>
               {showWatermelon ? (
                 <Watermelon />
-              ) : showGrape ? (
+              ) : user?.role === "admin" && showGrape ? (
                 <Grape />
               ) : isClientRoute ? (
                 postId || tribeSlug ? (

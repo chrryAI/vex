@@ -134,6 +134,10 @@ test.skip("Chat", async ({ page }) => {
     instruction: "Help me plan a 3-day trip to Tokyo",
     prompts: [
       {
+        text: "Greetings 👋. This is an e2e test and will include mock files.",
+        model: "sushi",
+      },
+      {
         text: "List shortly the top 3 must-see attractions in Tokyo",
         model: "sushi",
       },

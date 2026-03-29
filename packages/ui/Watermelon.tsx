@@ -258,7 +258,7 @@ export default function Watermelon() {
             fontSize: "0.9rem",
           }}
         >
-          <SignIn showSignIn={false} />
+          <SignIn dataTestId="sign-in" showSignIn={false} />
           <Subscribe />
           <LanguageSwitcher />
         </Div>
